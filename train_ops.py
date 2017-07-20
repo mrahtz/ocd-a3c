@@ -55,12 +55,6 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
     for var in apply_tvs:
         var_name = strip_var_name(var.name)
         apply_tvs_dict[var_name] = var
-        
-    # Create an operator which zeros out the buffers
-    zero_ops = []
-    for grad_buf in grad_bufs.values():
-        op = tf.assign(grad_buf, tf.zeros(shape=grad_buf.shape))
-        zero_ops.append(op)
 
     # Create an operator which applies the gradient buffers
     # to apply_scope
@@ -69,6 +63,11 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
         grad_bufs_and_vars.append((grad_buf, apply_tvs_dict[var_name]))
     apply_gradients = optimizer.apply_gradients(grad_bufs_and_vars)
     
-    apply_gradients = tf.group(apply_gradients, *zero_ops)
+    # Create an operator which zeros out the buffers
+    zero_ops = []
+    for grad_buf in grad_bufs.values():
+        op = tf.assign(grad_buf, tf.zeros(shape=grad_buf.shape))
+        zero_ops.append(op)
+    zero_gradients = tf.group(*zero_ops)
     
-    return update_gradients, apply_gradients
+    return update_gradients, apply_gradients, zero_gradients
