@@ -1,17 +1,18 @@
 import tensorflow as tf
 import unittest
-import re
 import numpy as np
 from train_ops import create_train_ops
 
 grad_bufs = None
 sess = None
 
+
 def assert_grad_bufs_zero():
     global grad_bufs
     for buf in grad_bufs.items():
         val = sess.run(buf)[0]
         np.testing.assert_equal(val, np.array([0., 0.]))
+
 
 class TestTrainOps(unittest.TestCase):
 
@@ -28,13 +29,15 @@ class TestTrainOps(unittest.TestCase):
         tf.reset_default_graph()
         sess = tf.Session()
 
+        input = tf.placeholder(tf.float32, [None, 2])
+
         vars = {}
         losses = {}
         for scope in scopes:
             with tf.variable_scope(scope):
                 w1 = tf.Variable(inits['w1'], name='w1')
                 w2 = tf.Variable(inits['w2'], name='w2')
-                losses[scope] = w1 + 2 * w2
+                losses[scope] = tf.reduce_sum(w1 + input * w2, axis=-1)
                 vars[scope] = {'w1': w1, 'w2': w2}
 
         o = tf.train.GradientDescentOptimizer(learning_rate=1)
@@ -45,7 +48,7 @@ class TestTrainOps(unittest.TestCase):
         # two variables, two scopes, for a total of 4 trainable variables
         assert(len(tf.trainable_variables()) == 4)
 
-        update_ops, apply_ops, zero_ops =     create_train_ops(losses['update_scope'], o, 'update_scope', 'apply_scope')
+        update_ops, apply_ops, zero_ops = create_train_ops(losses['update_scope'], o, 'update_scope', 'apply_scope')
 
         assert(len(tf.trainable_variables()) == 4)
 
@@ -58,7 +61,10 @@ class TestTrainOps(unittest.TestCase):
         """
         assert_grad_bufs_zero()
 
-        sess.run(update_ops)
+        # so the first loss term looks like w1 + 1 * w2
+        # and the second term looks like w1 + 2 * w2
+        sess.run(update_ops, feed_dict={input: [[1, 1],
+                                                [2, 2]]})
 
         """
         Confirm that no changes have taken place to the trainable
@@ -83,7 +89,7 @@ class TestTrainOps(unittest.TestCase):
                 expected = [2., 2.]
             np.testing.assert_equal(actual, expected)
 
-        sess.run(update_ops)
+        sess.run(update_ops, feed_dict={input: [[2, 2]]})
 
         """
         Confirm that the gradient buffers still look reasonable.
@@ -131,6 +137,7 @@ class TestTrainOps(unittest.TestCase):
         Check that gradient buffers have been zeroed.
         """
         assert_grad_bufs_zero()
+
 
 if __name__ == '__main__':
     unittest.main()
