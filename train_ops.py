@@ -1,11 +1,13 @@
 import tensorflow as tf
 import re
 
+# TODO: don't create gradient buffers for None variables
+
 def strip_var_name(name):
     """
     e.g. scope/weights:0 -> weights
     """
-    return re.match('\w*/(\w*):\w*', name).group(1)
+    return re.match('\w*/([^:]*):\w*', name).group(1)
 
 def create_train_ops(loss, optimizer, update_scope, apply_scope):
     """
@@ -26,6 +28,8 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
         tf.GraphKeys.TRAINABLE_VARIABLES,
         scope=update_scope)
     grads_and_vars = optimizer.compute_gradients(loss, update_tvs)
+    for g, v in grads_and_vars:
+        print(g, v.name)
     grads_dict = {}
     for grads, var in grads_and_vars:
         var_name = strip_var_name(var.name)
