@@ -37,6 +37,9 @@ class TestTrainOps(unittest.TestCase):
             with tf.variable_scope(scope):
                 w1 = tf.Variable(inits['w1'], name='w1')
                 w2 = tf.Variable(inits['w2'], name='w2')
+                # NB reduce_sum is necessary to ensure that the gradients
+                # accumulated for multiple examples in a batch are the same as
+                # if the examples were presented in individual batches
                 losses[scope] = tf.reduce_sum(w1 + input * w2, axis=-1)
                 vars[scope] = {'w1': w1, 'w2': w2}
 
@@ -80,16 +83,21 @@ class TestTrainOps(unittest.TestCase):
         """
         for buf_name, buf in grad_bufs.items():
             actual = sess.run(buf)
-            # loss is w1 + 2 * w2,
-            # so derivative wrt each element of w1 should be 1,
-            # and derivative wrt each element of w2 should be 2
+            # first loss term was w1 + 1 * w2
+            # second was w1 + 2 * w2
+            # first loss term contribution:
+            # derivative wrt to each element of both vectors should be 1
+            # second loss term contribution:
+            # derivative wrt w1 should be 1; derivative wrt w2 should be 2
             if 'w1' in buf_name:
-                expected = [1., 1.]
+                expected = np.array([1., 1.]) + np.array([1., 1.])
             elif 'w2' in buf_name:
-                expected = [2., 2.]
+                expected = np.array([1., 1.]) + np.array([2., 2.])
             np.testing.assert_equal(actual, expected)
 
-        sess.run(update_ops, feed_dict={input: [[2, 2]]})
+        # loss will be e.g. w1 + [3, 4] * w2
+        sess.run(update_ops, feed_dict={input: [[3, 4],
+                                                [5, 6]]})
 
         """
         Confirm that the gradient buffers still look reasonable.
@@ -97,9 +105,11 @@ class TestTrainOps(unittest.TestCase):
         for buf_name, buf in grad_bufs.items():
             actual = sess.run(buf)
             if 'w1' in buf_name:
-                expected = [2., 2.]
+                expected = np.array([1., 1.]) + np.array([1., 1.]) + \
+                           np.array([1., 1.]) + np.array([1., 1.])
             elif 'w2' in buf_name:
-                expected = [4., 4.]
+                expected = np.array([1., 1.]) + np.array([2., 2.]) + \
+                           np.array([3., 4.]) + np.array([5., 6.])
             np.testing.assert_equal(actual, expected)
 
         sess.run(apply_ops)
@@ -120,15 +130,17 @@ class TestTrainOps(unittest.TestCase):
         """
         for var_name, var in vars['apply_scope'].items():
             actual = sess.run(var)
-            # gradient wrt w1 was 1 on each step;
-            # gradient wrt w2 was 2 on each step;
-            # we accumulated gradients for 2 steps;
-            # we started off with [10, 20] and [5, 10];
-            # and we have a step size of 1
+            # w1 started off as [10, 20];
+            # gradient wrt w1 was 1 on each step,
+            # and we went for 4 steps with step size of 1
             if 'w1' in var_name:
-                expected = [8., 18.]
+                expected = [10 - 1. - 1. - 1. - 1.,
+                            20 - 1. - 1. - 1. - 1.]
+            # w2 started off as [5, 10]
+            # gradients were [1, 1], [2, 2], [3, 4], and [5, 6]
             elif 'w2' in var_name:
-                expected = [1., 6.]
+                expected = [5.  - 1. - 2. - 3. - 5.,
+                            10. - 1. - 2. - 4. - 6.]
             np.testing.assert_equal(actual, expected)
 
         sess.run(zero_ops)
