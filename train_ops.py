@@ -28,12 +28,13 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
         tf.GraphKeys.TRAINABLE_VARIABLES,
         scope=update_scope)
     grads_and_vars = optimizer.compute_gradients(loss, update_tvs)
-    for g, v in grads_and_vars:
-        print(g, v.name)
     grads_dict = {}
     for grads, var in grads_and_vars:
         var_name = strip_var_name(var.name)
         grads_dict[var_name] = grads
+
+    # Discard variables which don't have gradients
+    grads_dict = {v: g for v, g in grads_dict.items() if g is not None}
 
     # Create gradient buffers (indexed by variable name)
     grad_bufs = {}
