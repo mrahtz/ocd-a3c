@@ -17,11 +17,11 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
     -  Create an update operator which adds the gradient
        to the gradient buffer
     -  Create an operator which will apply the gradient buffer
-    
+
     update_scope: the scope in which to calculate gradients
     apply_scope: the scope in which to apply the gradient buffers
     """
-        
+
     # Create a dictionary mapping from variable name to
     # gradients calculated in update_scope
     update_tvs = tf.get_collection(
@@ -49,7 +49,7 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
     for var_name, grad in grads_dict.items():
         update_ops.append(tf.assign_add(grad_bufs[var_name], grad))
     update_gradients = tf.group(*update_ops)
-    
+
     # Create a dictionary mapping from variable names to
     # variables in apply_scope
     apply_tvs = tf.get_collection(
@@ -66,12 +66,12 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
     for var_name, grad_buf in grad_bufs.items():
         grad_bufs_and_vars.append((grad_buf, apply_tvs_dict[var_name]))
     apply_gradients = optimizer.apply_gradients(grad_bufs_and_vars)
-    
+
     # Create an operator which zeros out the buffers
     zero_ops = []
     for grad_buf in grad_bufs.values():
         op = tf.assign(grad_buf, tf.zeros(shape=grad_buf.shape))
         zero_ops.append(op)
     zero_gradients = tf.group(*zero_ops)
-    
+
     return update_gradients, apply_gradients, zero_gradients
