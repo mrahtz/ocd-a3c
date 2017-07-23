@@ -16,6 +16,53 @@ def assert_grad_bufs_zero():
 
 class TestTrainOps(unittest.TestCase):
 
+    def testUnusedVariables(self):
+        """
+        Test whether everything behaves correctly if we have a trainable
+        variable which isn't relevant to the loss function
+        """
+        tf.reset_default_graph()
+        sess = tf.Session()
+
+        scopes = ['update_scope', 'apply_scope']
+        ops = {}
+        for scope in scopes:
+            ops[scope] = {}
+            with tf.variable_scope(scope):
+                ops[scope]['w1'] = tf.Variable(10.0)
+                ops[scope]['w2'] = tf.Variable(10.0)
+                ops[scope]['loss'] = ops[scope]['w1']
+
+        o = tf.train.GradientDescentOptimizer(learning_rate=1)
+
+        update_ops, apply_ops, zero_ops = \
+            create_train_ops(ops['update_scope']['loss'],
+                             o,
+                             'update_scope',
+                             'apply_scope')
+
+        sess.run(tf.global_variables_initializer())
+        sess.run(update_ops)
+        sess.run(update_ops)
+        sess.run(update_ops)
+        sess.run(apply_ops)
+
+        actual = sess.run(ops['update_scope']['w1'])
+        expected = 10.0
+        np.testing.assert_equal(actual, expected)
+
+        actual = sess.run(ops['update_scope']['w2'])
+        expected = 10.0
+        np.testing.assert_equal(actual, expected)
+
+        actual = sess.run(ops['apply_scope']['w1'])
+        expected = 7.0
+        np.testing.assert_equal(actual, expected)
+
+        actual = sess.run(ops['apply_scope']['w2'])
+        expected = 10.0
+        np.testing.assert_equal(actual, expected)
+
     def test(self):
         global grad_bufs
         global sess
