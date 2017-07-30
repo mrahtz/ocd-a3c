@@ -75,4 +75,4 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
         zero_ops.append(op)
     zero_gradients = tf.group(*zero_ops)
 
-    return update_gradients, apply_gradients, zero_gradients
+    return update_gradients, apply_gradients, zero_gradients, grad_bufs
