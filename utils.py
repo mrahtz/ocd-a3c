@@ -43,24 +43,26 @@ def rewards_to_returns(r, G):
     return r2
 
 
-def get_o(env, a, render=False):
+def get_o(env, a, render=True):
     os = []
     rs = []
     for i in range(4):
-        o1, r1, _, _ = env.step(a)
+        o, r, done, _ = env.step(a)
         if render:
             env.render()
-        o2, r2, done, _ = env.step(a)
-        if render:
-            env.render()
-        o = np.maximum(o1, o2)
-        o = np.mean(o, axis=2)
-        o = scipy.misc.imresize(o, (84, 84))
-        os.append(o)
-        rs.extend([r1, r2])
+        if get_o.last_frame is not None:
+            o_pooled = np.maximum(o, get_o.last_frame)
+        else:
+            o_pooled = o
+        get_o.last_frame = o
+        o_pooled = np.mean(o_pooled, axis=2)
+        o_pooled = scipy.misc.imresize(o_pooled, (84, 84))
+        os.append(o_pooled)
+        rs.append(r)
     os = np.stack(os, axis=-1)
     # TODO: is this necessary even with batchnorm?
     os = os / 255
     # TODO: is summing the right thing to do?
     r = np.sum(rs)
     return os, r, done
+get_o.last_frame = None

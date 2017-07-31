@@ -1,8 +1,12 @@
 import tensorflow as tf
 import numpy as np
 import unittest
+import matplotlib
+matplotlib.use('Qt5Agg')
+import matplotlib.pyplot as plt
 
 from utils import copy_network
+from utils import get_o
 
 
 class TestUtils(unittest.TestCase):
@@ -65,6 +69,39 @@ class TestUtils(unittest.TestCase):
                 expected = inits['from_scope']['w2']
             np.testing.assert_equal(actual, expected)
 
+class DummyEnv:
+    def __init__(self):
+        self.i = 0
+    
+    def step(self, a):
+        o = np.zeros((210, 160, 3))
+        draw_y = 10
+        draw_x = 10 + self.i * 20
+        o[draw_y, draw_x] = 255
+        self.i += 1
+        return o, 0, False, None
+
+    def render(self):
+        pass
+
+def test_get_o():
+    """
+    Test get_o().
+    
+    Frame 0: should be just one dot, top right.
+    Frames 1-3: should be two dots
+                (because max is taken with previous frame),
+                moving to the right
+    """
+    env = DummyEnv()
+    get_o.last_frame = None
+    o, r, done = get_o(env, 0)
+    for i in range(4):
+        plt.figure()
+        plt.title("Frame %d" % i)
+        plt.imshow(o[:, :, i])
+    plt.show()
 
 if __name__ == '__main__':
+    test_get_o()
     unittest.main()
