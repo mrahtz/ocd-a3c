@@ -42,27 +42,56 @@ def rewards_to_returns(r, G):
         r2[i] = r[i] + G * r2[i + 1]
     return r2
 
+def prepro(o):
+    o = np.mean(o, axis=2)
+    o = o / 255.0
+    o = scipy.misc.imresize(o, (84, 84))
+    return o
 
-def get_o(env, a, render=True):
-    os = []
-    rs = []
-    for i in range(4):
-        o, r, done, _ = env.step(a)
-        if render:
-            env.render()
-        if get_o.last_frame is not None:
-            o_pooled = np.maximum(o, get_o.last_frame)
-        else:
-            o_pooled = o
-        get_o.last_frame = o
-        o_pooled = np.mean(o_pooled, axis=2)
-        o_pooled = scipy.misc.imresize(o_pooled, (84, 84))
-        os.append(o_pooled)
-        rs.append(r)
-    os = np.stack(os, axis=-1)
-    # TODO: is this necessary even with batchnorm?
-    os = os / 255
-    # TODO: is summing the right thing to do?
-    r = np.sum(rs)
-    return os, r, done
-get_o.last_frame = None
+class EnvWrapper():
+    def __init__(self, env, pool=False, frameskip=1, prepro2=None):
+        self.env = env
+        self.pool = pool
+        self.prepro2 = prepro2
+        # 1 = don't skip
+        # 2 = skip every other frame
+        self.frameskip = frameskip
+        # gym.utils.play() wants these two
+        self.observation_space = env.observation_space
+        self.unwrapped = env.unwrapped
+
+    def reset(self):
+        o = self.env.reset()
+        self.prev_o = o
+        o = prepro(o)
+        if self.prepro2 is not None:
+            o = self.prepro2(o)
+        return o
+
+    def step(self, a):
+        i = 0
+        done = False
+        rs = []
+        while i < self.frameskip and not done:
+            o_raw, r, done, _ = self.env.step(a)
+            rs.append(r)
+            if not self.pool:
+                o = o_raw
+            else:
+                # Note that the first frame to come out of this
+                # _might_ be a little funny because the first prev_o
+                # is the first frame after reset which at least in Pong
+                # has a different colour palette (though it turns out
+                # it works fine for Pong)
+                o = np.maximum(o_raw, self.prev_o)
+                self.prev_o = o_raw
+            i += 1
+        o = prepro(o)
+        if self.prepro2 is not None:
+            o = self.prepro2(o)
+        r = sum(rs)
+        info = None
+        return o, r, done, info
+
+    def render(self):
+        self.env.render()
