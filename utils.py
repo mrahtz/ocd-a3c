@@ -42,10 +42,18 @@ def rewards_to_returns(r, G):
         r2[i] = r[i] + G * r2[i + 1]
     return r2
 
+# Based on Andrej's code
+def prepro2(I):
+    """ prepro 210x160 frame into 80x80 frame """
+    I = I[34:194]  # crop
+    I = I[::2, ::2]  # downsample by factor of 2
+    I[I <= 0.4] = 0 # erase background
+    I[I > 0.4] = 1 # everything else (paddles, ball) just set to 1
+    return I.astype(np.float)
+
 def prepro(o):
     o = np.mean(o, axis=2)
     o = o / 255.0
-    o = scipy.misc.imresize(o, (84, 84))
     return o
 
 class EnvWrapper():
@@ -56,6 +64,7 @@ class EnvWrapper():
         # 1 = don't skip
         # 2 = skip every other frame
         self.frameskip = frameskip
+        self.action_space = env.action_space
         # gym.utils.play() wants these two
         self.observation_space = env.observation_space
         self.unwrapped = env.unwrapped
