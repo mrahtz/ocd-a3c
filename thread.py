@@ -8,7 +8,10 @@ import time
 from worker import Worker
 from network import create_network
 
-cluster = tf.train.ClusterSpec({"worker": ["localhost:2222", "localhost:2223"],
+cluster = tf.train.ClusterSpec({"worker": ["localhost:2222", "localhost:2223",
+                                           "localhost:2224", "localhost:2225",
+                                           "localhost:2226", "localhost:2227",
+                                           "localhost:2228", "localhost:2229"],
                                 "ps":     ["localhost:2230"]})
 
 def ps():
