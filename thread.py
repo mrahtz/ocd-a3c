@@ -8,12 +8,6 @@ import time
 from worker import Worker
 from network import create_network
 
-cluster = tf.train.ClusterSpec({"worker": ["localhost:2222", "localhost:2223",
-                                           "localhost:2224", "localhost:2225",
-                                           "localhost:2226", "localhost:2227",
-                                           "localhost:2228", "localhost:2229"],
-                                "ps":     ["localhost:2230"]})
-
 def ps():
     tf.reset_default_graph()
     server = tf.train.Server(cluster, job_name="ps")
@@ -48,8 +42,19 @@ def worker(i):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("mode")
+parser.add_argument("total", type=int)
 parser.add_argument("--n", type=int)
 args = parser.parse_args()
+
+cluster_dict = {}
+cluster_dict["ps"] = ["localhost:2300"]
+workers = []
+for i in range(args.total):
+    workers.append("localhost:22%02d" % (i))
+cluster_dict["worker"] = workers
+print(cluster_dict)
+exit()
+cluster = tf.train.ClusterSpec(cluster_dict)
 
 if args.mode == "ps":
     ps()
