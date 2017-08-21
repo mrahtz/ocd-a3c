@@ -29,9 +29,8 @@ class Worker:
         self.summary_writer = summary_writer
         self.scope = worker_scope
 
-        self.reward_var = tf.Variable(0.0)
-        self.reward_summary = tf.summary.scalar('reward', self.reward_var)
-        self.smoothed_reward = None
+        self.reward = tf.Variable(0.0)
+        self.reward_summary = tf.summary.scalar('reward', self.reward)
 
         policy_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
         value_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
@@ -72,14 +71,7 @@ class Worker:
     def log_rewards(self):
         reward_sum = sum(self.episode_rewards)
         print("Reward sum was", reward_sum)
-
-        if self.smoothed_reward is None:
-            self.smoothed_reward = reward_sum
-        else:
-            self.smoothed_reward = self.smoothed_reward * 0.99 + reward_sum * 0.01
-        print("Smoothed reward sum is %.1f" % self.smoothed_reward)
-
-        self.sess.run(tf.assign(self.reward_var, self.smoothed_reward))
+        self.sess.run(tf.assign(self.reward, reward_sum))
         summ = self.sess.run(self.reward_summary)
         self.summary_writer.add_summary(summ, self.steps)
 
