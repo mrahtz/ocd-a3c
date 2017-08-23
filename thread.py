@@ -41,13 +41,16 @@ def worker(i):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("n_workers", type=int)
+parser.add_argument("worker_n", type=int)
+parser.add_argument("--port_start", type=int, default=2200)
 args = parser.parse_args()
 
 cluster_dict = {}
 workers = []
-for i in range(args.total):
-    workers.append("localhost:22%02d" % (i))
+for i in range(args.n_workers):
+    port = args.port_start + i
+    workers.append("localhost:%d" % port)
 cluster_dict["worker"] = workers
 cluster = tf.train.ClusterSpec(cluster_dict)
 
-worker(args.n_workers)
+worker(args.worker_n)
