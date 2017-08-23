@@ -5,15 +5,47 @@ import numpy as np
 import unittest
 import matplotlib
 import argparse
-matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 
-from utils import copy_network, EnvWrapper
+from utils import copy_network, EnvWrapper, entropy
 import gym
 from gym.utils.play import play
 
+class TestEntropy(unittest.TestCase):
 
-class TestUtils(unittest.TestCase):
+    def setUp(self):
+        self.sess = tf.Session()
+
+    def test_basic(self):
+        logits = [1., 2., 3., 4.]
+        probs = np.exp(logits) / np.sum(np.exp(logits))
+        expected_entropy = -np.sum(probs * np.log(probs))
+        actual_entropy = self.sess.run(entropy(logits))
+        np.testing.assert_approx_equal(actual_entropy, expected_entropy,
+                significant=4)
+
+    def test_batch(self):
+        # shape is 2 (batch size) x 4
+        logits = [[1., 2., 3., 4.],
+                  [1., 2., 2., 1.]]
+        probs = np.exp(logits) / np.sum(np.exp(logits), axis=1, keepdims=True)
+        expected_entropy = -np.sum(probs * np.log(probs), axis=1, keepdims=True)
+        actual_entropy = self.sess.run(entropy(logits))
+        np.testing.assert_allclose(actual_entropy, expected_entropy, atol=1e-4)
+
+    def test_gradient_descent(self):
+        logits = tf.Variable([1., 2., 3., 4., 5.])
+        neg_ent = -entropy(logits)
+        train_op = tf.train.AdamOptimizer().minimize(neg_ent)
+        self.sess.run(tf.global_variables_initializer())
+        for i in range(10000):
+            self.sess.run(train_op)
+        expected = [0.2, 0.2, 0.2, 0.2, 0.2] # maximum entropy distribution
+        actual = self.sess.run(tf.nn.softmax(logits))
+        np.testing.assert_allclose(actual, expected, atol=1e-4)
+
+
+class TestCopyNetwork(unittest.TestCase):
 
     def test(self):
         sess = tf.Session()
@@ -149,5 +181,5 @@ if __name__ == '__main__':
         test_envwrapper()
     elif args.test == 'prepro':
         test_prepro()
-    elif args.test == 'copynetwork':
-        unittest.main()
+    elif args.test == 'copynetwork' or args.test == 'entropy':
+        unittest.main(argv=[''])
