@@ -51,18 +51,31 @@ def create_network(scope):
             inputs=x,
             units=1,
             activation=None)
+        # Shape is currently (?, 1)
+        # Convert to just (?)
         graph_v = graph_v[:, 0]
+
+        advantage = graph_r - graph_v
 
         p = 0
         for i in range(N_ACTIONS):
             p += tf.cast(tf.equal(graph_action, i), tf.float32) * a_softmax[:, i]
         # Log probability: higher is better for actions we want to encourage
-        # Negative log probability: lower is better for actions we want to encourage
+        # Negative log probability: lower is better for actions we want to
+        #                           encourage
         # 1e-7: prevent log(0)
         nlp = -1 * tf.log(p + 1e-7)
-        policy_loss = tf.reduce_mean(nlp * graph_r)
 
-        value_loss = tf.reduce_mean((graph_r - graph_v) ** 2)
+        check_nlp = tf.assert_rank(nlp, 1)
+        check_advantage = tf.assert_rank(advantage, 1)
+        with tf.control_dependencies([check_nlp, check_advantage]):
+            # Note that the advantage is treated as a constant for the
+            # policy network update step
+            policy_loss = nlp * tf.stop_gradient(advantage)
+            policy_loss = tf.reduce_sum(policy_loss)
+
+            value_loss = advantage ** 2
+            value_loss = tf.reduce_sum(value_loss)
 
         network = Network(
             s=graph_s,
