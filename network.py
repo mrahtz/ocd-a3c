@@ -69,8 +69,13 @@ def create_network(scope):
         check_nlp = tf.assert_rank(nlp, 1)
         check_advantage = tf.assert_rank(advantage, 1)
         with tf.control_dependencies([check_nlp, check_advantage]):
-            policy_loss = tf.reduce_mean(nlp * advantage)
-            value_loss = tf.reduce_mean(advantage ** 2)
+            # Note that the advantage is treated as a constant for the
+            # policy network update step
+            policy_loss = nlp * tf.stop_gradient(advantage)
+            policy_loss = tf.reduce_sum(policy_loss)
+
+            value_loss = advantage ** 2
+            value_loss = tf.reduce_sum(value_loss)
 
         network = Network(
             s=graph_s,
