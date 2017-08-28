@@ -115,12 +115,19 @@ class Worker:
             i += 1
 
         if done:
-            print("Episode done!")
+            print("Episode done")
+            self.log_rewards()
+            self.episode_rewards = []
+
+        # Calculate initial value for R
+        if done:
+            # Terminal state
             r = 0
         else:
-            # We're not at the end of an episode, so we have to estimate
-            # the value of the current state using the value network
-            s = np.moveaxis(states[i], source=0, destination=-1) # the last state
+            # Non-terminal state
+            # Estimate the value of the current state using the value network
+            # (states[i]: the last state)
+            s = np.moveaxis(states[i], source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             r = self.sess.run(self.network.graph_v, feed_dict=feed_dict)[0]
 
@@ -129,29 +136,20 @@ class Worker:
         #  So that we miss out the last state.)
         for j in reversed(range(i)):
             s = np.moveaxis(states[j], source=0, destination=-1)
-
-            if rewards[j] != 0:
-                r = rewards[j]
-            else:
-                r = rewards[j] + G * r
-            feed_dict = {self.network.s: [s]}
-            v = self.sess.run(self.network.graph_v, feed_dict=feed_dict)[0]
-            advantage = r - v
-
+            r = rewards[j] + G * r
             feed_dict = {self.network.s: [s],
-                         self.network.a: [actions[j] - 1], # map from possible actions (1, 2, 3) -> (0, 1, 2)
-                         self.network.r: [advantage]}
+                         # map from possible actions (1, 2, 3) -> (0, 1, 2)
+                         self.network.a: [actions[j] - 1], 
+                         self.network.r: [r]}
+
             self.sess.run([self.update_policy_gradients,
                       self.update_value_gradients],
                       feed_dict)
+
         self.sess.run([self.apply_policy_gradients,
                        self.apply_value_gradients])
         self.sess.run([self.zero_policy_gradients,
                        self.zero_value_gradients])
-
-        if done:
-            self.log_rewards()
-            self.episode_rewards = []
 
         self.steps += 1
 
