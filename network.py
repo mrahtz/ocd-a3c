@@ -1,9 +1,7 @@
 from collections import namedtuple
 import tensorflow as tf
-from utils import entropy
 
 N_ACTIONS = 3
-BETA = 0.01
 
 Network = namedtuple('Network', 's a r a_softmax graph_v policy_loss value_loss')
 
@@ -63,7 +61,6 @@ def create_network(scope):
         # 1e-7: prevent log(0)
         nlp = -1 * tf.log(p + 1e-7)
         policy_loss = tf.reduce_mean(nlp * graph_r)
-        policy_loss += tf.reduce_mean(BETA * entropy(a_softmax))
 
         value_loss = tf.reduce_mean((graph_r - graph_v) ** 2)
 
