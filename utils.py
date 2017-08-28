@@ -104,3 +104,12 @@ class EnvWrapper():
 
     def render(self):
         self.env.render()
+
+def entropy(logits, dims=-1):
+    """
+    Numerically-stable entropy.
+    From https://gist.github.com/vahidk/5445ce374a27f6d452a43efb1571ea75.
+    """
+    probs = tf.nn.softmax(logits, dims)
+    nplogp = probs * (tf.reduce_logsumexp(logits, dims, keep_dims=True) - logits)
+    return tf.reduce_sum(nplogp, dims, keep_dims=True)
