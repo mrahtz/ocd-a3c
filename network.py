@@ -80,7 +80,7 @@ def create_network(scope):
 
             # We want to maximise entropy, which is the same as
             # minimising negative entropy
-            policy_loss -= tf.reduce_sum(BETA * entropy(a_softmax))
+            policy_loss -= tf.reduce_sum(BETA * entropy(a_logits))
 
             value_loss = advantage ** 2
             value_loss = tf.reduce_sum(value_loss)
