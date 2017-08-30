@@ -1,9 +1,13 @@
 from collections import namedtuple
 import tensorflow as tf
+from utils import entropy
 
 N_ACTIONS = 3
+BETA = 0.01
 
-Network = namedtuple('Network', 's a r a_softmax graph_v policy_loss value_loss')
+Network = namedtuple('Network',
+                     's a r a_softmax graph_v policy_loss value_loss')
+
 
 def create_network(scope):
     with tf.variable_scope(scope):
@@ -52,7 +56,7 @@ def create_network(scope):
             units=1,
             activation=None)
         # Shape is currently (?, 1)
-        # Convert to just (?)
+        # Convert to just (?)
         graph_v = graph_v[:, 0]
 
         advantage = graph_r - graph_v
@@ -73,6 +77,10 @@ def create_network(scope):
             # policy network update step
             policy_loss = nlp * tf.stop_gradient(advantage)
             policy_loss = tf.reduce_sum(policy_loss)
+
+            # We want to maximise entropy, which is the same as
+            # minimising negative entropy
+            policy_loss -= tf.reduce_sum(BETA * entropy(a_softmax))
 
             value_loss = advantage ** 2
             value_loss = tf.reduce_sum(value_loss)
