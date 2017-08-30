@@ -88,9 +88,8 @@ class Worker:
         if self.fig is None:
             self.fig, self.ax = plt.subplots()
             self.fig.set_size_inches(2, 2)
-            maxlen = 100
-            self.ax.set_xlim([0, maxlen])
-            self.ax.set_ylim([0, 1])
+            self.ax.set_xlim([0, 100])
+            self.ax.set_ylim([0, 2.0])
             self.line, = self.ax.plot([], [])
 
             self.fig.show()
@@ -101,8 +100,6 @@ class Worker:
 
         ydata = list(self.value_log)
         xdata = list(range(len(self.value_log)))
-        if max(ydata) > self.ax.get_ylim()[1]:
-            self.ax.set_ylim([0, max(ydata)])
         self.line.set_data(xdata, ydata)
 
         self.ax.draw_artist(self.line)
