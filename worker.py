@@ -1,6 +1,7 @@
 from collections import deque
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
 import gym
 
@@ -55,6 +56,9 @@ class Worker:
         self.episode_rewards = []
         self.render = False
 
+        self.value_log = deque(maxlen=100)
+        self.fig = None
+
     def reset_env(self):
         self.env.reset()
         n_noops = np.random.randint(low=0, high=N_MAX_NOOPS+1)
@@ -80,6 +84,31 @@ class Worker:
                      from_scope='global',
                      to_scope=self.scope)
 
+    def value_graph(self):
+        if self.fig is None:
+            self.fig, self.ax = plt.subplots()
+            self.fig.set_size_inches(2, 2)
+            maxlen = 100
+            self.ax.set_xlim([0, maxlen])
+            self.ax.set_ylim([0, 1])
+            self.line, = self.ax.plot([], [])
+
+            self.fig.show()
+            self.fig.canvas.draw()
+            self.bg = self.fig.canvas.copy_from_bbox(self.ax.bbox)
+
+        self.fig.canvas.restore_region(self.bg)
+
+        ydata = list(self.value_log)
+        xdata = list(range(len(self.value_log)))
+        if max(ydata) > self.ax.get_ylim()[1]:
+            self.ax.set_ylim([0, max(ydata)])
+        self.line.set_data(xdata, ydata)
+
+        self.ax.draw_artist(self.line)
+        self.fig.canvas.update()
+        self.fig.canvas.flush_events()
+
     def run_step(self):
         states = []
         actions = []
@@ -102,8 +131,13 @@ class Worker:
             list_set(actions, i, a)
 
             o, r, done, _ = self.env.step(a)
+
             if self.render:
                 self.env.render()
+                feed_dict = {self.network.s: [s]}
+                v = self.sess.run(self.network.graph_v, feed_dict=feed_dict)[0]
+                self.value_log.append(v)
+                self.value_graph()
 
             if r != 0:
                 print("Got reward", r)
