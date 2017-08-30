@@ -10,7 +10,7 @@ from worker import Worker
 from network import create_network
 
 
-def worker(i, ckpt_freq, load_ckpt_file):
+def worker(i, ckpt_freq, load_ckpt_file, render):
     """
     Set up a single worker.
 
@@ -31,6 +31,8 @@ def worker(i, ckpt_freq, load_ckpt_file):
         create_network('global')
     with tf.device("/job:worker/task:%d" % i):
         w = Worker(sess, i, 'PongNoFrameskip-v4', summary_writer)
+        if render:
+            w.render = True
 
     if i == 0:
         saver = tf.train.Saver()
@@ -65,6 +67,7 @@ parser.add_argument("worker_n", type=int)
 parser.add_argument("--port_start", type=int, default=2200)
 parser.add_argument("--ckpt_freq", type=int, default=5)
 parser.add_argument("--load_ckpt")
+parser.add_argument("--render", action='store_true')
 args = parser.parse_args()
 
 cluster_dict = {}
@@ -75,4 +78,4 @@ for i in range(args.n_workers):
 cluster_dict["worker"] = workers
 cluster = tf.train.ClusterSpec(cluster_dict)
 
-worker(args.worker_n, args.ckpt_freq, args.load_ckpt)
+worker(args.worker_n, args.ckpt_freq, args.load_ckpt, args.render)
