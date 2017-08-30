@@ -41,7 +41,7 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
     for var_name, grads in grads_dict.items():
         name = "grad_buf_%s" % var_name
         grad_bufs[var_name] = \
-            tf.Variable(tf.zeros(shape=grads.shape),
+            tf.Variable(tf.zeros(shape=grads.get_shape()),
                         trainable=False, name=name)
 
     # Create ops which add the computed gradients
@@ -71,7 +71,7 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
     # Create an operator which zeros out the buffers
     zero_ops = []
     for grad_buf in grad_bufs.values():
-        op = tf.assign(grad_buf, tf.zeros(shape=grad_buf.shape))
+        op = tf.assign(grad_buf, tf.zeros(shape=grad_buf.get_shape()))
         zero_ops.append(op)
     zero_gradients = tf.group(*zero_ops)
 

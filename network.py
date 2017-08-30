@@ -32,7 +32,7 @@ def create_network(scope):
                 strides=1,
                 activation=tf.nn.relu)
 
-        w, h, f = x.shape[1:]
+        w, h, f = x.get_shape()[1:]
         x = tf.reshape(x, [-1, int(w * h * f)])
 
         x = tf.layers.dense(
