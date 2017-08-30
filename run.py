@@ -48,11 +48,12 @@ def worker(i, ckpt_freq, load_ckpt_file):
     print("Cluster established!")
     step = 0
     while True:
+        print("Step %d" % step)
         done = w.run_step()
         if done:
             w.reset_env()
         step += 1
-        if i == 0 and step % ckpt_freq == 0:
+        if (i == 0) and (step % ckpt_freq == 0):
             print("Saving checkpoint at step %d..." % step, end='', flush=True)
             saver.save(sess, checkpoint_file)
             print("done!")
@@ -62,7 +63,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("n_workers", type=int)
 parser.add_argument("worker_n", type=int)
 parser.add_argument("--port_start", type=int, default=2200)
-parser.add_argument("--ckpt_freq", type=int, default=10)
+parser.add_argument("--ckpt_freq", type=int, default=5)
 parser.add_argument("--load_ckpt")
 args = parser.parse_args()
 
