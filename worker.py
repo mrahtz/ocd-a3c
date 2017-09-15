@@ -57,6 +57,7 @@ class Worker:
         self.steps = 0
         self.episode_rewards = []
         self.render = False
+        self.episode_n = 1
 
         self.value_log = deque(maxlen=100)
         self.fig = None
@@ -81,7 +82,7 @@ class Worker:
         print("Reward sum was", reward_sum)
         self.sess.run(tf.assign(self.reward, reward_sum))
         summ = self.sess.run(self.reward_summary)
-        self.summary_writer.add_summary(summ, self.steps)
+        self.summary_writer.add_summary(summ, self.episode_n)
 
 
     def init_copy_ops(self):
@@ -168,9 +169,10 @@ class Worker:
             i += 1
 
         if done:
-            print("Episode done")
+            print("Episode %d finished" % self.episode_n)
             self.log_rewards()
             self.episode_rewards = []
+            self.episode_n += 1
 
         # Calculate initial value for R
         if done:
