@@ -48,6 +48,8 @@ class Worker:
                              update_scope=worker_scope,
                              apply_scope='global')
 
+        self.init_copy_ops()
+
         self.frame_stack = deque(maxlen=N_FRAMES_STACKED)
         self.reset_env()
 
@@ -79,10 +81,28 @@ class Worker:
         summ = self.sess.run(self.reward_summary)
         self.summary_writer.add_summary(summ, self.steps)
 
+
+    def init_copy_ops(self):
+        from_tvs = tf.get_collection(
+            tf.GraphKeys.TRAINABLE_VARIABLES, scope='global')
+        to_tvs = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
+                                   scope=self.scope)
+
+        from_dict = {var.name: var for var in from_tvs}
+        to_dict = {var.name: var for var in to_tvs}
+        copy_ops = []
+        for to_name, to_var in to_dict.items():
+            from_name = to_name.replace(self.scope, 'global')
+            from_var = from_dict[from_name]
+            op = to_var.assign(from_var.value())
+            copy_ops.append(op)
+
+        self.copy_ops = copy_ops
+
+
     def sync_network(self):
-        copy_network(self.sess,
-                     from_scope='global',
-                     to_scope=self.scope)
+        self.sess.run(self.copy_ops)
+
 
     def value_graph(self):
         if self.fig is None:

@@ -3,23 +3,6 @@ import numpy as np
 import scipy.misc
 
 
-def copy_network(sess, from_scope, to_scope):
-    # TODO: only trainable variables?
-    from_tvs = tf.get_collection(
-        tf.GraphKeys.TRAINABLE_VARIABLES, scope=from_scope)
-    to_tvs = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
-                               scope=to_scope)
-
-    from_dict = {var.name: var for var in from_tvs}
-    to_dict = {var.name: var for var in to_tvs}
-    copy_ops = []
-    for to_name, to_var in to_dict.items():
-        op = to_var.assign(
-            from_dict[to_name.replace(to_scope, from_scope)].value())
-        copy_ops.append(op)
-    sess.run(copy_ops)
-
-
 def with_prob(p):
     if np.random.random() < p:
         return True
