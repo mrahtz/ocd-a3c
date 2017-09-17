@@ -62,7 +62,9 @@ class Worker:
         self.fig = None
 
     def reset_env(self):
+        self.frame_stack.clear()
         self.env.reset()
+
         n_noops = np.random.randint(low=0, high=N_MAX_NOOPS+1)
         print("%d no-ops..." % n_noops)
         for i in range(n_noops):
