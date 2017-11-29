@@ -1,6 +1,10 @@
 # TensorFlow A3C
 
-Side project doing a TensorFlow implementation of [A3C](https://arxiv.org/abs/1602.01783). In progress; ugly code.
+Side project doing a TensorFlow implementation of [A3C](https://arxiv.org/abs/1602.01783).
+
+Started as part of a [reproduction](https://github.com/mrahtz/learning-from-human-preferences) of [Deep Reinforcement Learning from Human Preferences](https://arxiv.org/abs/1706.03741), but currently on hold, in favour of OpenAI's A2C implementation instead.
+
+In progress; ugly code.
 
 ## Milestones
 
