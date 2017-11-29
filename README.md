@@ -9,8 +9,9 @@ Side project doing a TensorFlow implementation of [A3C](https://arxiv.org/abs/16
 * 08/08/2017: Implemented all preprocessing stages
 * 18/08/2017: Functioning with a single worker
 * 20/08/2017: Functioning with multiple workers
+![](images/allworkers.png)
 * 23/08/2017: Implemented action entropy bonus
-* 30/08/2017: Implemented visualisation of value network output (sanity check)
+* 30/08/2017: Implemented visualisation of value network output, for a sanity check
 ![](images/value_network.gif)
 
 ## Usage
@@ -25,4 +26,10 @@ Side project doing a TensorFlow implementation of [A3C](https://arxiv.org/abs/16
 * Based on a cursory comparison, OpenAI's A2C implementation seems to run faster.
 * Currently Adam is used, whereas the paper uses RMSProp. If RMSProp is used instead of Adam, it doesn't work.
 * Shared optimiser statistics currently isn't implemented.
-* It doesn't seem to learn as fast as in the paper. With 16 workers, it takes about 6 hours to reach full reward (git c693e72). ![](images/16workers.png) but theirs reaches maximum reward within about 2 hours ![](images/a3c_pong.png).
+* It doesn't seem to learn as fast as in the paper. With 16 workers, it takes about 6 hours to reach full reward (git c693e72).
+
+![](images/16workers.png)
+
+* Whereas the paper reaches maximum reward within about 2 hours.
+
+![](images/a3c_pong.png).
