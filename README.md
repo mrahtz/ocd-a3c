@@ -1,6 +1,6 @@
 # TensorFlow A3C
 
-Side project doing a TensorFlow implementation of [A3C](https://arxiv.org/abs/1602.01783). In progress.
+Side project doing a TensorFlow implementation of [A3C](https://arxiv.org/abs/1602.01783). In progress - don't expect pretty code.
 
 ## Milestones
 
