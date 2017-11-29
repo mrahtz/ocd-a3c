@@ -31,10 +31,10 @@ A Gentle Introduction](http://amid.fish/distributed-tensorflow-a-gentle-introduc
 * Based on a cursory comparison, OpenAI's A2C implementation seems to run faster.
 * Currently Adam is used, whereas the paper uses RMSProp. If RMSProp is used instead of Adam, it doesn't work.
 * Shared optimiser statistics currently isn't implemented.
-* It doesn't seem to learn as fast as in the paper. With 16 workers, it takes about 6 hours to reach full reward (git c693e72).
+* It doesn't seem to learn as fast results quoted in the paper. With 16 workers, it takes about 6 hours to reach full reward (git c693e72).
 
 ![](images/16workers.png)
 
-* Whereas the paper reaches maximum reward within about 2 hours.
+* The paper, on the other hand, reaches maximum reward within about 2 hours.
 
 ![](images/a3c_pong.png).
