@@ -9,7 +9,8 @@ In progress; ugly code.
 ## Milestones
 
 * 19/07/2017: Implemented A3C training operations
-* 28/07/2017: Got Distributed TensorFlow working
+* 28/07/2017: Got Distributed TensorFlow working (see the followup, [Distributed TensorFlow:
+A Gentle Introduction](http://amid.fish/distributed-tensorflow-a-gentle-introduction))
 * 08/08/2017: Implemented all preprocessing stages
 * 18/08/2017: Functioning with a single worker
 * 20/08/2017: Functioning with multiple workers
