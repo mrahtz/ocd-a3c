@@ -48,6 +48,8 @@ class Worker:
                              update_scope=worker_scope,
                              apply_scope='global')
 
+        self.val_summ = tf.summary.scalar('value_loss', self.network.value_loss)
+
         self.init_copy_ops()
 
         self.frame_stack = deque(maxlen=N_FRAMES_STACKED)
@@ -186,20 +188,35 @@ class Worker:
             feed_dict = {self.network.s: [s]}
             r = self.sess.run(self.network.graph_v, feed_dict=feed_dict)[0]
 
+        s_batch = []
+        a_batch = []
+        r_batch = []
         # i - 1 to 0
         # (Why start from i - 1, rather than i?
         #  So that we miss out the last state.)
         for j in reversed(range(i)):
             s = np.moveaxis(states[j], source=0, destination=-1)
+            a = actions[j] - 1
             r = rewards[j] + G * r
+
+            s_batch.append(s)
+            a_batch.append(a)
+            r_batch.append(r)
+
             feed_dict = {self.network.s: [s],
                          # map from possible actions (1, 2, 3) -> (0, 1, 2)
-                         self.network.a: [actions[j] - 1], 
+                         self.network.a: [a],
                          self.network.r: [r]}
 
             self.sess.run([self.update_policy_gradients,
-                      self.update_value_gradients],
-                      feed_dict)
+                           self.update_value_gradients],
+                          feed_dict)
+
+        feed_dict = {self.network.s: s_batch,
+                     self.network.a: a_batch,
+                     self.network.r: r_batch}
+        val_loss = self.sess.run(self.val_summ, feed_dict)
+        self.summary_writer.add_summary(val_loss, self.steps)
 
         self.sess.run([self.apply_policy_gradients,
                        self.apply_value_gradients])
