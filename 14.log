@@ -1,0 +1,6483 @@
+/cluster/home/mrahtz/venv/lib64/python3.6/importlib/_bootstrap.py:205: RuntimeWarning: compiletime version 3.5 of module 'tensorflow.python.framework.fast_tensor_util' does not match runtime version 3.6
+  return f(*args, **kwds)
+2017-12-26 11:38:40.744952: I tensorflow/core/platform/cpu_feature_guard.cc:137] Your CPU supports instructions that this TensorFlow binary was not compiled to use: SSE4.1 SSE4.2 AVX
+E1226 11:38:40.754324888   63518 ev_epoll1_linux.c:1051]     grpc epoll fd: 6
+2017-12-26 11:38:40.774292: I tensorflow/core/distributed_runtime/rpc/grpc_channel.cc:215] Initialize GrpcChannelCache for job worker -> {0 -> localhost:2200, 1 -> localhost:2201, 2 -> localhost:2202, 3 -> localhost:2203, 4 -> localhost:2204, 5 -> localhost:2205, 6 -> localhost:2206, 7 -> localhost:2207, 8 -> localhost:2208, 9 -> localhost:2209, 10 -> localhost:2210, 11 -> localhost:2211, 12 -> localhost:2212, 13 -> localhost:2213, 14 -> localhost:2214, 15 -> localhost:2215}
+2017-12-26 11:38:40.783068: I tensorflow/core/distributed_runtime/rpc/grpc_server_lib.cc:324] Started server with target: grpc://localhost:2214
+[2017-12-26 11:38:41,118] Making new env: PongNoFrameskip-v4
+4 no-ops...
+No-ops done
+Waiting for cluster cluster connection...
+2017-12-26 11:38:43.933637: I tensorflow/core/distributed_runtime/master_session.cc:1004] Start master session d0bef83199b7b2c9 with config: 
+Cluster established!
+Step 0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 1 finished
+Reward sum was -20.0
+21 no-ops...
+No-ops done
+Step 1
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 2 finished
+Reward sum was -21.0
+25 no-ops...
+No-ops done
+Step 2
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 3 finished
+Reward sum was -21.0
+15 no-ops...
+No-ops done
+Step 3
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 4 finished
+Reward sum was -21.0
+1 no-ops...
+One more...
+One more...
+One more...
+No-ops done
+Step 4
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 5 finished
+Reward sum was -21.0
+12 no-ops...
+No-ops done
+Step 5
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 6 finished
+Reward sum was -20.0
+20 no-ops...
+No-ops done
+Step 6
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 7 finished
+Reward sum was -20.0
+20 no-ops...
+No-ops done
+Step 7
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 8 finished
+Reward sum was -21.0
+12 no-ops...
+No-ops done
+Step 8
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 9 finished
+Reward sum was -20.0
+18 no-ops...
+No-ops done
+Step 9
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 10 finished
+Reward sum was -20.0
+14 no-ops...
+No-ops done
+Step 10
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 11 finished
+Reward sum was -21.0
+18 no-ops...
+No-ops done
+Step 11
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 12 finished
+Reward sum was -21.0
+7 no-ops...
+No-ops done
+Step 12
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 13 finished
+Reward sum was -21.0
+23 no-ops...
+No-ops done
+Step 13
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 14 finished
+Reward sum was -21.0
+4 no-ops...
+No-ops done
+Step 14
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 15 finished
+Reward sum was -21.0
+14 no-ops...
+No-ops done
+Step 15
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 16 finished
+Reward sum was -21.0
+16 no-ops...
+No-ops done
+Step 16
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 17 finished
+Reward sum was -21.0
+23 no-ops...
+No-ops done
+Step 17
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 18 finished
+Reward sum was -21.0
+30 no-ops...
+No-ops done
+Step 18
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 19 finished
+Reward sum was -21.0
+10 no-ops...
+No-ops done
+Step 19
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 20 finished
+Reward sum was -21.0
+16 no-ops...
+No-ops done
+Step 20
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 21 finished
+Reward sum was -20.0
+12 no-ops...
+No-ops done
+Step 21
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 22 finished
+Reward sum was -21.0
+6 no-ops...
+No-ops done
+Step 22
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 23 finished
+Reward sum was -21.0
+28 no-ops...
+No-ops done
+Step 23
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 24 finished
+Reward sum was -20.0
+10 no-ops...
+No-ops done
+Step 24
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 25 finished
+Reward sum was -21.0
+17 no-ops...
+No-ops done
+Step 25
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 26 finished
+Reward sum was -20.0
+28 no-ops...
+No-ops done
+Step 26
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 27 finished
+Reward sum was -19.0
+3 no-ops...
+One more...
+No-ops done
+Step 27
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 28 finished
+Reward sum was -21.0
+20 no-ops...
+No-ops done
+Step 28
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 29 finished
+Reward sum was -20.0
+0 no-ops...
+One more...
+One more...
+One more...
+One more...
+No-ops done
+Step 29
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 30 finished
+Reward sum was -20.0
+27 no-ops...
+No-ops done
+Step 30
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 31 finished
+Reward sum was -21.0
+14 no-ops...
+No-ops done
+Step 31
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 32 finished
+Reward sum was -21.0
+25 no-ops...
+No-ops done
+Step 32
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 33 finished
+Reward sum was -21.0
+16 no-ops...
+No-ops done
+Step 33
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 34 finished
+Reward sum was -20.0
+29 no-ops...
+No-ops done
+Step 34
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 35 finished
+Reward sum was -20.0
+21 no-ops...
+No-ops done
+Step 35
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 36 finished
+Reward sum was -20.0
+17 no-ops...
+No-ops done
+Step 36
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 37 finished
+Reward sum was -19.0
+24 no-ops...
+No-ops done
+Step 37
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 38 finished
+Reward sum was -21.0
+10 no-ops...
+No-ops done
+Step 38
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 39 finished
+Reward sum was -21.0
+18 no-ops...
+No-ops done
+Step 39
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 40 finished
+Reward sum was -21.0
+25 no-ops...
+No-ops done
+Step 40
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 41 finished
+Reward sum was -21.0
+8 no-ops...
+No-ops done
+Step 41
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 42 finished
+Reward sum was -21.0
+26 no-ops...
+No-ops done
+Step 42
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 43 finished
+Reward sum was -21.0
+3 no-ops...
+One more...
+No-ops done
+Step 43
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 44 finished
+Reward sum was -21.0
+22 no-ops...
+No-ops done
+Step 44
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 45 finished
+Reward sum was -21.0
+11 no-ops...
+No-ops done
+Step 45
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 46 finished
+Reward sum was -18.0
+0 no-ops...
+One more...
+One more...
+One more...
+One more...
+No-ops done
+Step 46
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 47 finished
+Reward sum was -20.0
+24 no-ops...
+No-ops done
+Step 47
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 48 finished
+Reward sum was -21.0
+28 no-ops...
+No-ops done
+Step 48
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 49 finished
+Reward sum was -21.0
+4 no-ops...
+No-ops done
+Step 49
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 50 finished
+Reward sum was -20.0
+26 no-ops...
+No-ops done
+Step 50
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 51 finished
+Reward sum was -21.0
+28 no-ops...
+No-ops done
+Step 51
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 52 finished
+Reward sum was -21.0
+25 no-ops...
+No-ops done
+Step 52
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 53 finished
+Reward sum was -21.0
+26 no-ops...
+No-ops done
+Step 53
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 54 finished
+Reward sum was -21.0
+20 no-ops...
+No-ops done
+Step 54
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 55 finished
+Reward sum was -20.0
+14 no-ops...
+No-ops done
+Step 55
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 56 finished
+Reward sum was -21.0
+24 no-ops...
+No-ops done
+Step 56
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 57 finished
+Reward sum was -20.0
+1 no-ops...
+One more...
+One more...
+One more...
+No-ops done
+Step 57
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 58 finished
+Reward sum was -21.0
+4 no-ops...
+No-ops done
+Step 58
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 59 finished
+Reward sum was -20.0
+9 no-ops...
+No-ops done
+Step 59
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 60 finished
+Reward sum was -20.0
+4 no-ops...
+No-ops done
+Step 60
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 61 finished
+Reward sum was -19.0
+23 no-ops...
+No-ops done
+Step 61
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 62 finished
+Reward sum was -20.0
+22 no-ops...
+No-ops done
+Step 62
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 63 finished
+Reward sum was -21.0
+8 no-ops...
+No-ops done
+Step 63
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 64 finished
+Reward sum was -20.0
+12 no-ops...
+No-ops done
+Step 64
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 65 finished
+Reward sum was -19.0
+28 no-ops...
+No-ops done
+Step 65
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 66 finished
+Reward sum was -20.0
+1 no-ops...
+One more...
+One more...
+One more...
+No-ops done
+Step 66
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 67 finished
+Reward sum was -20.0
+19 no-ops...
+No-ops done
+Step 67
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 68 finished
+Reward sum was -20.0
+12 no-ops...
+No-ops done
+Step 68
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 69 finished
+Reward sum was -21.0
+12 no-ops...
+No-ops done
+Step 69
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 70 finished
+Reward sum was -21.0
+5 no-ops...
+No-ops done
+Step 70
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 71 finished
+Reward sum was -21.0
+18 no-ops...
+No-ops done
+Step 71
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 72 finished
+Reward sum was -18.0
+4 no-ops...
+No-ops done
+Step 72
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 73 finished
+Reward sum was -20.0
+6 no-ops...
+No-ops done
+Step 73
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 74 finished
+Reward sum was -20.0
+28 no-ops...
+No-ops done
+Step 74
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 75 finished
+Reward sum was -20.0
+6 no-ops...
+No-ops done
+Step 75
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 76 finished
+Reward sum was -21.0
+5 no-ops...
+No-ops done
+Step 76
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 77 finished
+Reward sum was -21.0
+16 no-ops...
+No-ops done
+Step 77
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 78 finished
+Reward sum was -20.0
+28 no-ops...
+No-ops done
+Step 78
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 79 finished
+Reward sum was -21.0
+1 no-ops...
+One more...
+One more...
+One more...
+No-ops done
+Step 79
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 80 finished
+Reward sum was -20.0
+23 no-ops...
+No-ops done
+Step 80
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 81 finished
+Reward sum was -18.0
+5 no-ops...
+No-ops done
+Step 81
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 82 finished
+Reward sum was -21.0
+6 no-ops...
+No-ops done
+Step 82
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 83 finished
+Reward sum was -21.0
+8 no-ops...
+No-ops done
+Step 83
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 84 finished
+Reward sum was -20.0
+6 no-ops...
+No-ops done
+Step 84
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 85 finished
+Reward sum was -21.0
+29 no-ops...
+No-ops done
+Step 85
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 86 finished
+Reward sum was -21.0
+27 no-ops...
+No-ops done
+Step 86
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 87 finished
+Reward sum was -19.0
+18 no-ops...
+No-ops done
+Step 87
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 88 finished
+Reward sum was -20.0
+27 no-ops...
+No-ops done
+Step 88
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 89 finished
+Reward sum was -21.0
+27 no-ops...
+No-ops done
+Step 89
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 90 finished
+Reward sum was -19.0
+21 no-ops...
+No-ops done
+Step 90
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 91 finished
+Reward sum was -21.0
+13 no-ops...
+No-ops done
+Step 91
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Episode 92 finished
+Reward sum was -18.0
+21 no-ops...
+No-ops done
+Step 92
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 93 finished
+Reward sum was -20.0
+10 no-ops...
+No-ops done
+Step 93
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 94 finished
+Reward sum was -17.0
+3 no-ops...
+One more...
+No-ops done
+Step 94
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 95 finished
+Reward sum was -20.0
+20 no-ops...
+No-ops done
+Step 95
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 96 finished
+Reward sum was -20.0
+9 no-ops...
+No-ops done
+Step 96
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 97 finished
+Reward sum was -21.0
+15 no-ops...
+No-ops done
+Step 97
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 98 finished
+Reward sum was -20.0
+0 no-ops...
+One more...
+One more...
+One more...
+One more...
+No-ops done
+Step 98
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 99 finished
+Reward sum was -21.0
+9 no-ops...
+No-ops done
+Step 99
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 100 finished
+Reward sum was -20.0
+18 no-ops...
+No-ops done
+Step 100
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 101 finished
+Reward sum was -19.0
+6 no-ops...
+No-ops done
+Step 101
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 102 finished
+Reward sum was -20.0
+3 no-ops...
+One more...
+No-ops done
+Step 102
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Episode 103 finished
+Reward sum was -16.0
+13 no-ops...
+No-ops done
+Step 103
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 104 finished
+Reward sum was -18.0
+15 no-ops...
+No-ops done
+Step 104
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 105 finished
+Reward sum was -18.0
+17 no-ops...
+No-ops done
+Step 105
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 106 finished
+Reward sum was -21.0
+13 no-ops...
+No-ops done
+Step 106
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 107 finished
+Reward sum was -18.0
+7 no-ops...
+No-ops done
+Step 107
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 108 finished
+Reward sum was -18.0
+24 no-ops...
+No-ops done
+Step 108
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 109 finished
+Reward sum was -21.0
+1 no-ops...
+One more...
+One more...
+One more...
+No-ops done
+Step 109
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 110 finished
+Reward sum was -20.0
+17 no-ops...
+No-ops done
+Step 110
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 111 finished
+Reward sum was -19.0
+9 no-ops...
+No-ops done
+Step 111
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 112 finished
+Reward sum was -21.0
+5 no-ops...
+No-ops done
+Step 112
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 113 finished
+Reward sum was -20.0
+22 no-ops...
+No-ops done
+Step 113
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 114 finished
+Reward sum was -20.0
+13 no-ops...
+No-ops done
+Step 114
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 115 finished
+Reward sum was -18.0
+27 no-ops...
+No-ops done
+Step 115
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 116 finished
+Reward sum was -20.0
+24 no-ops...
+No-ops done
+Step 116
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 117 finished
+Reward sum was -19.0
+9 no-ops...
+No-ops done
+Step 117
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 118 finished
+Reward sum was -18.0
+19 no-ops...
+No-ops done
+Step 118
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 119 finished
+Reward sum was -21.0
+16 no-ops...
+No-ops done
+Step 119
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 120 finished
+Reward sum was -21.0
+14 no-ops...
+No-ops done
+Step 120
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 121 finished
+Reward sum was -20.0
+15 no-ops...
+No-ops done
+Step 121
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 122 finished
+Reward sum was -19.0
+29 no-ops...
+No-ops done
+Step 122
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 123 finished
+Reward sum was -20.0
+26 no-ops...
+No-ops done
+Step 123
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 124 finished
+Reward sum was -19.0
+28 no-ops...
+No-ops done
+Step 124
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 125 finished
+Reward sum was -21.0
+15 no-ops...
+No-ops done
+Step 125
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 126 finished
+Reward sum was -19.0
+21 no-ops...
+No-ops done
+Step 126
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 127 finished
+Reward sum was -18.0
+18 no-ops...
+No-ops done
+Step 127
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 128 finished
+Reward sum was -18.0
+4 no-ops...
+No-ops done
+Step 128
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 129 finished
+Reward sum was -18.0
+8 no-ops...
+No-ops done
+Step 129
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 130 finished
+Reward sum was -21.0
+4 no-ops...
+No-ops done
+Step 130
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 131 finished
+Reward sum was -19.0
+0 no-ops...
+One more...
+One more...
+One more...
+One more...
+No-ops done
+Step 131
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 132 finished
+Reward sum was -19.0
+20 no-ops...
+No-ops done
+Step 132
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 133 finished
+Reward sum was -16.0
+12 no-ops...
+No-ops done
+Step 133
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 134 finished
+Reward sum was -19.0
+4 no-ops...
+No-ops done
+Step 134
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 135 finished
+Reward sum was -17.0
+2 no-ops...
+One more...
+One more...
+No-ops done
+Step 135
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 136 finished
+Reward sum was -19.0
+13 no-ops...
+No-ops done
+Step 136
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 137 finished
+Reward sum was -19.0
+25 no-ops...
+No-ops done
+Step 137
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 138 finished
+Reward sum was -19.0
+14 no-ops...
+No-ops done
+Step 138
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 139 finished
+Reward sum was -19.0
+2 no-ops...
+One more...
+One more...
+No-ops done
+Step 139
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 140 finished
+Reward sum was -20.0
+15 no-ops...
+No-ops done
+Step 140
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Episode 141 finished
+Reward sum was -20.0
+30 no-ops...
+No-ops done
+Step 141
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 142 finished
+Reward sum was -21.0
+2 no-ops...
+One more...
+One more...
+No-ops done
+Step 142
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 143 finished
+Reward sum was -19.0
+9 no-ops...
+No-ops done
+Step 143
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 144 finished
+Reward sum was -20.0
+11 no-ops...
+No-ops done
+Step 144
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 145 finished
+Reward sum was -19.0
+24 no-ops...
+No-ops done
+Step 145
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 146 finished
+Reward sum was -20.0
+25 no-ops...
+No-ops done
+Step 146
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 147 finished
+Reward sum was -19.0
+19 no-ops...
+No-ops done
+Step 147
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 148 finished
+Reward sum was -19.0
+13 no-ops...
+No-ops done
+Step 148
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 149 finished
+Reward sum was -19.0
+17 no-ops...
+No-ops done
+Step 149
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 150 finished
+Reward sum was -19.0
+24 no-ops...
+No-ops done
+Step 150
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 151 finished
+Reward sum was -17.0
+13 no-ops...
+No-ops done
+Step 151
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 152 finished
+Reward sum was -21.0
+17 no-ops...
+No-ops done
+Step 152
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 153 finished
+Reward sum was -10.0
+7 no-ops...
+No-ops done
+Step 153
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 154 finished
+Reward sum was -15.0
+3 no-ops...
+One more...
+No-ops done
+Step 154
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 155 finished
+Reward sum was -18.0
+15 no-ops...
+No-ops done
+Step 155
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 156 finished
+Reward sum was -18.0
+9 no-ops...
+No-ops done
+Step 156
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 157 finished
+Reward sum was -19.0
+11 no-ops...
+No-ops done
+Step 157
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 158 finished
+Reward sum was -17.0
+19 no-ops...
+No-ops done
+Step 158
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 159 finished
+Reward sum was -17.0
+2 no-ops...
+One more...
+One more...
+No-ops done
+Step 159
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 160 finished
+Reward sum was -17.0
+9 no-ops...
+No-ops done
+Step 160
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 161 finished
+Reward sum was -19.0
+13 no-ops...
+No-ops done
+Step 161
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 162 finished
+Reward sum was -18.0
+11 no-ops...
+No-ops done
+Step 162
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 163 finished
+Reward sum was -15.0
+16 no-ops...
+No-ops done
+Step 163
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 164 finished
+Reward sum was -13.0
+11 no-ops...
+No-ops done
+Step 164
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 165 finished
+Reward sum was -11.0
+1 no-ops...
+One more...
+One more...
+One more...
+No-ops done
+Step 165
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 166 finished
+Reward sum was -7.0
+19 no-ops...
+No-ops done
+Step 166
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 167 finished
+Reward sum was -20.0
+9 no-ops...
+No-ops done
+Step 167
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 168 finished
+Reward sum was -17.0
+10 no-ops...
+No-ops done
+Step 168
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Episode 169 finished
+Reward sum was -19.0
+13 no-ops...
+No-ops done
+Step 169
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 170 finished
+Reward sum was -17.0
+8 no-ops...
+No-ops done
+Step 170
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 171 finished
+Reward sum was -17.0
+10 no-ops...
+No-ops done
+Step 171
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 172 finished
+Reward sum was -21.0
+13 no-ops...
+No-ops done
+Step 172
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 173 finished
+Reward sum was -21.0
+12 no-ops...
+No-ops done
+Step 173
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 174 finished
+Reward sum was -21.0
+6 no-ops...
+No-ops done
+Step 174
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 175 finished
+Reward sum was -20.0
+25 no-ops...
+No-ops done
+Step 175
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 176 finished
+Reward sum was -20.0
+20 no-ops...
+No-ops done
+Step 176
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 177 finished
+Reward sum was -19.0
+3 no-ops...
+One more...
+No-ops done
+Step 177
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 178 finished
+Reward sum was -21.0
+13 no-ops...
+No-ops done
+Step 178
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 179 finished
+Reward sum was -16.0
+26 no-ops...
+No-ops done
+Step 179
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 180 finished
+Reward sum was -20.0
+24 no-ops...
+No-ops done
+Step 180
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 181 finished
+Reward sum was -20.0
+22 no-ops...
+No-ops done
+Step 181
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 182 finished
+Reward sum was -21.0
+27 no-ops...
+No-ops done
+Step 182
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 183 finished
+Reward sum was -20.0
+16 no-ops...
+No-ops done
+Step 183
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 184 finished
+Reward sum was -21.0
+12 no-ops...
+No-ops done
+Step 184
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 185 finished
+Reward sum was -21.0
+23 no-ops...
+No-ops done
+Step 185
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 186 finished
+Reward sum was -21.0
+16 no-ops...
+No-ops done
+Step 186
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 187 finished
+Reward sum was -21.0
+14 no-ops...
+No-ops done
+Step 187
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 188 finished
+Reward sum was -20.0
+15 no-ops...
+No-ops done
+Step 188
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 189 finished
+Reward sum was -20.0
+4 no-ops...
+No-ops done
+Step 189
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 190 finished
+Reward sum was -20.0
+18 no-ops...
+No-ops done
+Step 190
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 191 finished
+Reward sum was -21.0
+26 no-ops...
+No-ops done
+Step 191
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 192 finished
+Reward sum was -21.0
+7 no-ops...
+No-ops done
+Step 192
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 193 finished
+Reward sum was -20.0
+24 no-ops...
+No-ops done
+Step 193
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 194 finished
+Reward sum was -19.0
+4 no-ops...
+No-ops done
+Step 194
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 195 finished
+Reward sum was -21.0
+18 no-ops...
+No-ops done
+Step 195
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 196 finished
+Reward sum was -21.0
+18 no-ops...
+No-ops done
+Step 196
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 197 finished
+Reward sum was -20.0
+3 no-ops...
+One more...
+No-ops done
+Step 197
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 198 finished
+Reward sum was -20.0
+15 no-ops...
+No-ops done
+Step 198
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 199 finished
+Reward sum was -21.0
+24 no-ops...
+No-ops done
+Step 199
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 200 finished
+Reward sum was -19.0
+18 no-ops...
+No-ops done
+Step 200
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 201 finished
+Reward sum was -19.0
+19 no-ops...
+No-ops done
+Step 201
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 202 finished
+Reward sum was -21.0
+5 no-ops...
+No-ops done
+Step 202
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 203 finished
+Reward sum was -20.0
+11 no-ops...
+No-ops done
+Step 203
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 204 finished
+Reward sum was -18.0
+15 no-ops...
+No-ops done
+Step 204
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Episode 205 finished
+Reward sum was -19.0
+17 no-ops...
+No-ops done
+Step 205
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Episode 206 finished
+Reward sum was -18.0
+20 no-ops...
+No-ops done
+Step 206
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 207 finished
+Reward sum was -19.0
+8 no-ops...
+No-ops done
+Step 207
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 208 finished
+Reward sum was -16.0
+29 no-ops...
+No-ops done
+Step 208
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 209 finished
+Reward sum was -19.0
+10 no-ops...
+No-ops done
+Step 209
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 210 finished
+Reward sum was -19.0
+30 no-ops...
+No-ops done
+Step 210
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 211 finished
+Reward sum was -19.0
+9 no-ops...
+No-ops done
+Step 211
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 212 finished
+Reward sum was -5.0
+26 no-ops...
+No-ops done
+Step 212
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 213 finished
+Reward sum was -16.0
+22 no-ops...
+No-ops done
+Step 213
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Episode 214 finished
+Reward sum was -18.0
+25 no-ops...
+No-ops done
+Step 214
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Episode 215 finished
+Reward sum was -13.0
+8 no-ops...
+No-ops done
+Step 215
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 216 finished
+Reward sum was -17.0
+22 no-ops...
+No-ops done
+Step 216
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 217 finished
+Reward sum was -19.0
+13 no-ops...
+No-ops done
+Step 217
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 218 finished
+Reward sum was -17.0
+3 no-ops...
+One more...
+No-ops done
+Step 218
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 219 finished
+Reward sum was -17.0
+21 no-ops...
+No-ops done
+Step 219
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 220 finished
+Reward sum was -13.0
+24 no-ops...
+No-ops done
+Step 220
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 221 finished
+Reward sum was -15.0
+29 no-ops...
+No-ops done
+Step 221
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 222 finished
+Reward sum was -16.0
+5 no-ops...
+No-ops done
+Step 222
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 223 finished
+Reward sum was -13.0
+10 no-ops...
+No-ops done
+Step 223
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Episode 224 finished
+Reward sum was -9.0
+29 no-ops...
+No-ops done
+Step 224
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 225 finished
+Reward sum was -10.0
+11 no-ops...
+No-ops done
+Step 225
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 226 finished
+Reward sum was -14.0
+10 no-ops...
+No-ops done
+Step 226
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Episode 227 finished
+Reward sum was -14.0
+27 no-ops...
+No-ops done
+Step 227
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 228 finished
+Reward sum was -16.0
+15 no-ops...
+No-ops done
+Step 228
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Episode 229 finished
+Reward sum was -17.0
+3 no-ops...
+One more...
+No-ops done
+Step 229
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward 1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Episode 230 finished
+Reward sum was -9.0
+24 no-ops...
+No-ops done
+Step 230
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
+Got reward -1.0
+Got reward 1.0
