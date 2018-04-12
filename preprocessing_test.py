@@ -3,8 +3,8 @@
 import unittest
 
 import gym
+import numpy as np
 from numpy.testing import assert_array_equal
-from pylab import *
 
 from preprocessing import MaxWrapper, FrameStackWrapper, FrameSkipWrapper, \
     ExtractLuminanceAndScaleWrapper, preprocess_wrap, ConcatFrameStack
@@ -163,6 +163,7 @@ class TestPreprocessing(unittest.TestCase):
         Not run as part of normal unit tests; run me with
           ./preprocessing_test.py TestPreprocessing.check_full_preprocessing
         """
+        from pylab import subplot, imshow, show
         env = DummyEnv()
         env.draw_n_dots = True
         env_wrapped = preprocess_wrap(env)
@@ -180,7 +181,6 @@ class TestPreprocessing(unittest.TestCase):
         imshow(np.hstack(obs3), cmap='gray')
         subplot(4, 1, 4)
         imshow(np.hstack(obs4), cmap='gray')
-
         show()
 
     def play_pong(self):
