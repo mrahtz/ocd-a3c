@@ -1,0 +1,193 @@
+from gym import Wrapper, ObservationWrapper, spaces
+from collections import deque
+import numpy as np
+import cv2
+
+"""
+Observation processing.
+
+Section 8 ("Experimental Setup") of the paper says:
+"The Atari experiments used the same input preprocessing as (Mnih et
+al., 2015) and an action repeat of 4."
+
+'Mnih et al., 2015' is
+'Human-level control through deep reinforcement learning', which says:
+
+  - First, to encode a single frame we take the maximum value for each
+    pixel colour value over the frame being encoded and the previous frame.
+    This was necessary to remove flickering that is present in games where
+    some objects appear only in even frames while other objects appear only
+    in odd frames, an artefact caused by the limited number of sprites Atari
+    2600 can display at once.
+  - Second, we then extract the Y channel, also known as luminance,
+    from the RGB frame and rescale it to 84 x 84.
+  - The function phi from algorithm 1 described below applies this
+    preprocessing to the m most recent frames and stacks them to produce the
+    input to the Q-function, in which m = 4, although the algorithm is robust
+    to different values of m (for example, 3 or 5)."
+
+So we would have:
+
+- Frame stack 0:
+    - Max. over frames 0 and 1
+    - Max. over frames 1 and 2
+    - Max. over frames 2 and 3
+    - Max. over frames 3 and 4
+- Frame stack 1:
+    - Max. over frames 1 and 2
+    - Max. over frames 2 and 3
+    - Max. over frames 3 and 4
+    - Max. over frames 4 and 5
+- etc.
+
+Also:
+
+  Following previous approaches to playing Atari 2600 games, we also use a
+  simple frame-skipping technique. More precisely, the agent sees and selects
+  actions on every kth frame instead of every frame, and its last action is
+  repeated on skipped frames. Because running the emulator forward for one
+  step requires much less computation than having the agent select an action,
+  this technique allows the agent to play roughly k times more games without
+  significantly increasing the runtime. We use k = 4 for all games.
+
+So we only look at frame stacks 0, 4, 7, etc.:
+
+- Frame stack 0:
+    - Max. over frames 0 and 1
+    - Max. over frames 1 and 2
+    - Max. over frames 2 and 3
+    - Max. over frames 3 and 4
+- Frame stack 4:
+    - Max. over frames 4 and 5
+    - Max. over frames 5 and 6
+    - Max. over frames 6 and 7
+    - Max. over frames 7 and 8
+- etc.
+"""
+
+
+def get_noop_action_index(env):
+    action_meanings = env.unwrapped.get_action_meanings()
+    try:
+        noop_action_index = action_meanings.index('NOOP')
+        return noop_action_index
+    except ValueError:
+        raise Exception("Unsure about environment's NOOP action")
+
+
+class MaxWrapper(Wrapper):
+    """
+    Take maximum pixel values over pairs of frames.
+    """
+
+    def __init__(self, env):
+        Wrapper.__init__(self, env)
+        self.frame_pairs = deque(maxlen=2)
+
+    def reset(self):
+        obs = self.env.reset()
+        self.frame_pairs.append(obs)
+
+        # The first frame returned should be the maximum of frames 0 and 1.
+        # We get frame 0 from env.reset(). For frame 1, we take a no-op action.
+        noop_action_index = get_noop_action_index(self.env)
+        obs, done, _, _ = self.env.step(noop_action_index)
+        if done:
+            raise Exception("Environment signalled done during initial frame "
+                            "maxing")
+        self.frame_pairs.append(obs)
+        return np.max(self.frame_pairs, axis=0)
+
+    def step(self, action):
+        obs, reward, done, info = self.env.step(action)
+        self.frame_pairs.append(obs)
+        obs_maxed = np.max(self.frame_pairs, axis=0)
+        return obs_maxed, reward, done, info
+
+
+class ExtractLuminanceAndScaleWrapper(ObservationWrapper):
+    """
+    Convert observations from colour to grayscale, then scale to 84 x 84
+    """
+
+    def __init__(self, env):
+        ObservationWrapper.__init__(self, env)
+        # Important so that gym's play.py picks up the right resolution
+        self.observation_space = spaces.Box(low=0, high=255,
+                                            shape=(84, 84),
+                                            dtype=np.uint8)
+
+    def observation(self, obs):
+        obs = cv2.cvtColor(obs, cv2.COLOR_RGB2GRAY)
+        obs = cv2.resize(obs, (84, 84))
+        return obs
+
+
+class FrameStackWrapper(Wrapper):
+    """
+    Stack the most recent 4 frames together.
+    """
+
+    def __init__(self, env):
+        Wrapper.__init__(self, env)
+        self.frame_stack = deque(maxlen=4)
+
+    def reset(self):
+        obs = self.env.reset()
+        self.frame_stack.append(obs)
+        # The first frame returned should be a stack of frames 0 through 3.
+        # We get frame 0 from env.reset(). For the rest, we take no-op actions.
+        noop_action_index = get_noop_action_index(self.env)
+        for _ in range(3):
+            obs, done, _, _ = self.env.step(noop_action_index)
+            if done:
+                raise Exception("Environment signalled done during initial "
+                                "frame stack")
+            self.frame_stack.append(obs)
+        return np.array(self.frame_stack)
+
+    def step(self, action):
+        obs, done, reward, info = self.env.step(action)
+        self.frame_stack.append(obs)
+        return np.array(self.frame_stack), done, reward, info
+
+
+class ConcatFrameStack(ObservationWrapper):
+    """
+    Concatenate a stack horizontally into one long frame (for debugging)
+    """
+
+    def __init__(self, env):
+        ObservationWrapper.__init__(self, env)
+        # Important so that gym's play.py picks up the right resolution
+        self.observation_space = spaces.Box(low=0, high=255,
+                                            shape=(84, 4 * 84),
+                                            dtype=np.uint8)
+
+    def observation(self, obs):
+        assert obs.shape[0] == 4
+        return np.hstack(obs)
+
+
+class FrameSkipWrapper(Wrapper):
+    """
+    Repeat the chosen action for 4 frames, only returning the last frame.
+    """
+
+    def reset(self):
+        return self.env.reset()
+
+    def step(self, action):
+        for _ in range(4):
+            obs, done, reward, info = self.env.step(action)
+            if done:
+                break
+        return obs, done, reward, info
+
+
+def preprocess_wrap(env):
+    env = MaxWrapper(env)
+    env = ExtractLuminanceAndScaleWrapper(env)
+    env = FrameStackWrapper(env)
+    env = FrameSkipWrapper(env)
+    return env
