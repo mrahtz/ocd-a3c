@@ -32,5 +32,27 @@ def entropy(logits, dims=-1):
     """
     probs = tf.nn.softmax(logits, dims)
     nplogp = probs * (
-                tf.reduce_logsumexp(logits, dims, keep_dims=True) - logits)
+            tf.reduce_logsumexp(logits, dims, keep_dims=True) - logits)
     return tf.reduce_sum(nplogp, dims, keep_dims=True)
+
+
+def create_copy_ops(from_scope, to_scope):
+    """
+    Create operations to mirror the values from all trainable variables
+    in from_scope to to_scope.
+    """
+    from_tvs = tf.get_collection(
+        tf.GraphKeys.TRAINABLE_VARIABLES, scope=from_scope)
+    to_tvs = tf.get_collection(
+        tf.GraphKeys.TRAINABLE_VARIABLES, scope=to_scope)
+
+    from_dict = {var.name: var for var in from_tvs}
+    to_dict = {var.name: var for var in to_tvs}
+    copy_ops = []
+    for to_name, to_var in to_dict.items():
+        from_name = to_name.replace(to_scope, from_scope)
+        from_var = from_dict[from_name]
+        op = to_var.assign(from_var.value())
+        copy_ops.append(op)
+
+    return copy_ops

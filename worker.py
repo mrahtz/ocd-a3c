@@ -7,7 +7,7 @@ import gym
 
 from network import create_network
 from train_ops import *
-from utils import *
+import utils
 
 G = 0.99
 N_ACTIONS = 3
@@ -50,7 +50,8 @@ class Worker:
 
         self.val_summ = tf.summary.scalar('value_loss', self.network.value_loss)
 
-        self.init_copy_ops()
+        self.copy_ops = utils.create_copy_ops(from_scope='global',
+                                              to_scope=self.scope)
 
         self.frame_stack = deque(maxlen=N_FRAMES_STACKED)
         self.reset_env()
@@ -87,27 +88,9 @@ class Worker:
         self.summary_writer.add_summary(summ, self.episode_n)
 
 
-    def init_copy_ops(self):
-        from_tvs = tf.get_collection(
-            tf.GraphKeys.TRAINABLE_VARIABLES, scope='global')
-        to_tvs = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
-                                   scope=self.scope)
-
-        from_dict = {var.name: var for var in from_tvs}
-        to_dict = {var.name: var for var in to_tvs}
-        copy_ops = []
-        for to_name, to_var in to_dict.items():
-            from_name = to_name.replace(self.scope, 'global')
-            from_var = from_dict[from_name]
-            op = to_var.assign(from_var.value())
-            copy_ops.append(op)
-
-        self.copy_ops = copy_ops
-
 
     def sync_network(self):
         self.sess.run(self.copy_ops)
-
 
     def value_graph(self):
         if self.fig is None:

@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
-from utils import copy_network, entropy
+from utils import create_copy_ops, entropy
 
 
 class TestEntropy(unittest.TestCase):
@@ -63,6 +63,7 @@ class TestCopyNetwork(unittest.TestCase):
                 w1 = tf.Variable(inits[scope]['w1'], name='w1')
                 w2 = tf.Variable(inits[scope]['w2'], name='w2')
                 variables[scope] = {'w1': w1, 'w2': w2}
+        copy_ops = create_copy_ops(from_scope='from_scope', to_scope='to_scope')
 
         sess.run(tf.global_variables_initializer())
 
@@ -78,7 +79,7 @@ class TestCopyNetwork(unittest.TestCase):
                     expected = inits[scope]['w2']
                 np.testing.assert_equal(actual, expected)
 
-        copy_network(sess, from_scope='from_scope', to_scope='to_scope')
+        sess.run(copy_ops)
 
         """
         Check that the variables in from_scope are untouched.
