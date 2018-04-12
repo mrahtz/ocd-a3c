@@ -9,20 +9,12 @@ def with_prob(p):
         return False
 
 
-def discount_rewards(r, G):
-    r2 = np.zeros_like(np.array(r).astype(np.float32))
-    r2[-1] = r[-1]
-    for i in range(len(r2) - 2, -1, -1):
-        r2[i] = G * r2[i + 1]
-    return r2
-
-
-def rewards_to_returns(r, G):
-    r2 = np.zeros_like(np.array(r).astype(np.float32))
-    r2[-1] = r[-1]
-    for i in range(len(r2) - 2, -1, -1):
-        r2[i] = r[i] + G * r2[i + 1]
-    return r2
+def rewards_to_discounted_returns(r, discount_factor):
+    returns = np.zeros_like(np.array(r), dtype=np.float32)
+    returns[-1] = r[-1]
+    for i in range(len(returns) - 2, -1, -1):
+        returns[i] = r[i] + discount_factor * returns[i + 1]
+    return returns
 
 
 def entropy(logits, dims=-1):
@@ -31,8 +23,7 @@ def entropy(logits, dims=-1):
     From https://gist.github.com/vahidk/5445ce374a27f6d452a43efb1571ea75.
     """
     probs = tf.nn.softmax(logits, dims)
-    nplogp = probs * (
-            tf.reduce_logsumexp(logits, dims, keepdims=True) - logits)
+    nplogp = probs * (tf.reduce_logsumexp(logits, dims, keepdims=True) - logits)
     return tf.reduce_sum(nplogp, dims, keepdims=True)
 
 

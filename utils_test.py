@@ -5,7 +5,28 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
-from utils import create_copy_ops, entropy
+from utils import create_copy_ops, entropy, rewards_to_discounted_returns
+
+
+class TestMiscUtils(unittest.TestCase):
+
+    def test_returns_easy(self):
+        r = [0, 0, 0, 5]
+        discounted_r = rewards_to_discounted_returns(r, discount_factor=0.99)
+        np.testing.assert_array_almost_equal(discounted_r,
+                                             [0.99 ** 3 * 5,
+                                              0.99 ** 2 * 5,
+                                              0.99 ** 1 * 5,
+                                              0.99 ** 0 * 5])
+
+    def test_returns_hard(self):
+        r = [1, 2, 3, 4]
+        discounted_r = rewards_to_discounted_returns(r, discount_factor=0.99)
+        expected = [1 + 0.99 * 2 + 0.99 ** 2 * 3 + 0.99 ** 3 * 4,
+                    2 + 0.99 * 3 + 0.99 ** 2 * 4,
+                    3 + 0.99 * 4,
+                    4]
+        np.testing.assert_array_almost_equal(discounted_r, expected)
 
 
 class TestEntropy(unittest.TestCase):
