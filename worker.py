@@ -1,7 +1,6 @@
 from collections import deque
 
 import gym
-import matplotlib.pyplot as plt
 import numpy as np
 
 import preprocessing
@@ -93,6 +92,7 @@ class Worker:
         self.sess.run(self.copy_ops)
 
     def value_graph(self):
+        import matplotlib.pyplot as plt
         if self.fig is None:
             self.fig, self.ax = plt.subplots()
             self.fig.set_size_inches(2, 2)
