@@ -32,8 +32,8 @@ def entropy(logits, dims=-1):
     """
     probs = tf.nn.softmax(logits, dims)
     nplogp = probs * (
-            tf.reduce_logsumexp(logits, dims, keep_dims=True) - logits)
-    return tf.reduce_sum(nplogp, dims, keep_dims=True)
+            tf.reduce_logsumexp(logits, dims, keepdims=True) - logits)
+    return tf.reduce_sum(nplogp, dims, keepdims=True)
 
 
 def create_copy_ops(from_scope, to_scope):
