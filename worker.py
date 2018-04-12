@@ -1,13 +1,13 @@
 from collections import deque
-import numpy as np
-import tensorflow as tf
-import matplotlib.pyplot as plt
 
 import gym
+import matplotlib.pyplot as plt
+import numpy as np
 
+import preprocessing
+import utils
 from network import create_network
 from train_ops import *
-import utils
 
 G = 0.99
 N_ACTIONS = 3
@@ -88,8 +88,6 @@ class Worker:
         self.sess.run(tf.assign(self.reward, reward_sum))
         summ = self.sess.run(self.reward_summary)
         self.summary_writer.add_summary(summ, self.episode_n)
-
-
 
     def sync_network(self):
         self.sess.run(self.copy_ops)

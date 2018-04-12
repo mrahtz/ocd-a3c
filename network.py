@@ -1,5 +1,7 @@
 from collections import namedtuple
+
 import tensorflow as tf
+
 from utils import entropy
 
 N_ACTIONS = 3
@@ -16,38 +18,38 @@ def create_network(scope):
         graph_r = tf.placeholder(tf.float32, [None])
 
         x = tf.layers.conv2d(
-                inputs=graph_s,
-                filters=32,
-                kernel_size=8,
-                strides=4,
-                activation=tf.nn.relu)
+            inputs=graph_s,
+            filters=32,
+            kernel_size=8,
+            strides=4,
+            activation=tf.nn.relu)
 
         x = tf.layers.conv2d(
-                inputs=x,
-                filters=64,
-                kernel_size=4,
-                strides=2,
-                activation=tf.nn.relu)
+            inputs=x,
+            filters=64,
+            kernel_size=4,
+            strides=2,
+            activation=tf.nn.relu)
 
         x = tf.layers.conv2d(
-                inputs=x,
-                filters=64,
-                kernel_size=3,
-                strides=1,
-                activation=tf.nn.relu)
+            inputs=x,
+            filters=64,
+            kernel_size=3,
+            strides=1,
+            activation=tf.nn.relu)
 
         w, h, f = x.get_shape()[1:]
         x = tf.reshape(x, [-1, int(w * h * f)])
 
         x = tf.layers.dense(
-                inputs=x,
-                units=512,
-                activation=tf.nn.relu)
+            inputs=x,
+            units=512,
+            activation=tf.nn.relu)
 
         a_logits = tf.layers.dense(
-                inputs=x,
-                units=N_ACTIONS,
-                activation=None)
+            inputs=x,
+            units=N_ACTIONS,
+            activation=None)
 
         a_softmax = tf.nn.softmax(a_logits)
 
@@ -63,7 +65,8 @@ def create_network(scope):
 
         p = 0
         for i in range(N_ACTIONS):
-            p += tf.cast(tf.equal(graph_action, i), tf.float32) * a_softmax[:, i]
+            p += tf.cast(tf.equal(graph_action, i), tf.float32) * a_softmax[:,
+                                                                  i]
         # Log probability: higher is better for actions we want to encourage
         # Negative log probability: lower is better for actions we want to
         #                           encourage

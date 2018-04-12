@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+
 import argparse
 import os
-import tensorflow as tf
 import time
 
-from worker import Worker
+import tensorflow as tf
+
 from network import create_network
+from worker import Worker
 
 
 def worker(env_id, i, ckpt_freq, load_ckpt_file, render):
