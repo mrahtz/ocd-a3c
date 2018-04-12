@@ -12,7 +12,7 @@ def with_prob(p):
 def rewards_to_discounted_returns(r, discount_factor):
     returns = np.zeros_like(np.array(r), dtype=np.float32)
     returns[-1] = r[-1]
-    for i in range(len(returns) - 2, -1, -1):
+    for i in range(len(r) - 2, -1, -1):
         returns[i] = r[i] + discount_factor * returns[i + 1]
     return returns
 

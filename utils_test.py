@@ -13,11 +13,11 @@ class TestMiscUtils(unittest.TestCase):
     def test_returns_easy(self):
         r = [0, 0, 0, 5]
         discounted_r = rewards_to_discounted_returns(r, discount_factor=0.99)
-        np.testing.assert_array_almost_equal(discounted_r,
-                                             [0.99 ** 3 * 5,
-                                              0.99 ** 2 * 5,
-                                              0.99 ** 1 * 5,
-                                              0.99 ** 0 * 5])
+        np.testing.assert_allclose(discounted_r,
+                                   [0.99 ** 3 * 5,
+                                    0.99 ** 2 * 5,
+                                    0.99 ** 1 * 5,
+                                    0.99 ** 0 * 5])
 
     def test_returns_hard(self):
         r = [1, 2, 3, 4]
@@ -26,7 +26,7 @@ class TestMiscUtils(unittest.TestCase):
                     2 + 0.99 * 3 + 0.99 ** 2 * 4,
                     3 + 0.99 * 4,
                     4]
-        np.testing.assert_array_almost_equal(discounted_r, expected)
+        np.testing.assert_allclose(discounted_r, expected)
 
 
 class TestEntropy(unittest.TestCase):
@@ -35,23 +35,35 @@ class TestEntropy(unittest.TestCase):
         self.sess = tf.Session()
 
     def test_basic(self):
+        """
+        Manually calculate entropy, and check the result matches.
+        """
         logits = [1., 2., 3., 4.]
         probs = np.exp(logits) / np.sum(np.exp(logits))
         expected_entropy = -np.sum(probs * np.log(probs))
         actual_entropy = self.sess.run(entropy(logits))
         np.testing.assert_approx_equal(actual_entropy, expected_entropy,
-                                       significant=4)
+                                       significant=5)
 
     def test_batch(self):
+        """
+        Make sure we get the right result if calculating entropies on a batch
+        of probabilities.
+        """
         # shape is 2 (batch size) x 4
         logits = [[1., 2., 3., 4.],
                   [1., 2., 2., 1.]]
         probs = np.exp(logits) / np.sum(np.exp(logits), axis=1, keepdims=True)
         expected_entropy = -np.sum(probs * np.log(probs), axis=1, keepdims=True)
         actual_entropy = self.sess.run(entropy(logits))
-        np.testing.assert_allclose(actual_entropy, expected_entropy, atol=1e-4)
+        np.testing.assert_allclose(actual_entropy, expected_entropy,
+                                   atol=1e-4)
 
     def test_gradient_descent(self):
+        """
+        Check that if we start with a distribution and use gradient descent
+        to maximise entropy, we end up with a maximise entropy distribution.
+        """
         logits = tf.Variable([1., 2., 3., 4., 5.])
         neg_ent = -entropy(logits)
         train_op = tf.train.AdamOptimizer().minimize(neg_ent)
@@ -88,9 +100,7 @@ class TestCopyNetwork(unittest.TestCase):
 
         sess.run(tf.global_variables_initializer())
 
-        """
-        Check that the variables start off being what we expect them to.
-        """
+        #Check that the variables start off being what we expect them to.
         for scope in scopes:
             for var_name, var in variables[scope].items():
                 actual = sess.run(var)
@@ -102,9 +112,7 @@ class TestCopyNetwork(unittest.TestCase):
 
         sess.run(copy_ops)
 
-        """
-        Check that the variables in from_scope are untouched.
-        """
+        #Check that the variables in from_scope are untouched.
         for var_name, var in variables['from_scope'].items():
             actual = sess.run(var)
             if 'w1' in var_name:
@@ -113,9 +121,7 @@ class TestCopyNetwork(unittest.TestCase):
                 expected = inits['from_scope']['w2']
             np.testing.assert_equal(actual, expected)
 
-        """
-        Check that the variables in to_scope have been modified.
-        """
+        #Check that the variables in to_scope have been modified.
         for var_name, var in variables['to_scope'].items():
             actual = sess.run(var)
             if 'w1' in var_name:
