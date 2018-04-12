@@ -25,7 +25,7 @@ class Worker:
 
     def __init__(self, sess, worker_n, env_name, summary_writer):
         self.sess = sess
-        self.env = EnvWrapper(gym.make(env_name), prepro2=prepro2, frameskip=4)
+        self.env = preprocessing.preprocess_wrap(gym.make(env_name))
 
         worker_scope = "worker_%d" % worker_n
         self.network = create_network(worker_scope)
