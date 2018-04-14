@@ -13,7 +13,7 @@ from multiprocessing import Process
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
-def start_worker(env_id, worker_n, ckpt_freq, load_ckpt_file, render):
+def run_worker(env_id, worker_n, n_steps, ckpt_freq, load_ckpt_file, render):
     dirname = 'summaries/%d_worker%d' % (int(time.time()), worker_n)
     os.makedirs(dirname)
     summary_writer = tf.summary.FileWriter(dirname, flush_secs=1)
@@ -43,7 +43,7 @@ def start_worker(env_id, worker_n, ckpt_freq, load_ckpt_file, render):
 
     print("Cluster established!")
     step = 0
-    while True:
+    while step < n_steps:
         print("Step %d" % step)
         done = w.run_step()
         if done:
@@ -58,6 +58,7 @@ def start_worker(env_id, worker_n, ckpt_freq, load_ckpt_file, render):
 parser = argparse.ArgumentParser()
 parser.add_argument("env_id")
 parser.add_argument("n_workers", type=int)
+parser.add_argument("n_steps", type=int)
 parser.add_argument("--port_start", type=int, default=2200)
 parser.add_argument("--ckpt_freq", type=int, default=5)
 parser.add_argument("--load_ckpt")
@@ -78,11 +79,12 @@ cluster = tf.train.ClusterSpec(cluster_dict)
 
 def start_worker_process(worker_n):
     print("Starting worker", worker_n)
-    start_worker(args.env_id,
-                 worker_n,
-                 args.ckpt_freq,
-                 args.load_ckpt,
-                 args.render)
+    run_worker(args.env_id,
+               worker_n,
+               args.n_steps,
+               args.ckpt_freq,
+               args.load_ckpt,
+               args.render)
 
 
 worker_processes = []
