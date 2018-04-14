@@ -1,6 +1,44 @@
+import random
+import socket
+
+import numpy as np
 import tensorflow as tf
 import numpy as np
 import scipy.misc
+
+
+def get_port_range(start_port, n_ports, random_stagger=False):
+    # If multiple runs try and call this function at the same time,
+    # the function could return the same port range.
+    # To guard against this, automatically offset the port range.
+    if random_stagger:
+        start_port += random.randint(0, 20) * n_ports
+
+    free_range_found = False
+    while not free_range_found:
+        ports = []
+        for port_n in range(n_ports):
+            port = start_port + port_n
+            try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.bind(("127.0.0.1", port))
+                ports.append(port)
+            except socket.error as e:
+                if e.errno == 98 or e.errno == 48:
+                    print("Warning: port {} already in use".format(port))
+                    break
+                else:
+                    raise e
+            finally:
+                s.close()
+        if len(ports) < n_ports:
+            # The last port we tried was in use
+            # Try again, starting from the next port
+            start_port = port + 1
+        else:
+            free_range_found = True
+
+    return ports
 
 
 def with_prob(p):

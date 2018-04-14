@@ -3,12 +3,15 @@
 from __future__ import print_function
 import argparse
 import os
+import time
+from multiprocessing import Process
+
 import tensorflow as tf
 import time
 
-from worker import Worker
 from network import create_network
-from multiprocessing import Process
+from utils import get_port_range
+from worker import Worker
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
@@ -56,20 +59,20 @@ def run_worker(env_id, worker_n, n_steps, ckpt_freq, load_ckpt_file, render):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("env_id")
-parser.add_argument("n_workers", type=int)
-parser.add_argument("n_steps", type=int)
-parser.add_argument("--port_start", type=int, default=2200)
+parser.add_argument("--n_steps", type=int)
+parser.add_argument("--n_workers", type=int, default=16)
 parser.add_argument("--ckpt_freq", type=int, default=5)
 parser.add_argument("--load_ckpt")
 parser.add_argument("--render", action='store_true')
 args = parser.parse_args()
 
+if "MovingDot" in args.env_id:
+    pass
+
 cluster_dict = {}
-workers = []
-for i in range(args.n_workers):
-    port = args.port_start + i
-    workers.append("localhost:{}".format(port))
-cluster_dict["worker"] = workers
+ports = get_port_range(start_port=2200, n_ports=args.n_workers)
+cluster_dict["worker"] = ["localhost:{}".format(port)
+                          for port in ports]
 cluster = tf.train.ClusterSpec(cluster_dict)
 
 def start_worker_process(worker_n):
