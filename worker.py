@@ -7,6 +7,7 @@ import preprocessing
 import utils
 from network import create_network
 from train_ops import *
+import comet_ml_setup
 
 G = 0.99
 N_ACTIONS = 3
