@@ -11,7 +11,6 @@ from train_ops import *
 G = 0.99
 N_ACTIONS = 3
 ACTIONS = np.arange(N_ACTIONS) + 1
-N_FRAMES_STACKED = 4
 N_MAX_NOOPS = 30
 
 
@@ -54,7 +53,6 @@ class Worker:
         self.copy_ops = utils.create_copy_ops(from_scope='global',
                                               to_scope=self.scope)
 
-        self.frame_stack = deque(maxlen=N_FRAMES_STACKED)
         self.reset_env()
 
         self.t_max = 10000
@@ -67,18 +65,11 @@ class Worker:
         self.fig = None
 
     def reset_env(self):
-        self.frame_stack.clear()
-        self.env.reset()
-
+        self.last_o = self.env.reset()
         n_noops = np.random.randint(low=0, high=N_MAX_NOOPS + 1)
         print("%d no-ops..." % n_noops)
         for i in range(n_noops):
-            o, _, _, _ = self.env.step(0)
-            self.frame_stack.append(o)
-        while len(self.frame_stack) < N_FRAMES_STACKED:
-            print("One more...")
-            o, _, _, _ = self.env.step(0)
-            self.frame_stack.append(o)
+            self.last_o, _, _, _ = self.env.step(0)
         print("No-ops done")
 
     def log_rewards(self):
@@ -124,18 +115,18 @@ class Worker:
                        self.zero_value_gradients])
         self.sync_network()
 
-        list_set(states, i, self.frame_stack)
+        list_set(states, i, self.last_o)
 
         done = False
         while not done and i < self.t_max:
             # print("Step %d" % i)
-            s = np.moveaxis(self.frame_stack, source=0, destination=-1)
+            s = np.moveaxis(self.last_o, source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             a_p = self.sess.run(self.network.a_softmax, feed_dict=feed_dict)[0]
             a = np.random.choice(ACTIONS, p=a_p)
             list_set(actions, i, a)
 
-            o, r, done, _ = self.env.step(a)
+            self.last_o, r, done, _ = self.env.step(a)
 
             if self.render:
                 self.env.render()
@@ -146,10 +137,9 @@ class Worker:
 
             if r != 0:
                 print("Got reward", r)
-            self.frame_stack.append(o)
             self.episode_rewards.append(r)
             list_set(rewards, i, r)
-            list_set(states, i + 1, np.copy(self.frame_stack))
+            list_set(states, i + 1, np.copy(self.last_o))
 
             i += 1
 
