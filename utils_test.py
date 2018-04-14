@@ -5,7 +5,8 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
-from utils import create_copy_ops, entropy, rewards_to_discounted_returns
+from utils import create_copy_ops, entropy, rewards_to_discounted_returns, \
+    get_port_range
 
 
 class TestMiscUtils(unittest.TestCase):
@@ -27,6 +28,34 @@ class TestMiscUtils(unittest.TestCase):
                     3 + 0.99 * 4,
                     4]
         np.testing.assert_allclose(discounted_r, expected)
+
+    def test_get_port_range(self):
+        # Test 1: if we ask for 3 ports starting from port 60000
+        # (which nothing should be listening on), we should get back
+        # 60000, 60001 and 60002
+        ports = get_port_range(60000, 3)
+        self.assertEqual(ports, [60000, 60001, 60002])
+
+        # Test 2: if we set something listening on port 60000
+        # then ask for the same ports as in test 1,
+        # the function should skip over 60000 and give us the next
+        # three ports
+        s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s1.bind(("127.0.0.1", 60000))
+        ports = get_port_range(60000, 3)
+        self.assertEqual(ports, [60001, 60002, 60003])
+
+        # Test 3: if we set something listening on port 60002,
+        # the function should realise it can't allocate a continuous
+        # range starting from 60000 and should give us a range starting
+        # from 60003
+        s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s2.bind(("127.0.0.1", 60002))
+        ports = get_port_range(60000, 3)
+        self.assertEqual(ports, [60003, 60004, 60005])
+
+        s2.close()
+        s1.close()
 
 
 class TestEntropy(unittest.TestCase):
@@ -100,7 +129,7 @@ class TestCopyNetwork(unittest.TestCase):
 
         sess.run(tf.global_variables_initializer())
 
-        #Check that the variables start off being what we expect them to.
+        # Check that the variables start off being what we expect them to.
         for scope in scopes:
             for var_name, var in variables[scope].items():
                 actual = sess.run(var)
@@ -112,7 +141,7 @@ class TestCopyNetwork(unittest.TestCase):
 
         sess.run(copy_ops)
 
-        #Check that the variables in from_scope are untouched.
+        # Check that the variables in from_scope are untouched.
         for var_name, var in variables['from_scope'].items():
             actual = sess.run(var)
             if 'w1' in var_name:
@@ -121,7 +150,7 @@ class TestCopyNetwork(unittest.TestCase):
                 expected = inits['from_scope']['w2']
             np.testing.assert_equal(actual, expected)
 
-        #Check that the variables in to_scope have been modified.
+        # Check that the variables in to_scope have been modified.
         for var_name, var in variables['to_scope'].items():
             actual = sess.run(var)
             if 'w1' in var_name:
