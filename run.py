@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 
-import comet_ml_setup
-comet_ml_setup.init()
-
 import argparse
 import os
 import time
-from multiprocessing import Process
 
 import tensorflow as tf
 
 from network import create_network
 from worker import Worker
+from multiprocessing import Process
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
@@ -69,7 +66,7 @@ parser.add_argument("--render", action='store_true')
 args = parser.parse_args()
 
 if "MovingDot" in args.env_id:
-    pass
+    import gym_moving_dot
 
 cluster_dict = {}
 workers = []
@@ -82,7 +79,6 @@ cluster = tf.train.ClusterSpec(cluster_dict)
 
 def start_worker_process(worker_n):
     print("Starting worker", worker_n)
-    comet_ml_setup.init()
     run_worker(args.env_id,
                worker_n,
                args.n_steps,
