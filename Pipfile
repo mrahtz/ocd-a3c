@@ -14,6 +14,7 @@ opencv-python = "*"
 [dev-packages]
 
 pygame = "*"
+memory-profiler = "*"
 
 
 [requires]

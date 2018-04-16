@@ -1,5 +1,8 @@
+import os.path as osp
 import random
 import socket
+import subprocess
+from multiprocessing import Process
 
 import numpy as np
 import tensorflow as tf
@@ -84,3 +87,29 @@ def create_copy_ops(from_scope, to_scope):
         copy_ops.append(op)
 
     return copy_ops
+
+
+def profile_memory(log_path, pid):
+    import memory_profiler
+    def profile():
+        with open(log_path, 'w') as f:
+            # timeout=99999 is necessary because for external processes,
+            # memory_usage otherwise defaults to only returning a single sample
+            # Note that even with interval=1, because memory_profiler only
+            # flushes every 50 lines, we still have to wait 50 seconds before
+            # updates.
+            memory_profiler.memory_usage(pid, stream=f,
+                                         timeout=99999, interval=1)
+
+    p = Process(target=profile, daemon=True)
+    p.start()
+    return p
+
+
+def get_git_rev():
+    if not osp.exists('.git'):
+        git_rev = "unkrev"
+    else:
+        git_rev = subprocess.check_output(
+            ['git', 'rev-parse', '--short', 'HEAD']).decode().rstrip()
+    return git_rev
