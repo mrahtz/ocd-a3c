@@ -9,15 +9,18 @@ from multiprocessing import Process
 import tensorflow as tf
 
 from network import create_network
-from utils import get_port_range, profile_memory, get_git_rev
+from utils import get_port_range, MemoryProfiler, get_git_rev
 from worker import Worker
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
-
 def run_worker(env_id, worker_n, n_steps, ckpt_freq, load_ckpt_file, render,
                log_dir):
+    mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
+    memory_profiler = MemoryProfiler(pid=-1, log_path=mem_log)
+    memory_profiler.start()
+
     dirname = osp.join(log_dir, "worker_{}".format(worker_n))
     os.makedirs(dirname)
     summary_writer = tf.summary.FileWriter(dirname, flush_secs=1)
@@ -57,6 +60,8 @@ def run_worker(env_id, worker_n, n_steps, ckpt_freq, load_ckpt_file, render,
             print("Saving checkpoint at step %d..." % step, end='', flush=True)
             saver.save(sess, checkpoint_file)
             print("done!")
+
+    memory_profiler.stop()
 
 
 parser = argparse.ArgumentParser()
@@ -106,17 +111,5 @@ for worker_n in range(args.n_workers):
     p.start()
     worker_processes.append(p)
 
-    # TODO: remove
-    mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
-    mp = profile_memory(mem_log, p.pid)
-    memory_profiler_processes.append(mp)
-
-
 for p in worker_processes:
-    print("Joining", p)
     p.join()
-print("Joined")
-for p in memory_profiler_processes:
-    print("Terminating mp", p)
-    p.terminate()
-print("Terminated")
