@@ -1,8 +1,10 @@
 import os.path as osp
+import queue
 import random
 import socket
 import subprocess
-from multiprocessing import Process
+from multiprocessing import Queue
+from threading import Thread
 
 import numpy as np
 import tensorflow as tf
@@ -173,21 +175,38 @@ def logit_entropy(logits):
     return tf.reduce_sum(nplogp, axis=-1, keepdims=True)
 
 
-def profile_memory(log_path, pid):
-    import memory_profiler
-    def profile():
-        with open(log_path, 'w') as f:
-            # timeout=99999 is necessary because for external processes,
-            # memory_usage otherwise defaults to only returning a single sample
-            # Note that even with interval=1, because memory_profiler only
-            # flushes every 50 lines, we still have to wait 50 seconds before
-            # updates.
-            memory_profiler.memory_usage(pid, stream=f,
-                                         timeout=99999, interval=1)
+class MemoryProfiler:
+    STOP_CMD = 0
 
-    p = Process(target=profile, daemon=True)
-    p.start()
-    return p
+    def __init__(self, pid, log_path):
+        self.pid = pid
+        self.log_path = log_path
+        self.cmd_queue = Queue()
+        self.t = None
+
+    def start(self):
+        self.t = Thread(target=self.profile)
+        self.t.start()
+
+    def stop(self):
+        self.cmd_queue.put(self.STOP_CMD)
+        self.t.join()
+
+    def profile(self):
+        import memory_profiler
+        f = open(self.log_path, 'w+')
+        while True:
+            # 5 samples, 1 second apart
+            memory_profiler.memory_usage(self.pid, stream=f,
+                                         timeout=5, interval=1)
+
+            try:
+                cmd = self.cmd_queue.get(timeout=0.1)
+                if cmd == self.STOP_CMD:
+                    f.close()
+                    break
+            except queue.Empty:
+                pass
 
 
 def get_git_rev():
