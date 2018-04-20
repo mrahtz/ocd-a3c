@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
-from utils import create_copy_ops, entropy, rewards_to_discounted_returns, \
+from utils import create_copy_ops, logit_entropy, rewards_to_discounted_returns, \
     get_port_range
 
 
@@ -67,10 +67,20 @@ class TestEntropy(unittest.TestCase):
         """
         Manually calculate entropy, and check the result matches.
         """
-        logits = [1., 2., 3., 4.]
+        logits = np.array([1., 2., 3., 4.])
         probs = np.exp(logits) / np.sum(np.exp(logits))
         expected_entropy = -np.sum(probs * np.log(probs))
-        actual_entropy = self.sess.run(entropy(logits))
+        actual_entropy = self.sess.run(logit_entropy(logits))
+        np.testing.assert_approx_equal(actual_entropy, expected_entropy,
+                                       significant=5)
+
+    def test_stability(self):
+        """
+        Test an example which would normally break numerical stability.
+        """
+        logits = np.array([0., 1000.])
+        expected_entropy = 0.
+        actual_entropy = self.sess.run(logit_entropy(logits))
         np.testing.assert_approx_equal(actual_entropy, expected_entropy,
                                        significant=5)
 
@@ -80,11 +90,11 @@ class TestEntropy(unittest.TestCase):
         of probabilities.
         """
         # shape is 2 (batch size) x 4
-        logits = [[1., 2., 3., 4.],
-                  [1., 2., 2., 1.]]
+        logits = np.array([[1., 2., 3., 4.],
+                           [1., 2., 2., 1.]])
         probs = np.exp(logits) / np.sum(np.exp(logits), axis=1, keepdims=True)
         expected_entropy = -np.sum(probs * np.log(probs), axis=1, keepdims=True)
-        actual_entropy = self.sess.run(entropy(logits))
+        actual_entropy = self.sess.run(logit_entropy(logits))
         np.testing.assert_allclose(actual_entropy, expected_entropy,
                                    atol=1e-4)
 
@@ -94,7 +104,7 @@ class TestEntropy(unittest.TestCase):
         to maximise entropy, we end up with a maximise entropy distribution.
         """
         logits = tf.Variable([1., 2., 3., 4., 5.])
-        neg_ent = -entropy(logits)
+        neg_ent = -logit_entropy(logits)
         train_op = tf.train.AdamOptimizer().minimize(neg_ent)
         self.sess.run(tf.global_variables_initializer())
         for i in range(10000):

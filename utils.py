@@ -59,14 +59,48 @@ def rewards_to_discounted_returns(r, discount_factor):
     return returns
 
 
-def entropy(logits, dims=-1):
+def logit_entropy(logits):
     """
-    Numerically-stable entropy.
-    From https://gist.github.com/vahidk/5445ce374a27f6d452a43efb1571ea75.
+    Numerically-stable entropy directly from logits.
+
+    We want to calculate p = exp(logits) / sum(exp(logits)),
+    then do -sum(p * log(p)).
+
+    There are two things we need to be careful of:
+    - If one of the logits is large, exp(logits) will overflow.
+    - If one of the probabilities is zero, we'll accidentally do log(0).
+      (Entropy /is/ still well-defined if one of the probabilities is zero.
+      we just miss out that probability from the sum.)
+    
+    The first problem is just a matter of using a numerically-stable softmax.
+
+    For the second problem, if we have access to the logits, there's a trick we
+    can use. Note that if we're calculating probabilities from logits, none of
+    the probabilities should ever be zero. If we do up with a zero probability,
+    it's only because of rounding. To get around this, when computing log(p),
+    we don't compute probabilities explicitly, but instead compute the result
+    directly in terms of the logits. For example:
+      logits = [0, 1000]
+      log(probs) = log(exp(logits)/sum(exp(logits)))
+                 = log(exp(logits)) - log(sum(exp(logits)))
+                 = logits - log_sum(exp(logits))
+                 = [0, 1000] - log(exp(0) + exp(1000))
+                 = [0, 1000] - log(1 + exp(1000))
+                 = [0, 1000] - log(exp(1000))               (approximately)
+                 = [0, 1000] - 1000
+                 = [-1000, 0]
     """
-    probs = tf.nn.softmax(logits, dims)
-    nplogp = probs * (tf.reduce_logsumexp(logits, dims, keepdims=True) - logits)
-    return tf.reduce_sum(nplogp, dims, keepdims=True)
+    # We support either:
+    # - 1D list of logits
+    # - A 2D list, batch size x logits
+    assert len(logits.shape) <= 2
+    # keepdims=True is necessary so that we get a result which is
+    # batch size x 1 instead of just batch size
+    logp = logits - tf.reduce_logsumexp(logits, axis=-1, keepdims=True)
+    nlogp = -logp
+    probs = tf.nn.softmax(logits, axis=-1)
+    nplogp = probs * nlogp
+    return tf.reduce_sum(nplogp, axis=-1, keepdims=True)
 
 
 def create_copy_ops(from_scope, to_scope):
