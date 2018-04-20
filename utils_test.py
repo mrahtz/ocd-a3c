@@ -7,7 +7,7 @@ import matplotlib
 import argparse
 import matplotlib.pyplot as plt
 
-from utils import copy_network, EnvWrapper, entropy
+from utils import copy_network, EnvWrapper, logit_entropy
 import gym
 from gym.utils.play import play
 
@@ -17,25 +17,39 @@ class TestEntropy(unittest.TestCase):
         self.sess = tf.Session()
 
     def test_basic(self):
-        logits = [1., 2., 3., 4.]
+        """
+        Manually calculate entropy, and check the result matches.
+        """
+        logits = np.array([1., 2., 3., 4.])
         probs = np.exp(logits) / np.sum(np.exp(logits))
         expected_entropy = -np.sum(probs * np.log(probs))
-        actual_entropy = self.sess.run(entropy(logits))
+        actual_entropy = self.sess.run(logit_entropy(logits))
+        np.testing.assert_approx_equal(actual_entropy, expected_entropy,
+                                       significant=5)
+
+    def test_stability(self):
+        """
+        Test an example which would normally break numerical stability.
+        """
+        logits = np.array([0., 1000.])
+        expected_entropy = 0.
+        actual_entropy = self.sess.run(logit_entropy(logits))
         np.testing.assert_approx_equal(actual_entropy, expected_entropy,
                 significant=4)
 
     def test_batch(self):
         # shape is 2 (batch size) x 4
-        logits = [[1., 2., 3., 4.],
-                  [1., 2., 2., 1.]]
+        logits = np.array([[1., 2., 3., 4.],
+                           [1., 2., 2., 1.]])
         probs = np.exp(logits) / np.sum(np.exp(logits), axis=1, keepdims=True)
         expected_entropy = -np.sum(probs * np.log(probs), axis=1, keepdims=True)
-        actual_entropy = self.sess.run(entropy(logits))
-        np.testing.assert_allclose(actual_entropy, expected_entropy, atol=1e-4)
+        actual_entropy = self.sess.run(logit_entropy(logits))
+        np.testing.assert_allclose(actual_entropy, expected_entropy,
+                                   atol=1e-4)
 
     def test_gradient_descent(self):
         logits = tf.Variable([1., 2., 3., 4., 5.])
-        neg_ent = -entropy(logits)
+        neg_ent = -logit_entropy(logits)
         train_op = tf.train.AdamOptimizer().minimize(neg_ent)
         self.sess.run(tf.global_variables_initializer())
         for i in range(10000):
