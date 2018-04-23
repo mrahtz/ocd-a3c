@@ -83,16 +83,21 @@ parser.add_argument("--n_workers", type=int, default=16)
 parser.add_argument("--ckpt_freq", type=int, default=5)
 parser.add_argument("--load_ckpt")
 parser.add_argument("--render", action='store_true')
+group = parser.add_mutually_exclusive_group()
+group.add_argument('--log_dir')
 seconds_since_epoch = str(int(time.time()))
-parser.add_argument('--run_name', default=seconds_since_epoch)
+group.add_argument('--run_name', default=seconds_since_epoch)
 args = parser.parse_args()
 
-git_rev = get_git_rev()
-run_name = args.run_name + '_' + git_rev
-log_dir = osp.join('runs', run_name)
-if osp.exists(log_dir):
-    raise Exception("Log directory '%s' already exists" % log_dir)
-os.makedirs(log_dir)
+if args.log_dir:
+    log_dir = args.log_dir
+else:
+    git_rev = get_git_rev()
+    run_name = args.run_name + '_' + git_rev
+    log_dir = osp.join('runs', run_name)
+    if osp.exists(log_dir):
+        raise Exception("Log directory '%s' already exists" % log_dir)
+os.makedirs(log_dir, exist_ok=True)
 
 if "MovingDot" in args.env_id:
     import gym_moving_dot
