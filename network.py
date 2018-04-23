@@ -8,7 +8,8 @@ N_ACTIONS = 3
 BETA = 0.01
 
 Network = namedtuple('Network',
-                     's a r a_softmax graph_v policy_loss value_loss')
+                     's a r a_softmax graph_v policy_loss value_loss '
+                     'policy_entropy')
 
 
 def create_network(scope):
@@ -81,9 +82,10 @@ def create_network(scope):
             policy_loss = nlp * tf.stop_gradient(advantage)
             policy_loss = tf.reduce_sum(policy_loss)
 
+            policy_entropy = logit_entropy(a_logits)
             # We want to maximise entropy, which is the same as
             # minimising negative entropy
-            policy_loss -= tf.reduce_sum(BETA * logit_entropy(a_logits))
+            policy_loss -= tf.reduce_sum(BETA * policy_entropy)
 
             value_loss = advantage ** 2
             value_loss = tf.reduce_sum(value_loss)
@@ -95,6 +97,7 @@ def create_network(scope):
             a_softmax=a_softmax,
             graph_v=graph_v,
             policy_loss=policy_loss,
-            value_loss=value_loss)
+            value_loss=value_loss,
+            policy_entropy=policy_entropy)
 
         return network

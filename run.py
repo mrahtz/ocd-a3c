@@ -6,6 +6,7 @@ import os.path as osp
 import time
 from multiprocessing import Process
 
+import easy_tf_log
 import tensorflow as tf
 
 from network import create_network
@@ -15,15 +16,18 @@ from worker import Worker
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
-def run_worker(env_id, worker_n, n_steps, ckpt_freq, load_ckpt_file, render,
-               log_dir):
+def run_worker(env_id, worker_n, n_steps_to_run, ckpt_freq, load_ckpt_file,
+               render, log_dir):
     mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
     memory_profiler = MemoryProfiler(pid=-1, log_path=mem_log)
     memory_profiler.start()
 
-    dirname = osp.join(log_dir, "worker_{}".format(worker_n))
-    os.makedirs(dirname)
-    summary_writer = tf.summary.FileWriter(dirname, flush_secs=1)
+    worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
+    easy_tf_log.set_dir(worker_log_dir)
+
+    tensorflow_log_dir = osp.join(worker_log_dir, 'tensorflow')
+    os.makedirs(tensorflow_log_dir)
+    summary_writer = tf.summary.FileWriter(tensorflow_log_dir, flush_secs=1)
 
     server = tf.train.Server(cluster, job_name="worker", task_index=worker_n)
     sess = tf.Session(server.target)
@@ -49,17 +53,25 @@ def run_worker(env_id, worker_n, n_steps, ckpt_freq, load_ckpt_file, render,
         print("done!")
 
     print("Cluster established!")
-    step = 0
-    while step < n_steps:
-        print("Step %d" % step)
-        done = w.run_step()
+    updates = 0
+    steps = 0
+    while steps < n_steps_to_run:
+        start_time = time.time()
+
+        steps_ran, done = w.run_update()
+        steps += steps_ran
+        updates += 1
+
+        end_time = time.time()
+        steps_per_second = steps_ran / (end_time - start_time)
+        easy_tf_log.tflog('steps_per_second', steps_per_second)
+        print('===', steps_per_second)
+
         if done:
             w.reset_env()
-        step += 1
-        if (worker_n == 0) and (step % ckpt_freq == 0):
-            print("Saving checkpoint at step %d..." % step, end='', flush=True)
+        if worker_n == 0 and updates % ckpt_freq == 0:
             saver.save(sess, checkpoint_file)
-            print("done!")
+            print("Checkpoint saved to '{}'".format(checkpoint_file))
 
     memory_profiler.stop()
 
@@ -84,6 +96,7 @@ os.makedirs(log_dir)
 
 if "MovingDot" in args.env_id:
     import gym_moving_dot
+
     gym_moving_dot  # TODO prevent PyCharm from removing the import
 
 cluster_dict = {}
@@ -95,13 +108,13 @@ cluster = tf.train.ClusterSpec(cluster_dict)
 
 def start_worker_process(worker_n):
     print("Starting worker", worker_n)
-    run_worker(args.env_id,
-               worker_n,
-               args.n_steps,
-               args.ckpt_freq,
-               args.load_ckpt,
-               args.render,
-               log_dir)
+    run_worker(env_id=args.env_id,
+               worker_n=worker_n,
+               n_steps_to_run=args.n_steps,
+               ckpt_freq=args.ckpt_freq,
+               load_ckpt_file=args.load_ckpt,
+               render=args.render,
+               log_dir=log_dir)
 
 
 worker_processes = []

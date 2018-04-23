@@ -91,7 +91,7 @@ class MaxWrapper(Wrapper):
         # The first frame returned should be the maximum of frames 0 and 1.
         # We get frame 0 from env.reset(). For frame 1, we take a no-op action.
         noop_action_index = get_noop_action_index(self.env)
-        obs, done, _, _ = self.env.step(noop_action_index)
+        obs, _, done, _ = self.env.step(noop_action_index)
         if done:
             raise Exception("Environment signalled done during initial frame "
                             "maxing")
@@ -139,7 +139,7 @@ class FrameStackWrapper(Wrapper):
         # We get frame 0 from env.reset(). For the rest, we take no-op actions.
         noop_action_index = get_noop_action_index(self.env)
         for _ in range(3):
-            obs, done, _, _ = self.env.step(noop_action_index)
+            obs, _, done, _ = self.env.step(noop_action_index)
             if done:
                 raise Exception("Environment signalled done during initial "
                                 "frame stack")
@@ -147,9 +147,9 @@ class FrameStackWrapper(Wrapper):
         return np.array(self.frame_stack)
 
     def step(self, action):
-        obs, done, reward, info = self.env.step(action)
+        obs, reward, done, info = self.env.step(action)
         self.frame_stack.append(obs)
-        return np.array(self.frame_stack), done, reward, info
+        return np.array(self.frame_stack), reward, done, info
 
 
 class ConcatFrameStack(ObservationWrapper):
@@ -179,10 +179,10 @@ class FrameSkipWrapper(Wrapper):
 
     def step(self, action):
         for _ in range(4):
-            obs, done, reward, info = self.env.step(action)
+            obs, reward, done, info = self.env.step(action)
             if done:
                 break
-        return obs, done, reward, info
+        return obs, reward, done, info
 
 
 def preprocess_wrap(env):
