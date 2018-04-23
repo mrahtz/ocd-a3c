@@ -132,7 +132,7 @@ class Worker:
         self.fig.canvas.update()
         self.fig.canvas.flush_events()
 
-    def run_step(self):
+    def run_update(self):
         states = []
         actions = []
         rewards = []
@@ -226,4 +226,4 @@ class Worker:
 
         self.steps += 1
 
-        return done
+        return i, done
