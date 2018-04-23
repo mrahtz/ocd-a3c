@@ -1,3 +1,4 @@
+import time
 from collections import deque
 
 import gym
@@ -13,6 +14,21 @@ G = 0.99
 N_ACTIONS = 3
 ACTIONS = np.arange(N_ACTIONS) + 1
 N_MAX_NOOPS = 30
+
+
+def toc(name):
+    if not toc.tic:
+        toc.tic = time.time()
+        return
+
+    t = time.time()
+    delta = t - toc.tic
+    tflog('time_{}'.format(name), 1000 * delta)
+
+    toc.tic = t
+
+
+toc.tic = None
 
 
 def list_set(l, i, val):
@@ -112,9 +128,13 @@ class Worker:
         rewards = []
         i = 0
 
+        toc(0)
+
         self.sess.run([self.zero_policy_gradients,
                        self.zero_value_gradients])
         self.sync_network()
+
+        toc(1)
 
         list_set(states, i, self.last_o)
 
@@ -142,6 +162,8 @@ class Worker:
 
             i += 1
 
+        toc(2)
+
         if done:
             print("Episode %d finished" % self.episode_n)
             self.log_rewards(self.episode_rewards)
@@ -159,6 +181,8 @@ class Worker:
             s = np.moveaxis(states[i], source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             r = self.sess.run(self.network.graph_v, feed_dict=feed_dict)[0]
+
+        toc(3)
 
         s_batch = []
         a_batch = []
@@ -184,6 +208,8 @@ class Worker:
                            self.update_value_gradients],
                           feed_dict)
 
+        toc(4)
+
         feed_dict = {self.network.s: s_batch,
                      self.network.a: a_batch,
                      self.network.r: r_batch}
@@ -194,6 +220,8 @@ class Worker:
                        self.apply_value_gradients])
         self.sess.run([self.zero_policy_gradients,
                        self.zero_value_gradients])
+
+        toc(5)
 
         self.steps += 1
 
