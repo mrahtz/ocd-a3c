@@ -48,7 +48,11 @@ class Worker:
                              update_scope=worker_scope,
                              apply_scope='global')
 
-        self.val_summ = tf.summary.scalar('value_loss', self.network.value_loss)
+        tf.summary.scalar('value_loss',
+                          self.network.value_loss)
+        tf.summary.scalar('policy_entropy',
+                          tf.reduce_mean(self.network.policy_entropy))
+        self.summary_ops = tf.summary.merge_all()
 
         self.init_copy_ops()
 
@@ -215,8 +219,8 @@ class Worker:
         feed_dict = {self.network.s: s_batch,
                      self.network.a: a_batch,
                      self.network.r: r_batch}
-        val_loss = self.sess.run(self.val_summ, feed_dict)
-        self.summary_writer.add_summary(val_loss, self.steps)
+        summaries = self.sess.run(self.summary_ops, feed_dict)
+        self.summary_writer.add_summary(summaries, self.steps)
 
         self.sess.run([self.apply_policy_gradients,
                        self.apply_value_gradients])
