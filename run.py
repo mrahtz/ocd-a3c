@@ -7,6 +7,7 @@ import os.path as osp
 import time
 from multiprocessing import Process
 
+import easy_tf_log
 import tensorflow as tf
 import time
 
@@ -22,9 +23,10 @@ def run_worker(env_id, worker_n, n_steps, ckpt_freq, load_ckpt_file, render,
     memory_profiler = MemoryProfiler(pid=-1, log_path=mem_log)
     memory_profiler.start()
 
-    dirname = osp.join(log_dir, "worker_{}".format(worker_n))
-    os.makedirs(dirname)
-    summary_writer = tf.summary.FileWriter(dirname, flush_secs=1)
+    worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
+    os.makedirs(worker_log_dir)
+    easy_tf_log.set_dir(worker_log_dir)
+    summary_writer = tf.summary.FileWriter(worker_log_dir, flush_secs=1)
 
     server = tf.train.Server(cluster, job_name="worker", task_index=worker_n)
     sess = tf.Session(server.target)

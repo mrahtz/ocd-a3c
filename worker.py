@@ -4,6 +4,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 import gym
+from easy_tf_log import tflog
 
 from network import create_network
 from train_ops import *
@@ -29,9 +30,6 @@ class Worker:
         self.network = create_network(worker_scope)
         self.summary_writer = summary_writer
         self.scope = worker_scope
-
-        self.reward = tf.Variable(0.0)
-        self.reward_summary = tf.summary.scalar('reward', self.reward)
 
         policy_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
         value_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
@@ -83,12 +81,11 @@ class Worker:
             self.frame_stack.append(o)
         print("No-ops done")
 
-    def log_rewards(self):
-        reward_sum = sum(self.episode_rewards)
+    @staticmethod
+    def log_rewards(episode_rewards):
+        reward_sum = sum(episode_rewards)
         print("Reward sum was", reward_sum)
-        self.sess.run(tf.assign(self.reward, reward_sum))
-        summ = self.sess.run(self.reward_summary)
-        self.summary_writer.add_summary(summ, self.episode_n)
+        tflog('episode_reward', reward_sum)
 
 
     def init_copy_ops(self):
@@ -176,7 +173,7 @@ class Worker:
 
         if done:
             print("Episode %d finished" % self.episode_n)
-            self.log_rewards()
+            self.log_rewards(self.episode_rewards)
             self.episode_rewards = []
             self.episode_n += 1
 
