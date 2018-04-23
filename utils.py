@@ -199,6 +199,7 @@ class MemoryProfiler:
             # 5 samples, 1 second apart
             memory_profiler.memory_usage(self.pid, stream=f,
                                          timeout=5, interval=1)
+            f.flush()
 
             try:
                 cmd = self.cmd_queue.get(timeout=0.1)
