@@ -106,7 +106,7 @@ class Worker:
         self.fig.canvas.update()
         self.fig.canvas.flush_events()
 
-    def run_step(self):
+    def run_update(self):
         states = []
         actions = []
         rewards = []
@@ -136,8 +136,6 @@ class Worker:
                 self.value_log.append(v)
                 self.value_graph()
 
-            if r != 0:
-                print("Got reward", r)
             self.episode_rewards.append(r)
             list_set(rewards, i, r)
             list_set(states, i + 1, np.copy(self.last_o))
@@ -199,4 +197,4 @@ class Worker:
 
         self.steps += 1
 
-        return done
+        return i, done
