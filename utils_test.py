@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
-import tensorflow as tf
-import numpy as np
-import unittest
-import matplotlib
 import argparse
-import matplotlib.pyplot as plt
+import socket
+import unittest
 
-from utils import create_copy_ops, entropy, rewards_to_discounted_returns, \
-    get_port_range
+import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
+
+from utils import logit_entropy, rewards_to_discounted_returns, \
+    get_port_range, EnvWrapper
 
 
 class TestMiscUtils(unittest.TestCase):
@@ -59,6 +60,7 @@ class TestMiscUtils(unittest.TestCase):
         s2.close()
         s1.close()
 
+
 class TestEntropy(unittest.TestCase):
 
     def setUp(self):
@@ -83,7 +85,7 @@ class TestEntropy(unittest.TestCase):
         expected_entropy = 0.
         actual_entropy = self.sess.run(logit_entropy(logits))
         np.testing.assert_approx_equal(actual_entropy, expected_entropy,
-                significant=4)
+                                       significant=4)
 
     def test_batch(self):
         # shape is 2 (batch size) x 4
@@ -102,7 +104,7 @@ class TestEntropy(unittest.TestCase):
         self.sess.run(tf.global_variables_initializer())
         for i in range(10000):
             self.sess.run(train_op)
-        expected = [0.2, 0.2, 0.2, 0.2, 0.2] # maximum entropy distribution
+        expected = [0.2, 0.2, 0.2, 0.2, 0.2]  # maximum entropy distribution
         actual = self.sess.run(tf.nn.softmax(logits))
         np.testing.assert_allclose(actual, expected, atol=1e-4)
 
