@@ -185,9 +185,24 @@ class FrameSkipWrapper(Wrapper):
         return obs, reward, done, info
 
 
+class NormalizeWrapper(ObservationWrapper):
+    """
+    Normalize observations to range [0, 1].
+    """
+
+    def __init__(self, env):
+        ObservationWrapper.__init__(self, env)
+        self.observation_space = spaces.Box(
+            low=0.0, high=1.0, shape=(84, 84), dtype=np.float32)
+
+    def observation(self, obs):
+        return obs / 255.0
+
+
 def preprocess_wrap(env):
     env = MaxWrapper(env)
     env = ExtractLuminanceAndScaleWrapper(env)
     env = FrameStackWrapper(env)
     env = FrameSkipWrapper(env)
+    env = NormalizeWrapper(env)
     return env
