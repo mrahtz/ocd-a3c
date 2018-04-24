@@ -33,18 +33,11 @@ class Worker:
         self.summary_writer = summary_writer
         self.scope = worker_scope
 
-        policy_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
-        value_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
+        optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
 
-        self.update_policy_gradients, self.apply_policy_gradients, self.zero_policy_gradients, self.grad_bufs_policy = \
-            create_train_ops(self.network.policy_loss,
-                             policy_optimizer,
-                             update_scope=worker_scope,
-                             apply_scope='global')
-
-        self.update_value_gradients, self.apply_value_gradients, self.zero_value_gradients, self.grad_bufs_value = \
-            create_train_ops(self.network.value_loss,
-                             value_optimizer,
+        self.update_gradients, self.apply_gradients, self.zero_gradients, self.grad_bufs = \
+            create_train_ops(self.network.loss,
+                             optimizer,
                              update_scope=worker_scope,
                              apply_scope='global')
 
@@ -122,8 +115,7 @@ class Worker:
         rewards = []
         i = 0
 
-        self.sess.run([self.zero_policy_gradients,
-                       self.zero_value_gradients])
+        self.sess.run(self.zero_gradients)
         self.sync_network()
 
         list_set(states, i, self.frame_stack)
@@ -187,16 +179,13 @@ class Worker:
         feed_dict = {self.network.s: s_batch,
                      self.network.a: a_batch,
                      self.network.r: r_batch}
-        summaries, _, _ = self.sess.run([self.summary_ops,
-                                         self.update_policy_gradients,
-                                         self.update_value_gradients],
-                                        feed_dict)
+        summaries, _ = self.sess.run([self.summary_ops,
+                                      self.update_gradients],
+                                     feed_dict)
         self.summary_writer.add_summary(summaries, self.steps)
 
-        self.sess.run([self.apply_policy_gradients,
-                       self.apply_value_gradients])
-        self.sess.run([self.zero_policy_gradients,
-                       self.zero_value_gradients])
+        self.sess.run(self.apply_gradients)
+        self.sess.run(self.zero_gradients)
 
         self.steps += 1
 
