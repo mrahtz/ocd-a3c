@@ -60,19 +60,22 @@ def rewards_to_discounted_returns(r, discount_factor):
         returns[i] = r[i] + discount_factor * returns[i + 1]
     return returns
 
+
 # Based on Andrej's code
 def prepro2(I):
     """ prepro 210x160 frame into 80x80 frame """
     I = I[34:194]  # crop
     I = I[::2, ::2]  # downsample by factor of 2
-    I[I <= 0.4] = 0 # erase background
-    I[I > 0.4] = 1 # everything else (paddles, ball) just set to 1
+    I[I <= 0.4] = 0  # erase background
+    I[I > 0.4] = 1  # everything else (paddles, ball) just set to 1
     return I.astype(np.float)
+
 
 def prepro(o):
     o = np.mean(o, axis=2)
     o = o / 255.0
     return o
+
 
 class EnvWrapper():
     def __init__(self, env, pool=False, frameskip=1, prepro2=None):
@@ -108,7 +111,7 @@ class EnvWrapper():
                 # Note that the first frame to come out of this
                 # _might_ be a little funny because the first prev_o
                 # is the first frame after reset which at least in Pong
-                # has a different colour palette (though it turns out
+                # has a different colour palette (though it turns out
                 # it works fine for Pong)
                 o = np.maximum(o_raw, self.prev_o)
                 self.prev_o = o_raw
@@ -122,6 +125,7 @@ class EnvWrapper():
 
     def render(self):
         self.env.render()
+
 
 def logit_entropy(logits):
     """

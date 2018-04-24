@@ -17,6 +17,7 @@ from worker import Worker
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
+
 def run_worker(env_id, worker_n, n_steps_to_run, ckpt_freq, load_ckpt_file,
                render, log_dir):
     mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
@@ -110,6 +111,7 @@ ports = get_port_range(start_port=2200, n_ports=args.n_workers)
 cluster_dict["worker"] = ["localhost:{}".format(port)
                           for port in ports]
 cluster = tf.train.ClusterSpec(cluster_dict)
+
 
 def start_worker_process(worker_n):
     print("Starting worker", worker_n)

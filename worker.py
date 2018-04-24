@@ -16,9 +16,11 @@ ACTIONS = np.arange(N_ACTIONS) + 1
 N_FRAMES_STACKED = 4
 N_MAX_NOOPS = 30
 
+
 def list_set(l, i, val):
-    assert(len(l) == i)
+    assert (len(l) == i)
     l.append(val)
+
 
 class Worker:
 
@@ -70,7 +72,7 @@ class Worker:
         self.frame_stack.clear()
         self.env.reset()
 
-        n_noops = np.random.randint(low=0, high=N_MAX_NOOPS+1)
+        n_noops = np.random.randint(low=0, high=N_MAX_NOOPS + 1)
         print("%d no-ops..." % n_noops)
         for i in range(n_noops):
             o, _, _, _ = self.env.step(0)
@@ -86,7 +88,6 @@ class Worker:
         reward_sum = sum(episode_rewards)
         print("Reward sum was", reward_sum)
         tflog('episode_reward', reward_sum)
-
 
     def init_copy_ops(self):
         from_tvs = tf.get_collection(
@@ -105,10 +106,8 @@ class Worker:
 
         self.copy_ops = copy_ops
 
-
     def sync_network(self):
         self.sess.run(self.copy_ops)
-
 
     def value_graph(self):
         if self.fig is None:
@@ -139,14 +138,13 @@ class Worker:
         i = 0
 
         self.sess.run([self.zero_policy_gradients,
-                  self.zero_value_gradients])
+                       self.zero_value_gradients])
         self.sync_network()
 
         list_set(states, i, self.frame_stack)
 
         done = False
         while not done and i < self.t_max:
-            #print("Step %d" % i)
             s = np.moveaxis(self.frame_stack, source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             a_p = self.sess.run(self.network.a_softmax, feed_dict=feed_dict)[0]
@@ -184,7 +182,7 @@ class Worker:
         else:
             # Non-terminal state
             # Estimate the value of the current state using the value network
-            # (states[i]: the last state)
+            # (states[i]: the last state)
             s = np.moveaxis(states[i], source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             r = self.sess.run(self.network.graph_v, feed_dict=feed_dict)[0]

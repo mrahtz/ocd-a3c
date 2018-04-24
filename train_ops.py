@@ -1,6 +1,7 @@
 import tensorflow as tf
 import re
 
+
 # TODO: don't create gradient buffers for None variables
 
 def strip_var_name(name):
@@ -8,6 +9,7 @@ def strip_var_name(name):
     e.g. scope/weights:0 -> weights
     """
     return re.match('\w*/([^:]*):\w*', name).group(1)
+
 
 def create_train_ops(loss, optimizer, update_scope, apply_scope):
     """
@@ -36,7 +38,7 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
     # Discard variables which don't have gradients
     grads_dict = {v: g for v, g in grads_dict.items() if g is not None}
 
-    # Create gradient buffers (indexed by variable name)
+    # Create gradient buffers (indexed by variable name)
     grad_bufs = {}
     for var_name, grads in grads_dict.items():
         name = "grad_buf_%s" % var_name
@@ -61,7 +63,7 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
         var_name = strip_var_name(var.name)
         apply_tvs_dict[var_name] = var
 
-    # Create an operator which applies the gradient buffers
+    # Create an operator which applies the gradient buffers
     # to apply_scope
     grad_bufs_and_vars = []
     for var_name, grad_buf in grad_bufs.items():
