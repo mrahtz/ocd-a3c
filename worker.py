@@ -204,18 +204,13 @@ class Worker:
             a_batch.append(a)
             r_batch.append(r)
 
-            feed_dict = {self.network.s: [s],
-                         # map from possible actions (1, 2, 3) -> (0, 1, 2)
-                         self.network.a: [a],
-                         self.network.r: [r]}
-
-            self.sess.run([self.update_policy_gradients,
-                           self.update_value_gradients],
-                          feed_dict)
-
         feed_dict = {self.network.s: s_batch,
                      self.network.a: a_batch,
                      self.network.r: r_batch}
+        self.sess.run([self.update_policy_gradients,
+                       self.update_value_gradients],
+                      feed_dict)
+
         summaries = self.sess.run(self.summary_ops, feed_dict)
         self.summary_writer.add_summary(summaries, self.steps)
 
