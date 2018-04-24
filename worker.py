@@ -4,7 +4,6 @@ import gym
 import numpy as np
 from easy_tf_log import tflog
 
-import preprocessing
 import utils
 from network import create_network
 from train_ops import *
@@ -22,9 +21,9 @@ def list_set(l, i, val):
 
 class Worker:
 
-    def __init__(self, sess, worker_n, env_name, summary_writer):
+    def __init__(self, sess, worker_n, env_id, preprocess_wrapper, summary_writer):
         self.sess = sess
-        self.env = preprocessing.generic_preprocess(gym.make(env_name))
+        self.env = preprocess_wrapper(gym.make(env_id))
 
         worker_scope = "worker_%d" % worker_n
         self.network = create_network(worker_scope)

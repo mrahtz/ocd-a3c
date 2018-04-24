@@ -9,6 +9,7 @@ from multiprocessing import Process
 import easy_tf_log
 import tensorflow as tf
 
+import preprocessing
 from network import create_network
 from utils import get_port_range, MemoryProfiler, get_git_rev
 from worker import Worker
@@ -16,7 +17,8 @@ from worker import Worker
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
-def run_worker(env_id, worker_n, n_steps_to_run, ckpt_freq, load_ckpt_file,
+def run_worker(env_id, preprocess_wrapper, worker_n, n_steps_to_run, ckpt_freq,
+               load_ckpt_file,
                render, log_dir):
     mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
     memory_profiler = MemoryProfiler(pid=-1, log_path=mem_log)
@@ -35,7 +37,7 @@ def run_worker(env_id, worker_n, n_steps_to_run, ckpt_freq, load_ckpt_file,
     with tf.device("/job:worker/task:0"):
         create_network('global')
     with tf.device("/job:worker/task:%d" % worker_n):
-        w = Worker(sess, worker_n, env_id, summary_writer)
+        w = Worker(sess, worker_n, env_id, preprocess_wrapper, summary_writer)
         if render:
             w.render = True
 
@@ -82,6 +84,9 @@ parser.add_argument("--n_workers", type=int, default=16)
 parser.add_argument("--ckpt_freq", type=int, default=5)
 parser.add_argument("--load_ckpt")
 parser.add_argument("--render", action='store_true')
+parser.add_argument("--preprocessing",
+                    choices=['generic', 'pong'],
+                    default='generic')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('--log_dir')
 seconds_since_epoch = str(int(time.time()))
@@ -103,6 +108,11 @@ if "MovingDot" in args.env_id:
 
     gym_moving_dot  # TODO prevent PyCharm from removing the import
 
+if args.preprocessing == 'generic':
+    preprocess_wrapper = preprocessing.generic_preprocess
+elif args.preprocessing == 'pong':
+    preprocess_wrapper = preprocessing.pong_preprocess
+
 cluster_dict = {}
 ports = get_port_range(start_port=2200, n_ports=args.n_workers)
 cluster_dict["worker"] = ["localhost:{}".format(port)
@@ -113,6 +123,7 @@ cluster = tf.train.ClusterSpec(cluster_dict)
 def start_worker_process(worker_n):
     print("Starting worker", worker_n)
     run_worker(env_id=args.env_id,
+               preprocess_wrapper=preprocess_wrapper,
                worker_n=worker_n,
                n_steps_to_run=args.n_steps,
                ckpt_freq=args.ckpt_freq,
