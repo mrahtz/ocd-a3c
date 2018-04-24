@@ -33,18 +33,17 @@ class Worker:
         self.summary_writer = summary_writer
         self.scope = worker_scope
 
-        policy_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
-        value_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
+        optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
 
         self.update_policy_gradients, self.apply_policy_gradients, self.zero_policy_gradients, self.grad_bufs_policy = \
             create_train_ops(self.network.policy_loss,
-                             policy_optimizer,
+                             optimizer,
                              update_scope=worker_scope,
                              apply_scope='global')
 
         self.update_value_gradients, self.apply_value_gradients, self.zero_value_gradients, self.grad_bufs_value = \
             create_train_ops(self.network.value_loss,
-                             value_optimizer,
+                             optimizer,
                              update_scope=worker_scope,
                              apply_scope='global')
 
