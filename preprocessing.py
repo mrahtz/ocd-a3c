@@ -119,7 +119,8 @@ class ExtractLuminanceAndScaleWrapper(ObservationWrapper):
 
     def observation(self, obs):
         obs = cv2.cvtColor(obs, cv2.COLOR_RGB2GRAY)
-        obs = cv2.resize(obs, (84, 84))
+        # Bilinear interpolation
+        obs = cv2.resize(obs, (84, 84), interpolation=cv2.INTER_LINEAR)
         return obs
 
 
