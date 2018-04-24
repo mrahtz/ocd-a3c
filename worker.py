@@ -24,7 +24,7 @@ class Worker:
 
     def __init__(self, sess, worker_n, env_name, summary_writer):
         self.sess = sess
-        self.env = preprocessing.preprocess_wrap(gym.make(env_name))
+        self.env = preprocessing.generic_preprocess(gym.make(env_name))
 
         worker_scope = "worker_%d" % worker_n
         self.network = create_network(worker_scope)

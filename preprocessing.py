@@ -200,10 +200,38 @@ class NormalizeWrapper(ObservationWrapper):
         return obs / 255.0
 
 
-def preprocess_wrap(env):
+class PongFeaturesWrapper(ObservationWrapper):
+    """
+    Manually extract the Pong game area, setting paddles/ball to 1.0 and the
+    background to 0.0.
+    """
+
+    def __init__(self, env):
+        ObservationWrapper.__init__(self, env)
+        self.observation_space = spaces.Box(
+            low=0.0, high=1.0, shape=(84, 84), dtype=np.float32)
+
+    def observation(self, obs):
+        obs = np.mean(obs, axis=2) / 255.0         # Convert to [0, 1] grayscale
+        obs = obs[34:194]                          # Extract game area
+        obs = obs[::2, ::2]                        # Downsample by a factor of 2
+        obs = np.pad(obs, pad_width=2, mode='constant')  # Pad to 84x84
+        obs[obs <= 0.4] = 0                        # Erase background
+        obs[obs > 0.4] = 1                         # Set balls, paddles to 1
+        return obs
+
+
+def generic_preprocess(env):
     env = MaxWrapper(env)
     env = ExtractLuminanceAndScaleWrapper(env)
     env = FrameStackWrapper(env)
     env = FrameSkipWrapper(env)
     env = NormalizeWrapper(env)
+    return env
+
+
+def pong_preprocess(env):
+    env = PongFeaturesWrapper(env)
+    env = FrameStackWrapper(env)
+    env = FrameSkipWrapper(env)
     return env

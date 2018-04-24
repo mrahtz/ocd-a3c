@@ -7,7 +7,8 @@ import numpy as np
 from numpy.testing import assert_array_equal
 
 from preprocessing import MaxWrapper, FrameStackWrapper, FrameSkipWrapper, \
-    ExtractLuminanceAndScaleWrapper, preprocess_wrap, ConcatFrameStack
+    ExtractLuminanceAndScaleWrapper, generic_preprocess, pong_preprocess, \
+    ConcatFrameStack
 
 
 class DummyEnv(gym.Env):
@@ -173,7 +174,7 @@ class TestPreprocessing(unittest.TestCase):
         from pylab import subplot, imshow, show
         env = DummyEnv()
         env.draw_n_dots = True
-        env_wrapped = preprocess_wrap(env)
+        env_wrapped = generic_preprocess(env)
 
         obs1 = env_wrapped.reset()
         obs2, _, _, _ = env_wrapped.step(0)
@@ -190,16 +191,23 @@ class TestPreprocessing(unittest.TestCase):
         imshow(np.hstack(obs4), cmap='gray')
         show()
 
-    def play_pong(self):
+    def play_pong_generic_wrap(self):
+        self.play_pong(generic_preprocess)
+
+    def play_pong_special_wrap(self):
+        self.play_pong(pong_preprocess)
+
+    def play_pong(self, wrap_fn):
         """
         Manual check of full set of preprocessing steps for Pong.
         Not run as port of normal unit tests; run me with
-          ./preprocessing_test.py TestPreprocessing.play_pong
+          ./preprocessing_test.py TestPreprocessing.play_pong_generic_wrap
+          ./preprocessing_test.py TestPreprocessing.play_pong_special_wrap
         """
         from gym.utils import play as gym_play
         env = gym.make('PongNoFrameskip-v4')
 
-        env_wrapped = ConcatFrameStack(preprocess_wrap(env))
+        env_wrapped = ConcatFrameStack(wrap_fn(env))
         gym_play.play(env_wrapped, fps=15, zoom=4)
 
 
