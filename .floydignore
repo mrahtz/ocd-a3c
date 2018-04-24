@@ -1,5 +1,6 @@
 .git
+.venv
 checkpoints
 images
 summaries
-.venv
+runs
