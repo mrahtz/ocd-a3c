@@ -1,5 +1,6 @@
-import tensorflow as tf
 import re
+
+import tensorflow as tf
 
 
 # TODO: don't create gradient buffers for None variables

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 
-from utils import logit_entropy, rewards_to_discounted_returns, \
+from utils import create_copy_ops, logit_entropy, rewards_to_discounted_returns, \
     get_port_range, EnvWrapper
 
 
@@ -85,9 +85,13 @@ class TestEntropy(unittest.TestCase):
         expected_entropy = 0.
         actual_entropy = self.sess.run(logit_entropy(logits))
         np.testing.assert_approx_equal(actual_entropy, expected_entropy,
-                                       significant=4)
+                                       significant=5)
 
     def test_batch(self):
+        """
+        Make sure we get the right result if calculating entropies on a batch
+        of probabilities.
+        """
         # shape is 2 (batch size) x 4
         logits = np.array([[1., 2., 3., 4.],
                            [1., 2., 2., 1.]])
@@ -98,6 +102,10 @@ class TestEntropy(unittest.TestCase):
                                    atol=1e-4)
 
     def test_gradient_descent(self):
+        """
+        Check that if we start with a distribution and use gradient descent
+        to maximise entropy, we end up with a maximise entropy distribution.
+        """
         logits = tf.Variable([1., 2., 3., 4., 5.])
         neg_ent = -logit_entropy(logits)
         train_op = tf.train.AdamOptimizer().minimize(neg_ent)
@@ -130,6 +138,7 @@ class TestCopyNetwork(unittest.TestCase):
                 w1 = tf.Variable(inits[scope]['w1'], name='w1')
                 w2 = tf.Variable(inits[scope]['w2'], name='w2')
                 variables[scope] = {'w1': w1, 'w2': w2}
+        copy_ops = create_copy_ops(from_scope='from_scope', to_scope='to_scope')
 
         sess.run(tf.global_variables_initializer())
 
@@ -143,7 +152,7 @@ class TestCopyNetwork(unittest.TestCase):
                     expected = inits[scope]['w2']
                 np.testing.assert_equal(actual, expected)
 
-        copy_network(sess, from_scope='from_scope', to_scope='to_scope')
+        sess.run(copy_ops)
 
         # Check that the variables in from_scope are untouched.
         for var_name, var in variables['from_scope'].items():

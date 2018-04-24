@@ -1,14 +1,12 @@
 from collections import deque
-import numpy as np
-import tensorflow as tf
-import matplotlib.pyplot as plt
 
 import gym
+import numpy as np
 from easy_tf_log import tflog
 
+import utils
 from network import create_network
 from train_ops import *
-from utils import *
 
 G = 0.99
 N_ACTIONS = 3
@@ -26,7 +24,9 @@ class Worker:
 
     def __init__(self, sess, worker_n, env_name, summary_writer):
         self.sess = sess
-        self.env = EnvWrapper(gym.make(env_name), prepro2=prepro2, frameskip=4)
+        self.env = utils.EnvWrapper(gym.make(env_name),
+                                    prepro2=utils.prepro2,
+                                    frameskip=4)
 
         worker_scope = "worker_%d" % worker_n
         self.network = create_network(worker_scope)
@@ -54,7 +54,8 @@ class Worker:
                           tf.reduce_mean(self.network.policy_entropy))
         self.summary_ops = tf.summary.merge_all()
 
-        self.init_copy_ops()
+        self.copy_ops = utils.create_copy_ops(from_scope='global',
+                                              to_scope=self.scope)
 
         self.frame_stack = deque(maxlen=N_FRAMES_STACKED)
         self.reset_env()
@@ -89,27 +90,11 @@ class Worker:
         print("Reward sum was", reward_sum)
         tflog('episode_reward', reward_sum)
 
-    def init_copy_ops(self):
-        from_tvs = tf.get_collection(
-            tf.GraphKeys.TRAINABLE_VARIABLES, scope='global')
-        to_tvs = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
-                                   scope=self.scope)
-
-        from_dict = {var.name: var for var in from_tvs}
-        to_dict = {var.name: var for var in to_tvs}
-        copy_ops = []
-        for to_name, to_var in to_dict.items():
-            from_name = to_name.replace(self.scope, 'global')
-            from_var = from_dict[from_name]
-            op = to_var.assign(from_var.value())
-            copy_ops.append(op)
-
-        self.copy_ops = copy_ops
-
     def sync_network(self):
         self.sess.run(self.copy_ops)
 
     def value_graph(self):
+        import matplotlib.pyplot as plt
         if self.fig is None:
             self.fig, self.ax = plt.subplots()
             self.fig.set_size_inches(2, 2)
@@ -160,8 +145,6 @@ class Worker:
                 self.value_log.append(v)
                 self.value_graph()
 
-            if r != 0:
-                print("Got reward", r)
             self.frame_stack.append(o)
             self.episode_rewards.append(r)
             list_set(rewards, i, r)
@@ -197,7 +180,6 @@ class Worker:
             s = np.moveaxis(states[j], source=0, destination=-1)
             a = actions[j] - 1
             r = rewards[j] + G * r
-
             s_batch.append(s)
             a_batch.append(a)
             r_batch.append(r)
@@ -205,11 +187,10 @@ class Worker:
         feed_dict = {self.network.s: s_batch,
                      self.network.a: a_batch,
                      self.network.r: r_batch}
-        self.sess.run([self.update_policy_gradients,
-                       self.update_value_gradients],
-                      feed_dict)
-
-        summaries = self.sess.run(self.summary_ops, feed_dict)
+        summaries, _, _ = self.sess.run([self.summary_ops,
+                                         self.update_policy_gradients,
+                                         self.update_value_gradients],
+                                        feed_dict)
         self.summary_writer.add_summary(summaries, self.steps)
 
         self.sess.run([self.apply_policy_gradients,

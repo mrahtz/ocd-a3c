@@ -1,5 +1,7 @@
 from collections import namedtuple
+
 import tensorflow as tf
+
 from utils import logit_entropy
 
 N_ACTIONS = 3

@@ -1,6 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
 import argparse
 import os
 import os.path as osp
@@ -9,7 +8,6 @@ from multiprocessing import Process
 
 import easy_tf_log
 import tensorflow as tf
-import time
 
 from network import create_network
 from utils import get_port_range, MemoryProfiler, get_git_rev
@@ -67,7 +65,6 @@ def run_worker(env_id, worker_n, n_steps_to_run, ckpt_freq, load_ckpt_file,
         end_time = time.time()
         steps_per_second = steps_ran / (end_time - start_time)
         easy_tf_log.tflog('steps_per_second', steps_per_second)
-        print('===', steps_per_second)
 
         if done:
             w.reset_env()
