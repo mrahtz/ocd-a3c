@@ -11,8 +11,7 @@ def strip_var_name(name):
     """
     return re.match('\w*/([^:]*):\w*', name).group(1)
 
-
-def create_train_ops(loss, optimizer, update_scope, apply_scope):
+def create_train_ops(loss, optimizer, max_grad_norm, update_scope, apply_scope):
     """
     - For each trainable variable:
     -  Create gradient operator
@@ -27,19 +26,19 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
 
     # Create a dictionary mapping from variable name to
     # gradients calculated in update_scope
-    update_tvs = tf.get_collection(
-        tf.GraphKeys.TRAINABLE_VARIABLES,
-        scope=update_scope)
-    grads_and_vars = optimizer.compute_gradients(loss, update_tvs)
+    update_tvs = tf.trainable_variables(update_scope)
+    grads = tf.gradients(loss, update_tvs)
+    if max_grad_norm is not None:
+        grads, _ = tf.clip_by_global_norm(grads, max_grad_norm)
     grads_dict = {}
-    for grads, var in grads_and_vars:
+    for var_grads, var in zip(grads, update_tvs):
+        if var_grads is None:
+            # Discard variables which don't have gradients
+            continue
         var_name = strip_var_name(var.name)
-        grads_dict[var_name] = grads
+        grads_dict[var_name] = var_grads
 
     grads_norm = tf.global_norm(list(grads_dict.values()))
-
-    # Discard variables which don't have gradients
-    grads_dict = {v: g for v, g in grads_dict.items() if g is not None}
 
     # Create gradient buffers (indexed by variable name)
     grad_bufs = {}
@@ -58,9 +57,7 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
 
     # Create a dictionary mapping from variable names to
     # variables in apply_scope
-    apply_tvs = tf.get_collection(
-        tf.GraphKeys.TRAINABLE_VARIABLES,
-        scope=apply_scope)
+    apply_tvs = tf.trainable_variables(apply_scope)
     apply_tvs_dict = {}
     for var in apply_tvs:
         var_name = strip_var_name(var.name)
