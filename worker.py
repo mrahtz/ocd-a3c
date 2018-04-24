@@ -31,18 +31,27 @@ class Worker:
         self.summary_writer = summary_writer
         self.scope = worker_scope
 
-        policy_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
-        value_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
+        # learning_rate, decay, epsilon and max_grad_norm are all taken from
+        # baselines' A2C implementation
+
+        policy_optimizer = tf.train.RMSPropOptimizer(learning_rate=7e-4,
+                                                     decay=0.99,
+                                                     epsilon=1e-5)
+        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=7e-4,
+                                                    decay=0.99,
+                                                    epsilon=1e-5)
 
         self.update_policy_gradients, self.apply_policy_gradients, self.zero_policy_gradients, self.grad_bufs_policy = \
-            create_train_ops(self.network.policy_loss,
-                             policy_optimizer,
+            create_train_ops(loss=self.network.policy_loss,
+                             optimizer=policy_optimizer,
+                             max_grad_norm=0.5,
                              update_scope=worker_scope,
                              apply_scope='global')
 
         self.update_value_gradients, self.apply_value_gradients, self.zero_value_gradients, self.grad_bufs_value = \
-            create_train_ops(self.network.value_loss,
-                             value_optimizer,
+            create_train_ops(loss=self.network.value_loss,
+                             optimizer=value_optimizer,
+                             max_grad_norm=0.5,
                              update_scope=worker_scope,
                              apply_scope='global')
 
