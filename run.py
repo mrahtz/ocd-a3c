@@ -65,7 +65,6 @@ def run_worker(env_id, worker_n, n_steps_to_run, ckpt_freq, load_ckpt_file,
         end_time = time.time()
         steps_per_second = steps_ran / (end_time - start_time)
         easy_tf_log.tflog('steps_per_second', steps_per_second)
-        print('===', steps_per_second)
 
         if done:
             w.reset_env()
