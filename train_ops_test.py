@@ -29,11 +29,10 @@ class TestTrainOps(unittest.TestCase):
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=1)
 
         update_ops, apply_ops, zero_ops, _ = create_train_ops(
-            loss=ops['update_scope']['loss'],
-            optimizer=optimizer,
-            max_grad_norm=None,
-            update_scope='update_scope',
-            apply_scope='apply_scope')
+            ops['update_scope']['loss'],
+            optimizer,
+            'update_scope',
+            'apply_scope')
 
         self.sess.run(tf.global_variables_initializer())
         self.sess.run(update_ops)
@@ -90,11 +89,7 @@ class TestTrainOps(unittest.TestCase):
         # variables
         assert len(tf.trainable_variables()) == 4
         update_ops, apply_ops, zero_ops, grad_bufs = create_train_ops(
-            loss=losses['update_scope'],
-            optimizer=optimizer,
-            max_grad_norm=None,
-            update_scope='update_scope',
-            apply_scope='apply_scope')
+            losses['update_scope'], optimizer, 'update_scope', 'apply_scope')
         assert len(tf.trainable_variables()) == 4
 
         self.sess.run(tf.global_variables_initializer())
