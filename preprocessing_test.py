@@ -40,13 +40,13 @@ class DummyEnv(gym.Env):
         # Draw the a dot on the first row
         x = 10 * self.n_steps
         y = 10
-        obs[y:y+dot_height, x:x+dot_width] = 255
+        obs[y:y + dot_height, x:x + dot_width] = 255
         if self.draw_n_dots:
             # Draw another n_steps - 1 dots in the same column,
             # for a total of n_steps dots in the column
             for i in range(1, self.n_steps):
                 y = 10 + i * 10
-                obs[y:y+dot_height, x:x+dot_width] = 255
+                obs[y:y + dot_height, x:x + dot_width] = 255
         return obs
 
     def step(self, action):

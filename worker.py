@@ -120,7 +120,6 @@ class Worker:
 
         done = False
         while not done and i < self.t_max:
-            # print("Step %d" % i)
             s = np.moveaxis(self.last_o, source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             a_p = self.sess.run(self.network.a_softmax, feed_dict=feed_dict)[0]
@@ -155,7 +154,7 @@ class Worker:
         else:
             # Non-terminal state
             # Estimate the value of the current state using the value network
-            #  (states[i]: the last state)
+            # (states[i]: the last state)
             s = np.moveaxis(states[i], source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             r = self.sess.run(self.network.graph_v, feed_dict=feed_dict)[0]
