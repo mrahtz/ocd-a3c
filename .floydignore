@@ -2,3 +2,5 @@
 checkpoints
 images
 summaries
+runs
+.venv
