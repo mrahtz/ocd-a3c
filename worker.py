@@ -1,11 +1,9 @@
-import time
 from collections import deque
 
 import gym
 import numpy as np
 from easy_tf_log import tflog
 
-import preprocessing
 import utils
 from network import create_network
 from train_ops import *
@@ -13,22 +11,8 @@ from train_ops import *
 G = 0.99
 N_ACTIONS = 3
 ACTIONS = np.arange(N_ACTIONS) + 1
+N_FRAMES_STACKED = 4
 N_MAX_NOOPS = 30
-
-
-def toc(name):
-    if not toc.tic:
-        toc.tic = time.time()
-        return
-
-    t = time.time()
-    delta = t - toc.tic
-    tflog('time_{}'.format(name), 1000 * delta)
-
-    toc.tic = t
-
-
-toc.tic = None
 
 
 def list_set(l, i, val):
@@ -38,27 +22,28 @@ def list_set(l, i, val):
 
 class Worker:
 
-    def __init__(self, sess, worker_n, env_name, summary_writer):
+    def __init__(self, sess, env_id, worker_n, seed, log_dir):
+        utils.set_random_seeds(seed)
+
+        env = gym.make(env_id)
+        env.seed(seed)
+
+        self.env = utils.EnvWrapper(env,
+                                    prepro2=utils.prepro2,
+                                    frameskip=4)
+
         self.sess = sess
-        self.env = preprocessing.preprocess_wrap(gym.make(env_name))
 
         worker_scope = "worker_%d" % worker_n
         self.network = create_network(worker_scope)
-        self.summary_writer = summary_writer
+        self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
         self.scope = worker_scope
 
-        policy_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
-        value_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
+        optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
 
-        self.update_policy_gradients, self.apply_policy_gradients, self.zero_policy_gradients, self.grad_bufs_policy = \
-            create_train_ops(self.network.policy_loss,
-                             policy_optimizer,
-                             update_scope=worker_scope,
-                             apply_scope='global')
-
-        self.update_value_gradients, self.apply_value_gradients, self.zero_value_gradients, self.grad_bufs_value = \
-            create_train_ops(self.network.value_loss,
-                             value_optimizer,
+        self.update_gradients, self.apply_gradients, self.zero_gradients, self.grad_bufs = \
+            create_train_ops(self.network.loss,
+                             optimizer,
                              update_scope=worker_scope,
                              apply_scope='global')
 
@@ -71,6 +56,7 @@ class Worker:
         self.copy_ops = utils.create_copy_ops(from_scope='global',
                                               to_scope=self.scope)
 
+        self.frame_stack = deque(maxlen=N_FRAMES_STACKED)
         self.reset_env()
 
         self.t_max = 10000
@@ -83,11 +69,18 @@ class Worker:
         self.fig = None
 
     def reset_env(self):
-        self.last_o = self.env.reset()
+        self.frame_stack.clear()
+        self.env.reset()
+
         n_noops = np.random.randint(low=0, high=N_MAX_NOOPS + 1)
         print("%d no-ops..." % n_noops)
         for i in range(n_noops):
-            self.last_o, _, _, _ = self.env.step(0)
+            o, _, _, _ = self.env.step(0)
+            self.frame_stack.append(o)
+        while len(self.frame_stack) < N_FRAMES_STACKED:
+            print("One more...")
+            o, _, _, _ = self.env.step(0)
+            self.frame_stack.append(o)
         print("No-ops done")
 
     @staticmethod
@@ -128,26 +121,20 @@ class Worker:
         rewards = []
         i = 0
 
-        toc(0)
-
-        self.sess.run([self.zero_policy_gradients,
-                       self.zero_value_gradients])
+        self.sess.run(self.zero_gradients)
         self.sync_network()
 
-        toc(1)
-
-        list_set(states, i, self.last_o)
+        list_set(states, i, self.frame_stack)
 
         done = False
         while not done and i < self.t_max:
-            # print("Step %d" % i)
-            s = np.moveaxis(self.last_o, source=0, destination=-1)
+            s = np.moveaxis(self.frame_stack, source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             a_p = self.sess.run(self.network.a_softmax, feed_dict=feed_dict)[0]
             a = np.random.choice(ACTIONS, p=a_p)
             list_set(actions, i, a)
 
-            self.last_o, r, done, _ = self.env.step(a)
+            o, r, done, _ = self.env.step(a)
 
             if self.render:
                 self.env.render()
@@ -156,13 +143,12 @@ class Worker:
                 self.value_log.append(v)
                 self.value_graph()
 
+            self.frame_stack.append(o)
             self.episode_rewards.append(r)
             list_set(rewards, i, r)
-            list_set(states, i + 1, np.copy(self.last_o))
+            list_set(states, i + 1, np.copy(self.frame_stack))
 
             i += 1
-
-        toc(2)
 
         if done:
             print("Episode %d finished" % self.episode_n)
@@ -177,12 +163,10 @@ class Worker:
         else:
             # Non-terminal state
             # Estimate the value of the current state using the value network
-            #  (states[i]: the last state)
+            # (states[i]: the last state)
             s = np.moveaxis(states[i], source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             r = self.sess.run(self.network.graph_v, feed_dict=feed_dict)[0]
-
-        toc(3)
 
         s_batch = []
         a_batch = []
@@ -194,34 +178,20 @@ class Worker:
             s = np.moveaxis(states[j], source=0, destination=-1)
             a = actions[j] - 1
             r = rewards[j] + G * r
-
             s_batch.append(s)
             a_batch.append(a)
             r_batch.append(r)
 
-            feed_dict = {self.network.s: [s],
-                         # map from possible actions (1, 2, 3) -> (0, 1, 2)
-                         self.network.a: [a],
-                         self.network.r: [r]}
-
-            self.sess.run([self.update_policy_gradients,
-                           self.update_value_gradients],
-                          feed_dict)
-
-        toc(4)
-
         feed_dict = {self.network.s: s_batch,
                      self.network.a: a_batch,
                      self.network.r: r_batch}
-        summaries = self.sess.run(self.summary_ops, feed_dict)
+        summaries, _ = self.sess.run([self.summary_ops,
+                                      self.update_gradients],
+                                     feed_dict)
         self.summary_writer.add_summary(summaries, self.steps)
 
-        self.sess.run([self.apply_policy_gradients,
-                       self.apply_value_gradients])
-        self.sess.run([self.zero_policy_gradients,
-                       self.zero_value_gradients])
-
-        toc(5)
+        self.sess.run(self.apply_gradients)
+        self.sess.run(self.zero_gradients)
 
         self.steps += 1
 
