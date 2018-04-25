@@ -42,6 +42,7 @@ for line in args.log_file:
                              axis=1)
     else:
         print("Unsure how to deal with shape; skipping")
+        continue
 
     imshow(obs, cmap='gray')
     show()
