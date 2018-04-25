@@ -33,11 +33,11 @@ for line in args.log_file:
     obs = np.array(eval(line)[0])
     print("Found observation with shape", obs.shape)
 
-    if obs.shape == (1, 84, 84, 4) or obs.shape == (1, 80, 80, 4):
+    if obs.shape == (1, 80, 80, 4) or obs.shape == (1, 84, 84, 4):
         obs = obs[0]
         obs = np.moveaxis(obs, 2, 0)
         obs = np.hstack(obs)
-    elif obs.shape == (5, 80, 80, 4):
+    elif obs.shape[1:] == (80, 80, 4) or obs.shape[1:] == (84, 84, 4):
         # Stack axis 0 vertically
         obs = np.vstack(obs)
         # Stack axis 3 horizontally
