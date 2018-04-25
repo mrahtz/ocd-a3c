@@ -239,11 +239,13 @@ class FrameSkipWrapper(Wrapper):
         return self.env.reset()
 
     def step(self, action):
+        reward_sum = 0
         for _ in range(4):
             obs, reward, done, info = self.env.step(action)
+            reward_sum += reward
             if done:
                 break
-        return obs, reward, done, info
+        return obs, reward_sum, done, info
 
 
 class NormalizeWrapper(ObservationWrapper):
