@@ -43,7 +43,9 @@ def run_worker(env_id, seed, worker_n, n_steps_to_run, ckpt_timer,
 
     if worker_n == 0:
         saver = tf.train.Saver()
-        checkpoint_file = os.path.join('checkpoints', 'network.ckpt')
+        checkpoint_dir = osp.join(log_dir, 'checkpoints')
+        os.makedirs(checkpoint_dir)
+        checkpoint_file = osp.join(checkpoint_dir, 'network.ckpt')
 
     print("Waiting for cluster connection...")
     sess.run(tf.global_variables_initializer())
