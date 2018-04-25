@@ -174,7 +174,7 @@ class FrameStackWrapper(Wrapper):
 
 class ConcatFrameStack(ObservationWrapper):
     """
-    Concatenate a stack horizontally into one long frame (for debugging)
+    Concatenate a stack horizontally into one long frame (for debugging).
     """
 
     def __init__(self, env):
@@ -187,6 +187,27 @@ class ConcatFrameStack(ObservationWrapper):
     def observation(self, obs):
         assert obs.shape[0] == 4
         return np.hstack(obs)
+
+
+class NumberFrames(ObservationWrapper):
+    """
+    Draw number of frames since reset (for debugging).
+    """
+
+    def __init__(self, env):
+        ObservationWrapper.__init__(self, env)
+        self.frames_since_reset = 0
+
+    def observation(self, obs):
+        cv2.putText(obs,
+                    str(self.frames_since_reset),
+                    org=(0, 70),  # x, y position of bottom-left corner of text
+                    fontFace=cv2.FONT_HERSHEY_PLAIN,
+                    fontScale=2.0,
+                    color=(255, 255, 255),
+                    thickness=2)
+        self.frames_since_reset += 1
+        return obs
 
 
 class FrameSkipWrapper(Wrapper):
@@ -231,12 +252,12 @@ class PongFeaturesWrapper(ObservationWrapper):
             low=0.0, high=1.0, shape=(84, 84), dtype=np.float32)
 
     def observation(self, obs):
-        obs = np.mean(obs, axis=2) / 255.0         # Convert to [0, 1] grayscale
-        obs = obs[34:194]                          # Extract game area
-        obs = obs[::2, ::2]                        # Downsample by a factor of 2
+        obs = np.mean(obs, axis=2) / 255.0  # Convert to [0, 1] grayscale
+        obs = obs[34:194]  # Extract game area
+        obs = obs[::2, ::2]  # Downsample by a factor of 2
         obs = np.pad(obs, pad_width=2, mode='constant')  # Pad to 84x84
-        obs[obs <= 0.4] = 0                        # Erase background
-        obs[obs > 0.4] = 1                         # Set balls, paddles to 1
+        obs[obs <= 0.4] = 0  # Erase background
+        obs[obs > 0.4] = 1  # Set balls, paddles to 1
         return obs
 
 

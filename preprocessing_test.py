@@ -8,7 +8,7 @@ from numpy.testing import assert_array_equal
 
 from preprocessing import MaxWrapper, FrameStackWrapper, FrameSkipWrapper, \
     ExtractLuminanceAndScaleWrapper, generic_preprocess, pong_preprocess, \
-    ConcatFrameStack
+    ConcatFrameStack, NumberFrames
 
 
 class DummyEnv(gym.Env):
@@ -212,7 +212,7 @@ class TestPreprocessing(unittest.TestCase):
         from gym.utils import play as gym_play
         env = gym.make('PongNoFrameskip-v4')
 
-        env_wrapped = ConcatFrameStack(wrap_fn(env))
+        env_wrapped = ConcatFrameStack(wrap_fn(NumberFrames(env)))
         gym_play.play(env_wrapped, fps=15, zoom=4)
 
 
