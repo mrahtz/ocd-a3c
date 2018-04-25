@@ -16,6 +16,9 @@ class DummyEnv(gym.Env):
     A super-simple environment which just paints a white dot starting at (10, 10)
     and moving 10 pixels right on every step.
 
+    Rewards returned corresponds to the current step number. ("Just after
+    reset" corresponds to step 1, so the reward from the first step taken is 2.)
+
     If draw_n_dots is true, also indicate the current step number by the
     number of dots in each column.
     """
@@ -23,7 +26,7 @@ class DummyEnv(gym.Env):
     OBS_DIMS = (210, 160, 3)
 
     def __init__(self, dot_width=1, dot_height=1, draw_n_dots=False):
-        self.n_steps = None
+        self.step_n = None
         self.draw_n_dots = draw_n_dots
         self.dot_width = dot_width
         self.dot_height = dot_height
@@ -32,32 +35,38 @@ class DummyEnv(gym.Env):
         return ['NOOP']
 
     def reset(self):
-        self.n_steps = 0
-        return self._get_obs()
+        self.step_n = 1
+        obs = self._get_obs()
+        return obs
 
     def _get_obs(self):
-        self.n_steps += 1
+        """
+        Draw a dot in a column corresponding to the current step number.
+        If draw_n_dots, also draw a bunch of extra dots in the column to show
+        exactly which step number we're on, such that no. of dots = step number.
+        """
         obs = np.zeros(self.OBS_DIMS, dtype=np.uint8)
         w = self.dot_width
         h = self.dot_height
         # Draw the a dot on the first row
-        x = 10 * self.n_steps
+        x = 10 * self.step_n
         y = 10
         obs[y:y + h, x:x + w] = 255
         if self.draw_n_dots:
             # Draw another n_steps - 1 dots in the same column,
             # for a total of n_steps dots in the column
-            for i in range(1, self.n_steps):
+            for i in range(1, self.step_n):
                 y = 10 + i * 10
                 obs[y:y + h, x:x + w] = 255
         return obs
 
     def step(self, action):
+        self.step_n += 1
         obs = self._get_obs()
-        reward = 0
+        reward = self.step_n
         info = None
 
-        if self.n_steps == 20:
+        if self.step_n == 20:
             done = True
         else:
             done = False
@@ -170,6 +179,22 @@ class TestPreprocessing(unittest.TestCase):
         expected_obs = np.zeros(DummyEnv.OBS_DIMS, dtype=np.uint8)
         expected_obs[10, 10] = 255
         assert_array_equal(actual_obs, expected_obs)
+
+    def test_full_preprocessing_rewards(self):
+        env = DummyEnv()
+        env_wrapped = generic_preprocess(env)
+        env_wrapped.reset()
+        _, r1, _, _ = env_wrapped.step(0)
+        _, r2, _, _ = env_wrapped.step(0)
+        _, r3, _, _ = env_wrapped.step(0)
+        # MaxWrapper skips the first step after reset (which gives reward 2)
+        # FrameSkipWrapper should sum the next 4 rewards: 3 + 4 + 5 + 6 = 18
+        self.assertEqual(r1, 18)
+        # FrameSkipWrapper should sum the next 4 rewards: 7 + 8 + 9 + 10 = 34
+        self.assertEqual(r2, 34)
+        # The next 4 rewards: 11 + 12 + 13 + 14 = 50
+        self.assertEqual(r3, 50)
+
 
     def check_full_preprocessing(self):
         """
