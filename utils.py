@@ -6,8 +6,8 @@ import subprocess
 from multiprocessing import Queue
 from threading import Thread
 
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 
 
 def get_port_range(start_port, n_ports, random_stagger=False):
