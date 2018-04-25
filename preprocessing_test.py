@@ -41,7 +41,7 @@ class DummyEnv(gym.Env):
         w = self.dot_width
         h = self.dot_height
         # Draw the a dot on the first row
-        x = 5 * self.n_steps
+        x = 10 * self.n_steps
         y = 10
         obs[y:y + h, x:x + w] = 255
         if self.draw_n_dots:
