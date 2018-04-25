@@ -17,18 +17,15 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
 def run_worker(env_id, seed, worker_n, n_steps_to_run, ckpt_freq,
-               load_ckpt_file,
-               render, log_dir):
+               load_ckpt_file, render, log_dir):
     mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
     memory_profiler = MemoryProfiler(pid=-1, log_path=mem_log)
     memory_profiler.start()
 
     worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
-    easy_tf_log.set_dir(worker_log_dir)
-
-    tensorflow_log_dir = osp.join(worker_log_dir, 'tensorflow')
-    os.makedirs(tensorflow_log_dir)
-    summary_writer = tf.summary.FileWriter(tensorflow_log_dir, flush_secs=1)
+    easy_tf_log_dir = osp.join(worker_log_dir, 'easy_tf_log')
+    os.makedirs(easy_tf_log_dir)
+    easy_tf_log.set_dir(easy_tf_log_dir)
 
     server = tf.train.Server(cluster, job_name="worker", task_index=worker_n)
     sess = tf.Session(server.target)
@@ -36,8 +33,11 @@ def run_worker(env_id, seed, worker_n, n_steps_to_run, ckpt_freq,
     with tf.device("/job:worker/task:0"):
         create_network('global')
     with tf.device("/job:worker/task:%d" % worker_n):
-        w = Worker(sess=sess, worker_n=worker_n, env_name=env_id,
-                   summary_writer=summary_writer, global_seed=seed)
+        w = Worker(sess=sess,
+                   env_id=env_id,
+                   worker_n=worker_n,
+                   seed=seed + worker_n,
+                   log_dir=worker_log_dir)
         if render:
             w.render = True
 
