@@ -41,8 +41,14 @@ class Worker:
 
         optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
 
-        self.update_gradients, self.apply_gradients, self.zero_gradients, self.grad_bufs = \
-            create_train_ops(self.network.loss,
+        self.update_policy_gradients, self.apply_policy_gradients, self.zero_policy_gradients, self.grad_bufs_policy = \
+            create_train_ops(self.network.policy_loss,
+                             optimizer,
+                             update_scope=worker_scope,
+                             apply_scope='global')
+
+        self.update_value_gradients, self.apply_value_gradients, self.zero_value_gradients, self.grad_bufs_value = \
+            create_train_ops(self.network.value_loss,
                              optimizer,
                              update_scope=worker_scope,
                              apply_scope='global')
@@ -121,7 +127,8 @@ class Worker:
         rewards = []
         i = 0
 
-        self.sess.run(self.zero_gradients)
+        self.sess.run([self.zero_policy_gradients,
+                       self.zero_value_gradients])
         self.sync_network()
 
         list_set(states, i, self.frame_stack)
@@ -185,13 +192,16 @@ class Worker:
         feed_dict = {self.network.s: s_batch,
                      self.network.a: a_batch,
                      self.network.r: r_batch}
-        summaries, _ = self.sess.run([self.summary_ops,
-                                      self.update_gradients],
-                                     feed_dict)
+        summaries, _, _ = self.sess.run([self.summary_ops,
+                                         self.update_policy_gradients,
+                                         self.update_value_gradients],
+                                        feed_dict)
         self.summary_writer.add_summary(summaries, self.steps)
 
-        self.sess.run(self.apply_gradients)
-        self.sess.run(self.zero_gradients)
+        self.sess.run([self.apply_policy_gradients,
+                       self.apply_value_gradients])
+        self.sess.run([self.zero_policy_gradients,
+                       self.zero_value_gradients])
 
         self.steps += 1
 
