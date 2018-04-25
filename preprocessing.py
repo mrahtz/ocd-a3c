@@ -1,7 +1,7 @@
 import cv2
 
 import numpy as np
-from gym import ObservationWrapper, spaces
+from gym import ObservationWrapper, spaces, Wrapper
 
 
 def prepro2(I):
@@ -97,7 +97,11 @@ class NumberFrames(ObservationWrapper):
 
     def __init__(self, env):
         ObservationWrapper.__init__(self, env)
+        self.frames_since_reset = None
+
+    def reset(self):
         self.frames_since_reset = 0
+        return self.env.reset()
 
     def observation(self, obs):
         cv2.putText(obs,
@@ -109,3 +113,20 @@ class NumberFrames(ObservationWrapper):
                     thickness=2)
         self.frames_since_reset += 1
         return obs
+
+
+class EarlyReset(Wrapper):
+    """
+    Reset the environment after 100 steps (for debugging).
+    """
+
+    def reset(self):
+        self.n_steps = 0
+        return self.env.reset()
+
+    def step(self, action):
+        obs, reward, done, info = self.env.step(action)
+        self.n_steps += 1
+        if self.n_steps >= 100:
+            done = True
+        return obs, reward, done, info
