@@ -208,7 +208,7 @@ class TestPreprocessing(unittest.TestCase):
         Not run as part of normal unit tests; run me with
           ./preprocessing_test.py TestPreprocessing.check_full_preprocessing
         """
-        from pylab import subplot, imshow, show
+        from pylab import subplot, imshow, show, tight_layout
         env = DummyEnv(dot_width=2, dot_height=2, draw_n_dots=True)
         env_wrapped = generic_preprocess(env)
 
@@ -225,6 +225,7 @@ class TestPreprocessing(unittest.TestCase):
         imshow(np.hstack(obs3), cmap='gray')
         subplot(4, 1, 4)
         imshow(np.hstack(obs4), cmap='gray')
+        tight_layout()
         show()
 
     def play_pong_generic_wrap(self):
