@@ -10,6 +10,7 @@ def prepro2(I):
     I = I[::2, ::2]  # downsample by factor of 2
     I[I <= 0.4] = 0  # erase background
     I[I > 0.4] = 1  # everything else (paddles, ball) just set to 1
+    I = np.pad(I, pad_width=2, mode='constant')
     return I.astype(np.float)
 
 
@@ -30,7 +31,7 @@ class EnvWrapper():
         self.action_space = env.action_space
         # gym.utils.play() wants these
         self.observation_space = spaces.Box(low=0., high=1.,
-                                            shape=(80, 80),
+                                            shape=(84, 84),
                                             dtype=np.float32)
         self.unwrapped = env.unwrapped
         self.reward_range = env.unwrapped.reward_range
