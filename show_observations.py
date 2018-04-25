@@ -37,7 +37,7 @@ for line in args.log_file:
         obs = obs[0]
         obs = np.moveaxis(obs, 2, 0)
         obs = np.hstack(obs)
-    elif obs.shape == (5, 80, 80, 4):
+    elif obs.shape == (5, 80, 80, 4) or obs.shape == (5, 84, 84, 4):
         # Stack axis 0 vertically
         obs = np.vstack(obs)
         # Stack axis 3 horizontally
