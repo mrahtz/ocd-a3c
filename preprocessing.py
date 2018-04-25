@@ -1,4 +1,5 @@
 import numpy as np
+from gym import ObservationWrapper, spaces
 
 
 def prepro2(I):
@@ -25,9 +26,11 @@ class EnvWrapper():
         # 2 = skip every other frame
         self.frameskip = frameskip
         self.action_space = env.action_space
-        # gym.utils.play() wants these two
+        # gym.utils.play() wants these
         self.observation_space = env.observation_space
         self.unwrapped = env.unwrapped
+        self.reward_range = env.unwrapped.reward_range
+        self.metadata = env.unwrapped.metadata
 
     def reset(self):
         o = self.env.reset()
@@ -64,3 +67,20 @@ class EnvWrapper():
 
     def render(self):
         self.env.render()
+
+
+class ConcatFrameStack(ObservationWrapper):
+    """
+    Concatenate a stack horizontally into one long frame (for debugging)
+    """
+
+    def __init__(self, env):
+        ObservationWrapper.__init__(self, env)
+        # Important so that gym's play.py picks up the right resolution
+        self.observation_space = spaces.Box(low=0, high=255,
+                                            shape=(84, 4 * 84),
+                                            dtype=np.uint8)
+
+    def observation(self, obs):
+        assert obs.shape[0] == 4
+        return np.hstack(obs)
