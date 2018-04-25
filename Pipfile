@@ -10,15 +10,15 @@ name = "pypi"
 gym = {extras = ["atari"]}
 opencv-python = "*"
 easy-tf-log = {git = 'https://github.com/mrahtz/easy-tf-log'}
+memory-profiler = "*"
 
 
 [dev-packages]
 
 pygame = "*"
-memory-profiler = "*"
-node = "*"
+nose = "*"
 
 
 [requires]
 
-python_version = "3.6"
+python_version = "3"
