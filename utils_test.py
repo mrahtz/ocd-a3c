@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import random
 import socket
 import unittest
 
@@ -9,7 +10,7 @@ import numpy as np
 import tensorflow as tf
 
 from utils import create_copy_ops, logit_entropy, rewards_to_discounted_returns, \
-    get_port_range, EnvWrapper
+    get_port_range, EnvWrapper, set_random_seeds
 
 
 class TestMiscUtils(unittest.TestCase):
@@ -59,6 +60,79 @@ class TestMiscUtils(unittest.TestCase):
 
         s2.close()
         s1.close()
+
+    def test_random_seed(self):
+        # Note: TensorFlow random seeding doesn't work completely as expected.
+        # tf.set_random_seed sets a the graph-level seed in the current graph.
+        # But operations also have their own operation-level seed, which is
+        # chosen deterministically based on the graph-level seed, but also
+        # based on other things.
+        #
+        # So if you create multiple operations in the same graph,
+        # each one will be given a different operation-level seed.
+        # The  graph-level seed just determines what the sequence of
+        # operation-level seeds will be.
+        #
+        # To get a bunch of operations with the same sequence of
+        # operation-level seeds, we need to reset the graph before creation
+        # of each bunch of operations.
+
+        # Generate some random numbers from a specific seed
+        tf.reset_default_graph()
+        sess = tf.Session()
+        set_random_seeds(0)
+        tf_rand_var = tf.random_normal([10])
+        numpy_rand_1 = np.random.rand(10)
+        numpy_rand_2 = np.random.rand(10)
+        np.testing.assert_raises(AssertionError, np.testing.assert_array_equal,
+                                 numpy_rand_1, numpy_rand_2)
+        tensorflow_rand_1 = sess.run(tf_rand_var)
+        tensorflow_rand_2 = sess.run(tf_rand_var)
+        np.testing.assert_raises(AssertionError, np.testing.assert_array_equal,
+                                 tensorflow_rand_1, tensorflow_rand_2)
+        python_rand_1 = [random.random() for _ in range(10)]
+        python_rand_2 = [random.random() for _ in range(10)]
+        np.testing.assert_raises(AssertionError, np.testing.assert_array_equal,
+                                 python_rand_1, python_rand_2)
+
+        # Put the seed back and check we get the same numbers
+        tf.reset_default_graph()
+        sess = tf.Session()
+        set_random_seeds(0)
+        tf_rand_var = tf.random_normal([10])
+        numpy_rand_3 = np.random.rand(10)
+        numpy_rand_4 = np.random.rand(10)
+        np.testing.assert_equal(numpy_rand_1, numpy_rand_3)
+        np.testing.assert_equal(numpy_rand_2, numpy_rand_4)
+        tensorflow_rand_3 = sess.run(tf_rand_var)
+        tensorflow_rand_4 = sess.run(tf_rand_var)
+        np.testing.assert_equal(tensorflow_rand_1, tensorflow_rand_3)
+        np.testing.assert_equal(tensorflow_rand_2, tensorflow_rand_4)
+        python_rand_3 = [random.random() for _ in range(10)]
+        python_rand_4 = [random.random() for _ in range(10)]
+        np.testing.assert_equal(python_rand_1, python_rand_3)
+        np.testing.assert_equal(python_rand_2, python_rand_4)
+
+        # Set a different seed and make sure we get different numbers
+        set_random_seeds(1)
+        numpy_rand_5 = np.random.rand(10)
+        numpy_rand_6 = np.random.rand(10)
+        np.testing.assert_raises(AssertionError, np.testing.assert_array_equal,
+                                 numpy_rand_5, numpy_rand_1)
+        np.testing.assert_raises(AssertionError, np.testing.assert_array_equal,
+                                 numpy_rand_6, numpy_rand_2)
+        tensorflow_rand_5 = sess.run(tf_rand_var)
+        tensorflow_rand_6 = sess.run(tf_rand_var)
+        np.testing.assert_raises(AssertionError, np.testing.assert_array_equal,
+                                 tensorflow_rand_5, tensorflow_rand_1)
+        np.testing.assert_raises(AssertionError, np.testing.assert_array_equal,
+                                 tensorflow_rand_6, tensorflow_rand_2)
+        python_rand_5 = [random.random() for _ in range(10)]
+        python_rand_6 = [random.random() for _ in range(10)]
+        np.testing.assert_raises(AssertionError, np.testing.assert_array_equal,
+                                 python_rand_5, python_rand_1)
+        np.testing.assert_raises(AssertionError, np.testing.assert_array_equal,
+                                 python_rand_6, python_rand_2)
 
 
 class TestEntropy(unittest.TestCase):
