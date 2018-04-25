@@ -50,8 +50,12 @@ class DummyEnv(gym.Env):
     def step(self, action):
         obs = self._get_obs()
         reward = 0
-        done = False
         info = None
+
+        if self.n_steps >= 16:
+            done = True
+        else:
+            done = False
 
         return obs, reward, done, info
 
