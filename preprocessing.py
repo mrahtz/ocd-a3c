@@ -1,3 +1,5 @@
+import cv2
+
 import numpy as np
 from gym import ObservationWrapper, spaces
 
@@ -27,7 +29,9 @@ class EnvWrapper():
         self.frameskip = frameskip
         self.action_space = env.action_space
         # gym.utils.play() wants these
-        self.observation_space = env.observation_space
+        self.observation_space = spaces.Box(low=0., high=1.,
+                                            shape=(80, 80),
+                                            dtype=np.float32)
         self.unwrapped = env.unwrapped
         self.reward_range = env.unwrapped.reward_range
         self.metadata = env.unwrapped.metadata
@@ -71,7 +75,7 @@ class EnvWrapper():
 
 class ConcatFrameStack(ObservationWrapper):
     """
-    Concatenate a stack horizontally into one long frame (for debugging)
+    Concatenate a stack horizontally into one long frame (for debugging).
     """
 
     def __init__(self, env):
@@ -84,3 +88,24 @@ class ConcatFrameStack(ObservationWrapper):
     def observation(self, obs):
         assert obs.shape[0] == 4
         return np.hstack(obs)
+
+
+class NumberFrames(ObservationWrapper):
+    """
+    Draw number of frames since reset (for debugging).
+    """
+
+    def __init__(self, env):
+        ObservationWrapper.__init__(self, env)
+        self.frames_since_reset = 0
+
+    def observation(self, obs):
+        cv2.putText(obs,
+                    str(self.frames_since_reset),
+                    org=(0, 70),  # x, y position of bottom-left corner of text
+                    fontFace=cv2.FONT_HERSHEY_PLAIN,
+                    fontScale=2.0,
+                    color=(255, 255, 255),
+                    thickness=2)
+        self.frames_since_reset += 1
+        return obs

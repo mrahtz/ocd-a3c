@@ -5,7 +5,7 @@ import unittest
 import gym
 import numpy as np
 
-from preprocessing import EnvWrapper, prepro2, ConcatFrameStack
+from preprocessing import EnvWrapper, prepro2, NumberFrames
 
 
 class DummyEnv(gym.Env):
@@ -100,6 +100,7 @@ class TestPreprocessing(unittest.TestCase):
         """
         from gym.utils import play as gym_play
         env = gym.make('PongNoFrameskip-v4')
+        env = NumberFrames(env)
         env_wrapped = EnvWrapper(env,
                                  prepro2=prepro2,
                                  frameskip=4)
