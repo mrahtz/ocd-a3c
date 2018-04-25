@@ -17,7 +17,7 @@ from worker import Worker
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
-def run_worker(env_id, preprocess_wrapper, worker_n, n_steps_to_run, ckpt_freq,
+def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run, ckpt_freq,
                load_ckpt_file,
                render, log_dir):
     mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
@@ -37,7 +37,9 @@ def run_worker(env_id, preprocess_wrapper, worker_n, n_steps_to_run, ckpt_freq,
     with tf.device("/job:worker/task:0"):
         create_network('global')
     with tf.device("/job:worker/task:%d" % worker_n):
-        w = Worker(sess, worker_n, env_id, preprocess_wrapper, summary_writer)
+        w = Worker(sess=sess, worker_n=worker_n, env_name=env_id,
+                   preprocess_wrapper=preprocess_wrapper,
+                   summary_writer=summary_writer, global_seed=seed)
         if render:
             w.render = True
 
@@ -83,6 +85,7 @@ parser.add_argument("--n_steps", type=int, default=10)
 parser.add_argument("--n_workers", type=int, default=16)
 parser.add_argument("--ckpt_freq", type=int, default=5)
 parser.add_argument("--load_ckpt")
+parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--render", action='store_true')
 parser.add_argument("--preprocessing",
                     choices=['generic', 'pong'],
@@ -124,6 +127,7 @@ def start_worker_process(worker_n):
     print("Starting worker", worker_n)
     run_worker(env_id=args.env_id,
                preprocess_wrapper=preprocess_wrapper,
+               seed=args.seed,
                worker_n=worker_n,
                n_steps_to_run=args.n_steps,
                ckpt_freq=args.ckpt_freq,

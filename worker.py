@@ -21,9 +21,14 @@ def list_set(l, i, val):
 
 class Worker:
 
-    def __init__(self, sess, worker_n, env_id, preprocess_wrapper, summary_writer):
+    def __init__(self, sess, worker_n, env_id, preprocess_wrapper, global_seed, summary_writer):
+        utils.set_random_seeds(global_seed + worker_n)
+
+        env = gym.make(env_id)
+        env.seed(global_seed + worker_n)
+        self.env = preprocess_wrapper(env)
+
         self.sess = sess
-        self.env = preprocess_wrapper(gym.make(env_id))
 
         worker_scope = "worker_%d" % worker_n
         self.network = create_network(worker_scope)

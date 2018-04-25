@@ -167,3 +167,9 @@ def get_git_rev():
         git_rev = subprocess.check_output(
             ['git', 'rev-parse', '--short', 'HEAD']).decode().rstrip()
     return git_rev
+
+
+def set_random_seeds(seed):
+    tf.set_random_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)

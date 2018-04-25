@@ -16,6 +16,8 @@ memory-profiler = "*"
 [dev-packages]
 
 pygame = "*"
+memory-profiler = "*"
+node = "*"
 
 
 [requires]
