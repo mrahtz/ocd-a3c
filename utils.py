@@ -59,9 +59,6 @@ def rewards_to_discounted_returns(r, discount_factor):
     return returns
 
 
-# Based on Andrej's code
-
-
 def logit_entropy(logits):
     """
     Numerically-stable entropy directly from logits.
