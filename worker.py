@@ -4,6 +4,7 @@ import gym
 import numpy as np
 from easy_tf_log import tflog
 
+import preprocessing
 import utils
 from network import create_network
 from train_ops import *
@@ -28,9 +29,9 @@ class Worker:
         env = gym.make(env_id)
         env.seed(seed)
 
-        self.env = utils.EnvWrapper(env,
-                                    prepro2=utils.prepro2,
-                                    frameskip=4)
+        self.env = preprocessing.EnvWrapper(env,
+                                            prepro2=preprocessing.prepro2,
+                                            frameskip=4)
 
         self.sess = sess
 
