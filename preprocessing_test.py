@@ -22,9 +22,11 @@ class DummyEnv(gym.Env):
 
     OBS_DIMS = (210, 160, 3)
 
-    def __init__(self):
+    def __init__(self, dot_width=1, dot_height=1, draw_n_dots=False):
         self.n_steps = None
-        self.draw_n_dots = False
+        self.draw_n_dots = draw_n_dots
+        self.dot_width = dot_width
+        self.dot_height = dot_height
 
     def get_action_meanings(self):
         return ['NOOP']
@@ -36,18 +38,18 @@ class DummyEnv(gym.Env):
     def _get_obs(self):
         self.n_steps += 1
         obs = np.zeros(self.OBS_DIMS, dtype=np.uint8)
-        dot_width = 3
-        dot_height = 3
+        w = self.dot_width
+        h = self.dot_height
         # Draw the a dot on the first row
-        x = 10 * self.n_steps
+        x = 5 * self.n_steps
         y = 10
-        obs[y:y + dot_height, x:x + dot_width] = 255
+        obs[y:y + h, x:x + w] = 255
         if self.draw_n_dots:
             # Draw another n_steps - 1 dots in the same column,
             # for a total of n_steps dots in the column
             for i in range(1, self.n_steps):
                 y = 10 + i * 10
-                obs[y:y + dot_height, x:x + dot_width] = 255
+                obs[y:y + h, x:x + w] = 255
         return obs
 
     def step(self, action):
@@ -55,7 +57,7 @@ class DummyEnv(gym.Env):
         reward = 0
         info = None
 
-        if self.n_steps >= 16:
+        if self.n_steps == 20:
             done = True
         else:
             done = False
@@ -176,8 +178,7 @@ class TestPreprocessing(unittest.TestCase):
           ./preprocessing_test.py TestPreprocessing.check_full_preprocessing
         """
         from pylab import subplot, imshow, show
-        env = DummyEnv()
-        env.draw_n_dots = True
+        env = DummyEnv(dot_width=2, dot_height=2, draw_n_dots=True)
         env_wrapped = generic_preprocess(env)
 
         obs1 = env_wrapped.reset()

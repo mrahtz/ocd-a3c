@@ -7,8 +7,8 @@ import cv2
 Observation processing.
 
 Section 8 ("Experimental Setup") of the paper says:
-"The Atari experiments used the same input preprocessing as (Mnih et
-al., 2015) and an action repeat of 4."
+"The Atari experiments used the same input preprocessing as
+(Mnih et al., 2015) and an action repeat of 4."
 
 'Mnih et al., 2015' is
 'Human-level control through deep reinforcement learning', which says:
@@ -26,20 +26,6 @@ al., 2015) and an action repeat of 4."
     input to the Q-function, in which m = 4, although the algorithm is robust
     to different values of m (for example, 3 or 5)."
 
-So we would have:
-
-- Frame stack 0:
-    - Max. over frames 0 and 1
-    - Max. over frames 1 and 2
-    - Max. over frames 2 and 3
-    - Max. over frames 3 and 4
-- Frame stack 1:
-    - Max. over frames 1 and 2
-    - Max. over frames 2 and 3
-    - Max. over frames 3 and 4
-    - Max. over frames 4 and 5
-- etc.
-
 Also:
 
   Following previous approaches to playing Atari 2600 games, we also use a
@@ -49,20 +35,53 @@ Also:
   step requires much less computation than having the agent select an action,
   this technique allows the agent to play roughly k times more games without
   significantly increasing the runtime. We use k = 4 for all games.
+  
+There's some ambiguity about what order to apply these steps in. I think the 
+right order should be:
 
-So we only look at frame stacks 0, 4, 7, etc.:
+1. Max over subsequent frames
+   So - observation 0: max. over frames 0 and 1
+        observation 1: max. over frames 1 and 2
+        etc.
+        
+2. Extract luminance and scale
 
-- Frame stack 0:
-    - Max. over frames 0 and 1
-    - Max. over frames 1 and 2
-    - Max. over frames 2 and 3
-    - Max. over frames 3 and 4
-- Frame stack 4:
-    - Max. over frames 4 and 5
-    - Max. over frames 5 and 6
-    - Max. over frames 6 and 7
-    - Max. over frames 7 and 8
-- etc.
+3. Skip frames
+   So - observation 0: max. over frames 0 and 1
+        observation 1: max. over frames 4 and 5
+        etc.
+        
+4. Stack frames
+   So - frame stack 0: max. over frames 0 and 1
+                       max. over frames 4 and 5
+                       max. over frames 8 and 9
+                       max. over frames 12 and 13
+                       
+        frame stack 2: max. over frames 4 and 5
+                       max. over frames 8 and 9
+                       max. over frames 12 and 13
+                       max. over frames 16 and 17
+                       
+The main ambiguity is whether frame skipping or frame stacking should be done
+first. Above we've assumed frame skipping should be done first. If we did
+frame stacking first, we would only look at every 4th frame stack: giving:
+
+- Frame stack 0: max. over frames 0 and 1
+                 max. over frames 1 and 2
+                 max. over frames 2 and 3
+                 max. over frames 3 and 4
+                 
+- Frame stack 4: max. over frames 4 and 5
+                 max. over frames 5 and 6
+                 max. over frames 6 and 7
+                 max. over frames 7 and 8
+                 
+Note that there's a big difference: frame skip then frame stack gives the 
+agent much less temporal scope than frame stack then frame skip. In the 
+former, the agent has access to 12 frames' worth of observations, whereas in 
+the latter, only 4 frames' worth.
+
+Empirically, also, frame skip then frame stack does perform better.
 """
 
 
@@ -224,14 +243,14 @@ class PongFeaturesWrapper(ObservationWrapper):
 def generic_preprocess(env):
     env = MaxWrapper(env)
     env = ExtractLuminanceAndScaleWrapper(env)
-    env = FrameStackWrapper(env)
-    env = FrameSkipWrapper(env)
     env = NormalizeWrapper(env)
+    env = FrameSkipWrapper(env)
+    env = FrameStackWrapper(env)
     return env
 
 
 def pong_preprocess(env):
     env = PongFeaturesWrapper(env)
-    env = FrameStackWrapper(env)
     env = FrameSkipWrapper(env)
+    env = FrameStackWrapper(env)
     return env
