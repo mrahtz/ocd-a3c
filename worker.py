@@ -133,7 +133,7 @@ class Worker:
                        self.zero_value_gradients])
         self.sync_network()
 
-        list_set(states, i, self.frame_stack)
+        list_set(states, i, np.copy(self.frame_stack))
 
         done = False
         while not done and i < self.t_max:
