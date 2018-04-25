@@ -21,18 +21,18 @@ def list_set(l, i, val):
 
 class Worker:
 
-    def __init__(self, sess, worker_n, env_id, preprocess_wrapper, global_seed, summary_writer):
-        utils.set_random_seeds(global_seed + worker_n)
+    def __init__(self, sess, env_id, preprocess_wrapper, worker_n, seed, log_dir):
+        utils.set_random_seeds(seed)
 
         env = gym.make(env_id)
-        env.seed(global_seed + worker_n)
+        env.seed(seed)
         self.env = preprocess_wrapper(env)
 
         self.sess = sess
 
         worker_scope = "worker_%d" % worker_n
         self.network = create_network(worker_scope)
-        self.summary_writer = summary_writer
+        self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
         self.scope = worker_scope
 
         policy_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
