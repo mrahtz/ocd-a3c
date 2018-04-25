@@ -18,8 +18,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
 def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
-               ckpt_timer,
-               load_ckpt_file, render, log_dir):
+               ckpt_timer, load_ckpt_file, render, log_dir):
     mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
     memory_profiler = MemoryProfiler(pid=-1, log_path=mem_log)
     memory_profiler.start()
@@ -46,7 +45,9 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
 
     if worker_n == 0:
         saver = tf.train.Saver()
-        checkpoint_file = os.path.join('checkpoints', 'network.ckpt')
+        checkpoint_dir = osp.join(log_dir, 'checkpoints')
+        os.makedirs(checkpoint_dir)
+        checkpoint_file = osp.join(checkpoint_dir, 'network.ckpt')
 
     print("Waiting for cluster connection...")
     sess.run(tf.global_variables_initializer())
