@@ -1,7 +1,8 @@
-from gym import Wrapper, ObservationWrapper, spaces
 from collections import deque
-import numpy as np
+
 import cv2
+import numpy as np
+from gym import Wrapper, ObservationWrapper, spaces
 
 """
 Observation processing.
@@ -35,33 +36,33 @@ Also:
   step requires much less computation than having the agent select an action,
   this technique allows the agent to play roughly k times more games without
   significantly increasing the runtime. We use k = 4 for all games.
-  
-There's some ambiguity about what order to apply these steps in. I think the 
+
+There's some ambiguity about what order to apply these steps in. I think the
 right order should be:
 
 1. Max over subsequent frames
    So - observation 0: max. over frames 0 and 1
         observation 1: max. over frames 1 and 2
         etc.
-        
+
 2. Extract luminance and scale
 
 3. Skip frames
    So - observation 0: max. over frames 0 and 1
         observation 1: max. over frames 4 and 5
         etc.
-        
+
 4. Stack frames
    So - frame stack 0: max. over frames 0 and 1
                        max. over frames 4 and 5
                        max. over frames 8 and 9
                        max. over frames 12 and 13
-                       
+
         frame stack 2: max. over frames 4 and 5
                        max. over frames 8 and 9
                        max. over frames 12 and 13
                        max. over frames 16 and 17
-                       
+
 The main ambiguity is whether frame skipping or frame stacking should be done
 first. Above we've assumed frame skipping should be done first. If we did
 frame stacking first, we would only look at every 4th frame stack: giving:
@@ -70,15 +71,15 @@ frame stacking first, we would only look at every 4th frame stack: giving:
                  max. over frames 1 and 2
                  max. over frames 2 and 3
                  max. over frames 3 and 4
-                 
+
 - Frame stack 4: max. over frames 4 and 5
                  max. over frames 5 and 6
                  max. over frames 6 and 7
                  max. over frames 7 and 8
-                 
-Note that there's a big difference: frame skip then frame stack gives the 
-agent much less temporal scope than frame stack then frame skip. In the 
-former, the agent has access to 12 frames' worth of observations, whereas in 
+
+Note that there's a big difference: frame skip then frame stack gives the
+agent much less temporal scope than frame stack then frame skip. In the
+former, the agent has access to 12 frames' worth of observations, whereas in
 the latter, only 4 frames' worth.
 
 Empirically, also, frame skip then frame stack does perform better.
@@ -212,6 +213,7 @@ class NumberFrames(ObservationWrapper):
                     thickness=2)
         self.frames_since_reset += 1
         return obs
+
 
 class EarlyReset(Wrapper):
     """
