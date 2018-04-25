@@ -16,6 +16,7 @@ easy-tf-log = {git = 'https://github.com/mrahtz/easy-tf-log'}
 
 pygame = "*"
 memory-profiler = "*"
+node = "*"
 
 
 [requires]
