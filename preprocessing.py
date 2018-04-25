@@ -156,8 +156,9 @@ class FrameStackWrapper(Wrapper):
     def reset(self):
         obs = self.env.reset()
         self.frame_stack.append(obs)
-        # The first frame returned should be a stack of frames 0 through 3.
-        # We get frame 0 from env.reset(). For the rest, we take no-op actions.
+        # The first observation returned should be a stack of observations
+        # 0 through 3. We get observation 0 from env.reset(). For the rest,
+        # we take no-op actions.
         noop_action_index = get_noop_action_index(self.env)
         for _ in range(3):
             obs, _, done, _ = self.env.step(noop_action_index)

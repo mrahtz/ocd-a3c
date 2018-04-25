@@ -61,15 +61,15 @@ class DummyEnv(gym.Env):
         return obs
 
     def step(self, action):
-        self.step_n += 1
-        obs = self._get_obs()
-        reward = self.step_n
-        info = None
-
-        if self.step_n == 20:
+        if self.step_n >= 30:
             done = True
         else:
             done = False
+            self.step_n += 1
+
+        obs = self._get_obs()
+        reward = self.step_n
+        info = None
 
         return obs, reward, done, info
 
@@ -188,12 +188,18 @@ class TestPreprocessing(unittest.TestCase):
         _, r2, _, _ = env_wrapped.step(0)
         _, r3, _, _ = env_wrapped.step(0)
         # MaxWrapper skips the first step after reset (which gives reward 2)
-        # FrameSkipWrapper should sum the next 4 rewards: 3 + 4 + 5 + 6 = 18
-        self.assertEqual(r1, 18)
-        # FrameSkipWrapper should sum the next 4 rewards: 7 + 8 + 9 + 10 = 34
-        self.assertEqual(r2, 34)
-        # The next 4 rewards: 11 + 12 + 13 + 14 = 50
-        self.assertEqual(r3, 50)
+        # FrameStackWrapper does another 3 steps after reset, each of which
+        # does 4 steps in the raw environment because of FrameSkipWrapper.
+        # Step 1: 3, 4, 5, 6
+        # Step 2: 7, 8, 9, 10
+        # Step 3: 11, 12, 13, 14
+        # The first step we do should get rewards 15, 16, 17 18, summed by
+        # FrameSkipWrapper.
+        self.assertEqual(r1, 66)
+        # Then 19 + 20 + 21 + 22.
+        self.assertEqual(r2, 82)
+        # Then 23 + 24 + 25 + 27.
+        self.assertEqual(r3, 98)
 
 
     def check_full_preprocessing(self):
