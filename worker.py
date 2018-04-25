@@ -45,9 +45,6 @@ class Worker:
         value_optimizer = tf.train.RMSPropOptimizer(learning_rate=0.0005,
                                                     decay=0.99, epsilon=1e-5)
 
-        self.o1 = policy_optimizer
-        self.o2 = value_optimizer
-
         self.update_policy_gradients, self.apply_policy_gradients, self.zero_policy_gradients, self.grad_bufs_policy = \
             create_train_ops(self.network.policy_loss,
                              policy_optimizer,

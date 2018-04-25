@@ -12,7 +12,6 @@ import tensorflow as tf
 from network import create_network
 from utils import get_port_range, MemoryProfiler, get_git_rev
 from worker import Worker
-import numpy as np
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
@@ -48,14 +47,6 @@ def run_worker(env_id, seed, worker_n, n_steps_to_run, ckpt_freq,
 
     print("Waiting for cluster connection...")
     sess.run(tf.global_variables_initializer())
-
-    if worker_n == 1:
-        while True:
-            o1v, o2v = sess.run([w.o1.variables(), w.o2.variables()])
-            s1 = np.sum([np.sum(v) for v in o1v])
-            s2 = np.sum([np.sum(v) for v in o2v])
-            print(s1, s2)
-            time.sleep(1.0)
 
     if load_ckpt_file is not None:
         print("Restoring from checkpoint '%s'..." % load_ckpt_file,
