@@ -36,6 +36,8 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
         var_name = strip_var_name(var.name)
         grads_dict[var_name] = grads
 
+    grads_norm = tf.global_norm(list(grads_dict.values()))
+
     # Discard variables which don't have gradients
     grads_dict = {v: g for v, g in grads_dict.items() if g is not None}
 
@@ -78,4 +80,5 @@ def create_train_ops(loss, optimizer, update_scope, apply_scope):
         zero_ops.append(op)
     zero_gradients = tf.group(*zero_ops)
 
-    return update_gradients, apply_gradients, zero_gradients, grad_bufs
+    return update_gradients, apply_gradients, zero_gradients, grad_bufs, \
+           grads_norm
