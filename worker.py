@@ -19,8 +19,6 @@ N_MAX_NOOPS = 30
 class Worker:
 
     def __init__(self, sess, env_id, worker_n, seed, log_dir):
-        utils.set_random_seeds(seed)
-
         env = gym.make(env_id)
         env.seed(seed)
 

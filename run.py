@@ -9,6 +9,7 @@ from multiprocessing import Process
 import easy_tf_log
 import tensorflow as tf
 
+import utils
 from network import create_network
 from utils import get_port_range, MemoryProfiler, get_git_rev, Timer
 from worker import Worker
@@ -18,6 +19,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 def run_worker(env_id, seed, worker_n, n_steps_to_run, ckpt_timer,
                load_ckpt_file, render, log_dir):
+    utils.set_random_seeds(seed)
+
     mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
     memory_profiler = MemoryProfiler(pid=-1, log_path=mem_log)
     memory_profiler.start()
@@ -36,7 +39,7 @@ def run_worker(env_id, seed, worker_n, n_steps_to_run, ckpt_timer,
         w = Worker(sess=sess,
                    env_id=env_id,
                    worker_n=worker_n,
-                   seed=seed + worker_n,
+                   seed=seed,
                    log_dir=worker_log_dir)
         if render:
             w.render = True
@@ -122,7 +125,7 @@ cluster = tf.train.ClusterSpec(cluster_dict)
 def start_worker_process(worker_n):
     print("Starting worker", worker_n)
     run_worker(env_id=args.env_id,
-               seed=args.seed,
+               seed=args.seed + worker_n,
                worker_n=worker_n,
                n_steps_to_run=args.n_steps,
                ckpt_timer=ckpt_timer,
