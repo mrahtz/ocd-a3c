@@ -72,7 +72,7 @@ def create_network(scope):
         # Negative log probability: lower is better for actions we want to
         #                           encourage
         # 1e-7: prevent log(0)
-        nlp = -1 * tf.log(p + 1e-7)
+        nlp = -tf.log(p + 1e-7)
 
         check_nlp = tf.assert_rank(nlp, 1)
         check_advantage = tf.assert_rank(advantage, 1)
@@ -80,15 +80,15 @@ def create_network(scope):
             # Note that the advantage is treated as a constant for the
             # policy network update step
             policy_loss = nlp * tf.stop_gradient(advantage)
-            policy_loss = tf.reduce_sum(policy_loss)
+            policy_loss = tf.reduce_mean(policy_loss)
 
-            policy_entropy = logit_entropy(a_logits)
+            policy_entropy = tf.reduce_mean(logit_entropy(a_logits))
             # We want to maximise entropy, which is the same as
             # minimising negative entropy
-            policy_loss -= tf.reduce_sum(BETA * policy_entropy)
+            policy_loss -= BETA * policy_entropy
 
             value_loss = advantage ** 2
-            value_loss = tf.reduce_sum(value_loss)
+            value_loss = tf.reduce_mean(value_loss)
 
         network = Network(
             s=graph_s,

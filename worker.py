@@ -64,7 +64,7 @@ class Worker:
         tf.summary.scalar('value_loss',
                           self.network.value_loss)
         tf.summary.scalar('policy_entropy',
-                          tf.reduce_mean(self.network.policy_entropy))
+                          self.network.policy_entropy)
         tf.summary.scalar('grads_policy_norm', grads_policy_norm)
         tf.summary.scalar('grads_value_norm', grads_value_norm)
         self.summary_ops = tf.summary.merge_all()
