@@ -51,11 +51,11 @@ def with_prob(p):
         return False
 
 
-def rewards_to_discounted_returns(r, discount_factor):
-    returns = np.zeros_like(np.array(r), dtype=np.float32)
-    returns[-1] = r[-1]
-    for i in range(len(r) - 2, -1, -1):
-        returns[i] = r[i] + discount_factor * returns[i + 1]
+def rewards_to_discounted_returns(rewards, discount_factor):
+    returns = np.zeros_like(rewards, dtype=np.float32)
+    returns[-1] = rewards[-1]
+    for i in range(len(rewards) - 2, -1, -1):
+        returns[i] = rewards[i] + discount_factor * returns[i + 1]
     return returns
 
 
