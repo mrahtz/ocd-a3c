@@ -85,15 +85,15 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
 
 parser = argparse.ArgumentParser()
 parser.add_argument("env_id")
-parser.add_argument("--n_steps", type=int, default=10)
-parser.add_argument("--n_workers", type=int, default=16)
+parser.add_argument("--n_steps", type=int, default=10000000)
+parser.add_argument("--n_workers", type=int, default=1)
 parser.add_argument("--ckpt_interval_seconds", type=int, default=60)
 parser.add_argument("--load_ckpt")
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--render", action='store_true')
 parser.add_argument("--preprocessing",
                     choices=['generic', 'pong'],
-                    default='generic')
+                    default='pong')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('--log_dir')
 seconds_since_epoch = str(int(time.time()))
