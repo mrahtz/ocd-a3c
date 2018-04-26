@@ -46,7 +46,11 @@ class Worker:
         #  considerably more robust than the other two methods."
         #
         # TensorFlow's RMSPropOptimizer defaults to centered=False,
-        # so we're good there. TODO: investigate shared statistics.
+        # so we're good there. For shared statistics - RMSPropOptimizer's
+        # gradient statistics variables are associated with the variables
+        # supplied to apply_gradients(), which happen to be in the global scope
+        # (see train_ops.py). So we get shared statistics without any special
+        # effort.
         #
         # In terms of hyperparameters:
         #
@@ -55,7 +59,7 @@ class Worker:
         # three best learning rates for each game. From the scatter plot of
         # performance for different learning rates, Figure 2, it looks like
         # 7e-4 is a safe bet which works across a variety of games.
-        # TODO: 7e-4?
+        # TODO: 7e-4
         #
         # RMSprop hyperparameters: Section 8, Experimental Setup, says:
         # "All experiments used...RMSProp decay factor of α = 0.99."
