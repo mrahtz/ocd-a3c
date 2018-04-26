@@ -51,7 +51,11 @@ class Worker:
         #  considerably more robust than the other two methods."
         #
         # TensorFlow's RMSPropOptimizer defaults to centered=False,
-        # so we're good there. TODO: investigate shared statistics.
+        # so we're good there. For shared statistics - RMSPropOptimizer's
+        # gradient statistics variables are associated with the variables
+        # supplied to apply_gradients(), which happen to be in the global scope
+        # (see train_ops.py). So we get shared statistics without any special
+        # effort.
         #
         # In terms of hyperparameters:
         #
