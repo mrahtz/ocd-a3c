@@ -13,60 +13,49 @@ class DummyEnv(gym.Env):
     A super-simple environment which just paints a white dot starting at (10, 10)
     and moving 10 pixels right on every step.
 
-    Rewards returned corresponds to the current step number. ("Just after
-    reset" corresponds to step 1, so the reward from the first step taken is 2.)
-
     If draw_n_dots is true, also indicate the current step number by the
     number of dots in each column.
     """
 
     OBS_DIMS = (210, 160, 3)
 
-    def __init__(self, dot_width=1, dot_height=1, draw_n_dots=False):
-        self.step_n = None
-        self.draw_n_dots = draw_n_dots
-        self.dot_width = dot_width
-        self.dot_height = dot_height
+    def __init__(self):
+        self.n_steps = None
+        self.draw_n_dots = False
 
     def get_action_meanings(self):
         return ['NOOP']
 
     def reset(self):
-        self.step_n = 1
-        obs = self._get_obs()
-        return obs
+        self.n_steps = 0
+        return self._get_obs()
 
     def _get_obs(self):
-        """
-        Draw a dot in a column corresponding to the current step number.
-        If draw_n_dots, also draw a bunch of extra dots in the column to show
-        exactly which step number we're on, such that no. of dots = step number.
-        """
+        self.n_steps += 1
         obs = np.zeros(self.OBS_DIMS, dtype=np.uint8)
-        w = self.dot_width
-        h = self.dot_height
+        dot_width = 3
+        dot_height = 3
         # Draw the a dot on the first row
-        x = 10 * self.step_n
+        x = 10 * self.n_steps
         y = 10
-        obs[y:y + h, x:x + w] = 255
+        obs[y:y + dot_height, x:x + dot_width] = 255
         if self.draw_n_dots:
             # Draw another n_steps - 1 dots in the same column,
             # for a total of n_steps dots in the column
-            for i in range(1, self.step_n):
+            for i in range(1, self.n_steps):
                 y = 10 + i * 10
-                obs[y:y + h, x:x + w] = 255
+                obs[y:y + dot_height, x:x + dot_width] = 255
         return obs
 
     def step(self, action):
-        if self.step_n >= 30:
+        obs = self._get_obs()
+        reward = 0
+        info = None
+
+        if self.n_steps >= 16:
             done = True
         else:
             done = False
-            self.step_n += 1
-
-        obs = self._get_obs()
-        reward = self.step_n
-        info = None
 
         return obs, reward, done, info
 
@@ -80,7 +69,8 @@ class TestPreprocessing(unittest.TestCase):
           ./preprocessing_test.py TestPreprocessing.check_full_preprocessing
         """
         from pylab import subplot, imshow, show, tight_layout
-        env = DummyEnv(dot_width=2, dot_height=2, draw_n_dots=True)
+        env = DummyEnv()
+        env.draw_n_dots = True
         env_wrapped = EnvWrapper(env,
                                  prepro2=prepro2,
                                  frameskip=4)

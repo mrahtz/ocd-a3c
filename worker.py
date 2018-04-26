@@ -40,8 +40,10 @@ class Worker:
         self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
         self.scope = worker_scope
 
-        policy_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
-        value_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
+        policy_optimizer = tf.train.RMSPropOptimizer(learning_rate=0.0005,
+                                                     decay=0.99, epsilon=1e-5)
+        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=0.0005,
+                                                    decay=0.99, epsilon=1e-5)
 
         self.update_policy_gradients, self.apply_policy_gradients, self.zero_policy_gradients, self.grad_bufs_policy = \
             create_train_ops(self.network.policy_loss,

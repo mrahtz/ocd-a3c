@@ -6,8 +6,8 @@ import subprocess
 from multiprocessing import Queue
 from threading import Thread
 
-import numpy as np
 import tensorflow as tf
+import numpy as np
 
 
 def get_port_range(start_port, n_ports, random_stagger=False):
@@ -57,6 +57,9 @@ def rewards_to_discounted_returns(r, discount_factor):
     for i in range(len(r) - 2, -1, -1):
         returns[i] = r[i] + discount_factor * returns[i + 1]
     return returns
+
+
+# Based on Andrej's code
 
 
 def logit_entropy(logits):

@@ -14,7 +14,7 @@ Network = namedtuple('Network',
 
 def create_network(scope):
     with tf.variable_scope(scope):
-        graph_s = tf.placeholder(tf.float32, [None, 84, 84, 4])
+        graph_s = tf.placeholder(tf.float32, [None, 80, 80, 4])
         graph_action = tf.placeholder(tf.int64, [None])
         graph_r = tf.placeholder(tf.float32, [None])
 
