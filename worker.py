@@ -73,13 +73,17 @@ class Worker:
         value_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                                     decay=0.99, epsilon=1e-5)
 
-        self.update_policy_gradients, self.apply_policy_gradients, self.zero_policy_gradients, self.grad_bufs_policy = \
+        self.update_policy_gradients, self.apply_policy_gradients, \
+        self.zero_policy_gradients, self.grad_bufs_policy, \
+        grads_policy_norm = \
             create_train_ops(self.network.policy_loss,
                              policy_optimizer,
                              update_scope=worker_scope,
                              apply_scope='global')
 
-        self.update_value_gradients, self.apply_value_gradients, self.zero_value_gradients, self.grad_bufs_value = \
+        self.update_value_gradients, self.apply_value_gradients, \
+        self.zero_value_gradients, self.grad_bufs_value, \
+        grads_value_norm = \
             create_train_ops(self.network.value_loss,
                              value_optimizer,
                              update_scope=worker_scope,
@@ -89,6 +93,8 @@ class Worker:
                           self.network.value_loss)
         tf.summary.scalar('policy_entropy',
                           tf.reduce_mean(self.network.policy_entropy))
+        tf.summary.scalar('grads_policy_norm', grads_policy_norm)
+        tf.summary.scalar('grads_value_norm', grads_value_norm)
         self.summary_ops = tf.summary.merge_all()
 
         self.copy_ops = utils.create_copy_ops(from_scope='global',
