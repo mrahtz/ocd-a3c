@@ -4,6 +4,7 @@ import gym
 import numpy as np
 from easy_tf_log import tflog
 
+import preprocessing
 import utils
 from network import create_network
 from train_ops import *
@@ -28,9 +29,9 @@ class Worker:
         env = gym.make(env_id)
         env.seed(seed)
 
-        self.env = utils.EnvWrapper(env,
-                                    prepro2=utils.prepro2,
-                                    frameskip=4)
+        self.env = preprocessing.EnvWrapper(env,
+                                            prepro2=preprocessing.prepro2,
+                                            frameskip=4)
 
         self.sess = sess
 
@@ -39,17 +40,18 @@ class Worker:
         self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
         self.scope = worker_scope
 
-        optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
+        policy_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
+        value_optimizer = tf.train.AdamOptimizer(learning_rate=0.0005)
 
         self.update_policy_gradients, self.apply_policy_gradients, self.zero_policy_gradients, self.grad_bufs_policy = \
             create_train_ops(self.network.policy_loss,
-                             optimizer,
+                             policy_optimizer,
                              update_scope=worker_scope,
                              apply_scope='global')
 
         self.update_value_gradients, self.apply_value_gradients, self.zero_value_gradients, self.grad_bufs_value = \
             create_train_ops(self.network.value_loss,
-                             optimizer,
+                             value_optimizer,
                              update_scope=worker_scope,
                              apply_scope='global')
 
@@ -131,7 +133,7 @@ class Worker:
                        self.zero_value_gradients])
         self.sync_network()
 
-        list_set(states, i, self.frame_stack)
+        list_set(states, i, np.copy(self.frame_stack))
 
         done = False
         while not done and i < self.t_max:
