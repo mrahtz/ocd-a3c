@@ -55,6 +55,7 @@ class Worker:
         # three best learning rates for each game. From the scatter plot of
         # performance for different learning rates, Figure 2, it looks like
         # 7e-4 is a safe bet which works across a variety of games.
+        # TODO: 7e-4?
         #
         # RMSprop hyperparameters: Section 8, Experimental Setup, says:
         # "All experiments used...RMSProp decay factor of α = 0.99."
@@ -67,9 +68,9 @@ class Worker:
         # close to zero. So my speculation about why baselines uses a much
         # larger epsilon is: sometimes in RL the gradients can end up being
         # very small, and we want to limit the size of the update.
-        policy_optimizer = tf.train.RMSPropOptimizer(learning_rate=7e-4,
+        policy_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                                      decay=0.99, epsilon=1e-5)
-        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=7e-4,
+        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                                     decay=0.99, epsilon=1e-5)
 
         self.update_policy_gradients, self.apply_policy_gradients, self.zero_policy_gradients, self.grad_bufs_policy = \
