@@ -40,9 +40,42 @@ class Worker:
         self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
         self.scope = worker_scope
 
-        policy_optimizer = tf.train.RMSPropOptimizer(learning_rate=0.0005,
+        # From the paper, Section 4, Asynchronous RL Framework,
+        # subsection Optimization:
+        # "We investigated three different optimization algorithms in our
+        #  asynchronous framework – SGD with momentum, RMSProp without shared
+        #  statistics, and RMSProp with shared statistics.
+        #  We used the standard non-centered RMSProp update..."
+        # "A comparison on a subset of Atari 2600 games showed that a variant
+        #  of RMSProp where statistics g are shared across threads is
+        #  considerably more robust than the other two methods."
+        #
+        # TensorFlow's RMSPropOptimizer defaults to centered=False,
+        # so we're good there. TODO: investigate shared statistics.
+        #
+        # In terms of hyperparameters:
+        #
+        # Learning rate: the paper actually runs a bunch of
+        # different learning rates and presents results averaged over the
+        # three best learning rates for each game. From the scatter plot of
+        # performance for different learning rates, Figure 2, it looks like
+        # 7e-4 is a safe bet which works across a variety of games.
+        # TODO: 7e-4
+        #
+        # RMSprop hyperparameters: Section 8, Experimental Setup, says:
+        # "All experiments used...RMSProp decay factor of α = 0.99."
+        # There's no mention of the epsilon used. I see that OpenAI's
+        # baselines implementation of A2C uses 1e-5 (https://git.io/vpCQt),
+        # instead of TensorFlow's default of 1e-10. Remember, RMSprop divides
+        # gradients by a factor based on recent gradient history. Epsilon is
+        # added to that factor to prevent a division by zero. If epsilon is
+        # too small, we'll get a very large update when the gradient history is
+        # close to zero. So my speculation about why baselines uses a much
+        # larger epsilon is: sometimes in RL the gradients can end up being
+        # very small, and we want to limit the size of the update.
+        policy_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                                      decay=0.99, epsilon=1e-5)
-        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=0.0005,
+        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                                     decay=0.99, epsilon=1e-5)
 
         self.update_policy_gradients, self.apply_policy_gradients, \
