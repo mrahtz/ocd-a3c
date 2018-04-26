@@ -3,11 +3,12 @@ import queue
 import random
 import socket
 import subprocess
+import time
 from multiprocessing import Queue
 from threading import Thread
 
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 
 
 def get_port_range(start_port, n_ports, random_stagger=False):
@@ -59,9 +60,6 @@ def rewards_to_discounted_returns(r, discount_factor):
     return returns
 
 
-# Based on Andrej's code
-
-
 def logit_entropy(logits):
     """
     Numerically-stable entropy directly from logits.
@@ -103,7 +101,8 @@ def logit_entropy(logits):
     nlogp = -logp
     probs = tf.nn.softmax(logits, axis=-1)
     nplogp = probs * nlogp
-    return tf.reduce_sum(nplogp, axis=-1, keepdims=True)
+    # TODO: should this be reducing?
+    return tf.reduce_mean(nplogp, axis=-1, keepdims=True)
 
 
 def create_copy_ops(from_scope, to_scope):
@@ -176,3 +175,30 @@ def set_random_seeds(seed):
     tf.set_random_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
+
+class Timer:
+    """
+    A simple timer class.
+
+    Set the timer duration with the duration_seconds argument to the
+    constructor.
+
+    Start the timer by calling reset().
+
+    Check if the timer is done by calling done().
+    """
+
+    def __init__(self, duration_seconds):
+        self.duration_seconds = duration_seconds
+        self.start_time = None
+
+    def reset(self):
+        self.start_time = time.time()
+
+    def done(self):
+        cur_time = time.time()
+        if cur_time - self.start_time > self.duration_seconds:
+            return True
+        else:
+            return False
+

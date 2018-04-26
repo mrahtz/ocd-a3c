@@ -14,7 +14,7 @@ Network = namedtuple('Network',
 
 def create_network(scope):
     with tf.variable_scope(scope):
-        graph_s = tf.placeholder(tf.float32, [None, 80, 80, 4])
+        graph_s = tf.placeholder(tf.float32, [None, 84, 84, 4])
         graph_action = tf.placeholder(tf.int64, [None])
         graph_r = tf.placeholder(tf.float32, [None])
 
@@ -80,15 +80,15 @@ def create_network(scope):
             # Note that the advantage is treated as a constant for the
             # policy network update step
             policy_loss = nlp * tf.stop_gradient(advantage)
-            policy_loss = tf.reduce_sum(policy_loss)
+            policy_loss = tf.reduce_mean(policy_loss)
 
             policy_entropy = logit_entropy(a_logits)
             # We want to maximise entropy, which is the same as
             # minimising negative entropy
-            policy_loss -= tf.reduce_sum(BETA * policy_entropy)
+            policy_loss -= tf.reduce_mean(BETA * policy_entropy)
 
             value_loss = advantage ** 2
-            value_loss = tf.reduce_sum(value_loss)
+            value_loss = tf.reduce_mean(value_loss)
 
         network = Network(
             s=graph_s,
