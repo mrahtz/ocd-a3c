@@ -104,7 +104,7 @@ class Worker:
         self.copy_ops = utils.create_copy_ops(from_scope='global',
                                               to_scope=self.scope)
 
-        self.frame_stack = deque(maxlen=N_FRAMES_STACKED)
+        self.last_o = deque(maxlen=N_FRAMES_STACKED)
         self.reset_env()
 
         self.t_max = 10000
@@ -117,18 +117,18 @@ class Worker:
         self.fig = None
 
     def reset_env(self):
-        self.frame_stack.clear()
+        self.last_o.clear()
         self.env.reset()
 
         n_noops = np.random.randint(low=0, high=N_MAX_NOOPS + 1)
         print("%d no-ops..." % n_noops)
         for i in range(n_noops):
             o, _, _, _ = self.env.step(0)
-            self.frame_stack.append(o)
-        while len(self.frame_stack) < N_FRAMES_STACKED:
+            self.last_o.append(o)
+        while len(self.last_o) < N_FRAMES_STACKED:
             print("One more...")
             o, _, _, _ = self.env.step(0)
-            self.frame_stack.append(o)
+            self.last_o.append(o)
         print("No-ops done")
 
     @staticmethod
@@ -175,7 +175,7 @@ class Worker:
 
         done = False
         while not done and i < self.t_max:
-            s = np.moveaxis(self.frame_stack, source=0, destination=-1)
+            s = np.moveaxis(self.last_o, source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             a_p = self.sess.run(self.network.a_softmax, feed_dict=feed_dict)[0]
             a = np.random.choice(ACTIONS, p=a_p)
@@ -195,12 +195,12 @@ class Worker:
             actions.append(a)
             rewards.append(r)
 
-            self.frame_stack.append(o)
+            self.last_o.append(o)
             self.episode_rewards.append(r)
 
             i += 1
 
-        last_state = np.copy(self.frame_stack)
+        last_state = np.copy(self.last_o)
 
         if done:
             print("Episode %d finished" % self.episode_n)
