@@ -69,34 +69,20 @@ class Worker:
         # close to zero. So my speculation about why baselines uses a much
         # larger epsilon is: sometimes in RL the gradients can end up being
         # very small, and we want to limit the size of the update.
-        policy_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
-                                                     decay=0.99, epsilon=1e-5)
-        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
-                                                    decay=0.99, epsilon=1e-5)
+        optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
+                                              decay=0.99, epsilon=1e-5)
 
-        self.update_policy_gradients, self.apply_policy_gradients, \
-        self.zero_policy_gradients, self.grad_bufs_policy, \
-        grads_policy_norm = \
-            create_train_ops(self.network.policy_loss,
-                             policy_optimizer,
+        self.update_gradients, self.apply_gradients, self.zero_gradients, self.grad_bufs, grads_norm = \
+            create_train_ops(self.network.loss,
+                             optimizer,
                              update_scope=worker_scope,
                              apply_scope='global')
 
-        self.update_value_gradients, self.apply_value_gradients, \
-        self.zero_value_gradients, self.grad_bufs_value, \
-        grads_value_norm = \
-            create_train_ops(self.network.value_loss,
-                             value_optimizer,
-                             update_scope=worker_scope,
-                             apply_scope='global')
-
-        utils.add_rmsprop_monitoring_ops(policy_optimizer, 'policy')
-        utils.add_rmsprop_monitoring_ops(value_optimizer, 'value')
+        utils.add_rmsprop_monitoring_ops(optimizer, 'loss')
 
         tf.summary.scalar('rl/value_loss',self.network.value_loss)
         tf.summary.scalar('rl/policy_entropy', self.network.policy_entropy)
-        tf.summary.scalar('gradients/norm_policy', grads_policy_norm)
-        tf.summary.scalar('gradients/norm_value', grads_value_norm)
+        tf.summary.scalar('gradients/norm', grads_norm)
         self.summary_ops = tf.summary.merge_all()
 
         self.copy_ops = utils.create_copy_ops(from_scope='global',
@@ -144,8 +130,7 @@ class Worker:
         actions = []
         rewards = []
 
-        self.sess.run([self.zero_policy_gradients,
-                       self.zero_value_gradients])
+        self.sess.run(self.zero_gradients)
         self.sync_network()
 
         for _ in range(n_steps):
@@ -205,16 +190,12 @@ class Worker:
         feed_dict = {self.network.s: states,
                      self.network.a: actions,
                      self.network.r: returns}
-        summaries, _, _ = self.sess.run([self.summary_ops,
-                                         self.update_policy_gradients,
-                                         self.update_value_gradients],
+        summaries, _, _ = self.sess.run([self.summary_ops, self.update_gradients],
                                         feed_dict)
         self.summary_writer.add_summary(summaries, self.steps)
 
-        self.sess.run([self.apply_policy_gradients,
-                       self.apply_value_gradients])
-        self.sess.run([self.zero_policy_gradients,
-                       self.zero_value_gradients])
+        self.sess.run(self.apply_gradients)
+        self.sess.run(self.zero_gradients)
 
         self.steps += 1
 

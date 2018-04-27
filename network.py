@@ -8,7 +8,7 @@ N_ACTIONS = 3
 BETA = 0.01
 
 Network = namedtuple('Network',
-                     's a r a_softmax graph_v policy_loss value_loss '
+                     's a r a_softmax graph_v loss value_loss '
                      'policy_entropy')
 
 
@@ -109,13 +109,15 @@ def create_network(scope, debug=False):
             value_loss = advantage ** 2
             value_loss = tf.reduce_mean(value_loss)
 
+            loss = policy_loss + 0.5 * value_loss
+
         network = Network(
             s=graph_s,
             a=graph_action,
             r=graph_r,
             a_softmax=a_softmax,
             graph_v=graph_v,
-            policy_loss=policy_loss,
+            loss=loss,
             value_loss=value_loss,
             policy_entropy=policy_entropy)
 
