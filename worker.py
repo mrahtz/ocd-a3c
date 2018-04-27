@@ -76,6 +76,7 @@ class Worker:
         self.update_gradients, self.apply_gradients, self.zero_gradients, self.grad_bufs, grads_norm = \
             create_train_ops(self.network.loss,
                              policy_optimizer,
+                             max_grad_norm=0.5,
                              update_scope=worker_scope,
                              apply_scope='global')
 
