@@ -132,7 +132,7 @@ class Worker:
 
         self.reset_env()
 
-        self.t_max = 10000
+        self.t_max = 5
         self.steps = 0
         self.episode_rewards = []
         self.render = False
