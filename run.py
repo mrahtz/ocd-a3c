@@ -41,8 +41,13 @@ def run_worker(env_id, seed, worker_n, n_steps_to_run, ckpt_timer,
                    worker_n=worker_n,
                    seed=seed,
                    log_dir=worker_log_dir)
+        init_op = tf.global_variables_initializer()
         if render:
             w.render = True
+
+    # Worker 0 initialises the global network as well as the per-worker networks
+    # Other workers only initialise their own per-worker networks
+    sess.run(init_op)
 
     if worker_n == 0:
         saver = tf.train.Saver()
@@ -50,16 +55,12 @@ def run_worker(env_id, seed, worker_n, n_steps_to_run, ckpt_timer,
         os.makedirs(checkpoint_dir)
         checkpoint_file = osp.join(checkpoint_dir, 'network.ckpt')
 
-    print("Waiting for cluster connection...")
-    sess.run(tf.global_variables_initializer())
-
     if load_ckpt_file is not None:
         print("Restoring from checkpoint '%s'..." % load_ckpt_file,
               end='', flush=True)
         saver.restore(sess, load_ckpt_file)
         print("done!")
 
-    print("Cluster established!")
     updates = 0
     steps = 0
     ckpt_timer.reset()
@@ -122,10 +123,10 @@ cluster_dict["worker"] = ["localhost:{}".format(port)
 cluster = tf.train.ClusterSpec(cluster_dict)
 
 
-def start_worker_process(worker_n):
+def start_worker_process(worker_n, seed):
     print("Starting worker", worker_n)
     run_worker(env_id=args.env_id,
-               seed=args.seed + worker_n,
+               seed=seed,
                worker_n=worker_n,
                n_steps_to_run=args.n_steps,
                ckpt_timer=ckpt_timer,
@@ -137,7 +138,8 @@ def start_worker_process(worker_n):
 worker_processes = []
 memory_profiler_processes = []
 for worker_n in range(args.n_workers):
-    p = Process(target=start_worker_process, args=(worker_n,), daemon=True)
+    seed = args.seed * args.n_workers + worker_n
+    p = Process(target=start_worker_process, args=(worker_n, seed), daemon=True)
     p.start()
     worker_processes.append(p)
 
