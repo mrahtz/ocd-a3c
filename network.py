@@ -109,7 +109,7 @@ def create_network(scope, debug=False):
             value_loss = advantage ** 2
             value_loss = tf.reduce_mean(value_loss)
 
-            loss = policy_loss + 0.5 * value_loss
+            loss = policy_loss + 0.25 * value_loss
 
         network = Network(
             s=graph_s,
