@@ -222,7 +222,7 @@ class Worker:
             a_batch.append(a)
             r_batch.append(r)
 
-        tflog('batch_reward_sum', sum(r_batch))
+        tflog('batch_returns_sum', sum(r_batch))
 
         feed_dict = {self.network.s: s_batch,
                      self.network.a: a_batch,
