@@ -72,59 +72,33 @@ class Worker:
         # very small, and we want to limit the size of the update.
         policy_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                                      decay=0.99, epsilon=1e-5)
-        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
-                                                    decay=0.99, epsilon=1e-5)
 
-        self.update_policy_gradients, self.apply_policy_gradients, \
-        self.zero_policy_gradients, self.grad_bufs_policy, \
-        grads_policy_norm = \
-            create_train_ops(self.network.policy_loss,
+        self.update_gradients, self.apply_gradients, self.zero_gradients, self.grad_bufs, grads_norm = \
+            create_train_ops(self.network.loss,
                              policy_optimizer,
                              update_scope=worker_scope,
                              apply_scope='global')
 
-        self.update_value_gradients, self.apply_value_gradients, \
-        self.zero_value_gradients, self.grad_bufs_value, \
-        grads_value_norm = \
-            create_train_ops(self.network.value_loss,
-                             value_optimizer,
-                             update_scope=worker_scope,
-                             apply_scope='global')
-
-        rms_vars_policy = [policy_optimizer.get_slot(var, 'rms')
+        rms_vars = [policy_optimizer.get_slot(var, 'rms')
                            for var in tf.trainable_variables()]
-        rms_vars_policy = [v for v in rms_vars_policy if v is not None]
-        rms_max_policy = tf.reduce_max([tf.reduce_max(v)
-                                        for v in rms_vars_policy])
-        rms_min_policy = tf.reduce_min([tf.reduce_min(v)
-                                        for v in rms_vars_policy])
-        rms_avg_policy = tf.reduce_mean([tf.reduce_mean(v)
-                                         for v in rms_vars_policy])
+        rms_vars = [v for v in rms_vars if v is not None]
+        rms_max = tf.reduce_max([tf.reduce_max(v)
+                                        for v in rms_vars])
+        rms_min = tf.reduce_min([tf.reduce_min(v)
+                                        for v in rms_vars])
+        rms_avg = tf.reduce_mean([tf.reduce_mean(v)
+                                         for v in rms_vars])
 
-        rms_vars_value = [value_optimizer.get_slot(var, 'rms')
-                           for var in tf.trainable_variables()]
-        rms_vars_value = [v for v in rms_vars_value if v is not None]
-        rms_max_value = tf.reduce_max([tf.reduce_max(v)
-                                        for v in rms_vars_value])
-        rms_min_value = tf.reduce_min([tf.reduce_min(v)
-                                        for v in rms_vars_value])
-        rms_avg_value = tf.reduce_mean([tf.reduce_mean(v)
-                                         for v in rms_vars_value])
+        tf.summary.scalar('rms_max', rms_max)
+        tf.summary.scalar('rms_min', rms_min)
+        tf.summary.scalar('rms_avg', rms_avg)
 
-        tf.summary.scalar('rms_max_policy', rms_max_policy)
-        tf.summary.scalar('rms_min_policy', rms_min_policy)
-        tf.summary.scalar('rms_avg_policy', rms_avg_policy)
-
-        tf.summary.scalar('rms_max_value', rms_max_value)
-        tf.summary.scalar('rms_min_value', rms_min_value)
-        tf.summary.scalar('rms_avg_value', rms_avg_value)
 
         tf.summary.scalar('value_loss',
                           self.network.value_loss)
         tf.summary.scalar('policy_entropy',
                           self.network.policy_entropy)
-        tf.summary.scalar('grads_policy_norm', grads_policy_norm)
-        tf.summary.scalar('grads_value_norm', grads_value_norm)
+        tf.summary.scalar('grads_norm', grads_norm)
         self.summary_ops = tf.summary.merge_all()
 
         self.copy_ops = utils.create_copy_ops(from_scope='global',
@@ -187,8 +161,7 @@ class Worker:
         rewards = []
         i = 0
 
-        self.sess.run([self.zero_policy_gradients,
-                       self.zero_value_gradients])
+        self.sess.run(self.zero_gradients)
         self.sync_network()
 
         list_set(states, i, np.copy(self.last_o))
@@ -251,16 +224,12 @@ class Worker:
         feed_dict = {self.network.s: s_batch,
                      self.network.a: a_batch,
                      self.network.r: r_batch}
-        summaries, _, _ = self.sess.run([self.summary_ops,
-                                         self.update_policy_gradients,
-                                         self.update_value_gradients],
-                                        feed_dict)
+        summaries, _ = self.sess.run([self.summary_ops, self.update_gradients],
+                                     feed_dict)
         self.summary_writer.add_summary(summaries, self.steps)
 
-        self.sess.run([self.apply_policy_gradients,
-                       self.apply_value_gradients])
-        self.sess.run([self.zero_policy_gradients,
-                       self.zero_value_gradients])
+        self.sess.run(self.apply_gradients)
+        self.sess.run(self.zero_gradients)
 
         self.steps += 1
 
