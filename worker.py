@@ -173,6 +173,8 @@ class Worker:
             self.episode_rewards = []
             self.episode_n += 1
 
+        tflog('batch_reward_sum', sum(rewards))
+
         if done:
             returns = utils.rewards_to_discounted_returns(rewards, G)
             self.last_o = self.env.reset()
