@@ -16,11 +16,6 @@ N_FRAMES_STACKED = 4
 N_MAX_NOOPS = 30
 
 
-def list_set(l, i, val):
-    assert (len(l) == i)
-    l.append(val)
-
-
 class Worker:
 
     def __init__(self, sess, env_id, worker_n, seed, log_dir):
@@ -176,15 +171,12 @@ class Worker:
                        self.zero_value_gradients])
         self.sync_network()
 
-        list_set(states, i, np.copy(self.last_o))
-
         done = False
         while not done and i < self.t_max:
             s = np.moveaxis(self.last_o, source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             a_p = self.sess.run(self.network.a_softmax, feed_dict=feed_dict)[0]
             a = np.random.choice(ACTIONS, p=a_p)
-            list_set(actions, i, a)
 
             o, r, done, _ = self.env.step(a)
 
@@ -195,12 +187,18 @@ class Worker:
                 self.value_log.append(v)
                 self.value_graph()
 
+            # The state used to choose the action.
+            # Not the current state. The previous state.
+            states.append(np.copy(s))
+            actions.append(a - 1)
+            rewards.append(r)
+
             self.last_o.append(o)
             self.episode_rewards.append(r)
-            list_set(rewards, i, r)
-            list_set(states, i + 1, np.copy(self.last_o))
 
             i += 1
+
+        last_state = np.copy(self.last_o)
 
         if done:
             print("Episode %d finished" % self.episode_n)
@@ -208,35 +206,23 @@ class Worker:
             self.episode_rewards = []
             self.episode_n += 1
 
-        # Calculate initial value for R
         if done:
-            # Terminal state
-            r = 0
+            returns = utils.rewards_to_discounted_returns(rewards, G)
         else:
-            # Non-terminal state
-            # Estimate the value of the current state using the value network
-            # (states[i]: the last state)
-            s = np.moveaxis(states[i], source=0, destination=-1)
+            # If we're ending in a non-terminal state, in order to calculate
+            # returns, we need to know the return of the final state.
+            # We estimate this using the value network.
+            s = np.moveaxis(last_state, source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
-            r = self.sess.run(self.network.graph_v, feed_dict=feed_dict)[0]
+            last_value = self.sess.run(self.network.graph_v,
+                                       feed_dict=feed_dict)[0]
+            rewards += [last_value]
+            returns = utils.rewards_to_discounted_returns(rewards, G)
+            returns = returns[:-1]  # Chop off last_value
 
-        s_batch = []
-        a_batch = []
-        r_batch = []
-        # i - 1 to 0
-        # (Why start from i - 1, rather than i?
-        #  So that we miss out the last state.)
-        for j in reversed(range(i)):
-            s = np.moveaxis(states[j], source=0, destination=-1)
-            a = actions[j] - 1
-            r = rewards[j] + G * r
-            s_batch.append(s)
-            a_batch.append(a)
-            r_batch.append(r)
-
-        feed_dict = {self.network.s: s_batch,
-                     self.network.a: a_batch,
-                     self.network.r: r_batch}
+        feed_dict = {self.network.s: states,
+                     self.network.a: actions,
+                     self.network.r: returns}
         summaries, _, _ = self.sess.run([self.summary_ops,
                                          self.update_policy_gradients,
                                          self.update_value_gradients],
