@@ -1,4 +1,5 @@
 from collections import namedtuple
+from math import sqrt
 
 import tensorflow as tf
 
@@ -23,21 +24,25 @@ def create_network(scope):
             filters=32,
             kernel_size=8,
             strides=4,
-            activation=tf.nn.relu)
+            activation=tf.nn.relu,
+            kernel_initializer=tf.orthogonal_initializer(gain=sqrt(2)))
 
         x = tf.layers.conv2d(
             inputs=x,
             filters=64,
             kernel_size=4,
             strides=2,
-            activation=tf.nn.relu)
+            activation=tf.nn.relu,
+            kernel_initializer=tf.orthogonal_initializer(gain=sqrt(2)))
+
 
         x = tf.layers.conv2d(
             inputs=x,
             filters=64,
             kernel_size=3,
             strides=1,
-            activation=tf.nn.relu)
+            activation=tf.nn.relu,
+            kernel_initializer=tf.orthogonal_initializer(gain=sqrt(2)))
 
         w, h, f = x.get_shape()[1:]
         x = tf.reshape(x, [-1, int(w * h * f)])
@@ -45,19 +50,21 @@ def create_network(scope):
         x = tf.layers.dense(
             inputs=x,
             units=512,
-            activation=tf.nn.relu)
+            activation=tf.nn.relu,
+            kernel_initializer=tf.orthogonal_initializer(gain=sqrt(2)))
 
         a_logits = tf.layers.dense(
             inputs=x,
             units=N_ACTIONS,
-            activation=None)
-
+            activation=None,
+            kernel_initializer=tf.orthogonal_initializer())
         a_softmax = tf.nn.softmax(a_logits)
 
         graph_v = tf.layers.dense(
             inputs=x,
             units=1,
-            activation=None)
+            activation=None,
+            kernel_initializer=tf.orthogonal_initializer())
         # Shape is currently (?, 1)
         # Convert to just (?)
         graph_v = graph_v[:, 0]
@@ -80,15 +87,15 @@ def create_network(scope):
             # Note that the advantage is treated as a constant for the
             # policy network update step
             policy_loss = nlp * tf.stop_gradient(advantage)
-            policy_loss = tf.reduce_mean(policy_loss)
+            policy_loss = tf.reduce_sum(policy_loss)
 
             policy_entropy = logit_entropy(a_logits)
             # We want to maximise entropy, which is the same as
             # minimising negative entropy
-            policy_loss -= tf.reduce_mean(BETA * policy_entropy)
+            policy_loss -= tf.reduce_sum(BETA * policy_entropy)
 
             value_loss = advantage ** 2
-            value_loss = tf.reduce_mean(value_loss)
+            value_loss = tf.reduce_sum(value_loss)
 
         network = Network(
             s=graph_s,

@@ -101,8 +101,7 @@ def logit_entropy(logits):
     nlogp = -logp
     probs = tf.nn.softmax(logits, axis=-1)
     nplogp = probs * nlogp
-    # TODO: should this be reducing?
-    return tf.reduce_mean(nplogp, axis=-1, keepdims=True)
+    return tf.reduce_sum(nplogp, axis=-1, keepdims=True)
 
 
 def create_copy_ops(from_scope, to_scope):

@@ -10,6 +10,7 @@ import easy_tf_log
 import tensorflow as tf
 
 import preprocessing
+import utils
 from network import create_network
 from utils import get_port_range, MemoryProfiler, get_git_rev, Timer
 from worker import Worker
@@ -19,6 +20,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
                ckpt_timer, load_ckpt_file, render, log_dir):
+    utils.set_random_seeds(seed)
+
     mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
     memory_profiler = MemoryProfiler(pid=-1, log_path=mem_log)
     memory_profiler.start()
@@ -38,7 +41,7 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
                    env_id=env_id,
                    preprocess_wrapper=preprocess_wrapper,
                    worker_n=worker_n,
-                   seed=seed + worker_n,
+                   seed=seed,
                    log_dir=worker_log_dir)
         if render:
             w.render = True
@@ -85,15 +88,15 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
 
 parser = argparse.ArgumentParser()
 parser.add_argument("env_id")
-parser.add_argument("--n_steps", type=int, default=10)
-parser.add_argument("--n_workers", type=int, default=16)
+parser.add_argument("--n_steps", type=int, default=10000000)
+parser.add_argument("--n_workers", type=int, default=1)
 parser.add_argument("--ckpt_interval_seconds", type=int, default=60)
 parser.add_argument("--load_ckpt")
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--render", action='store_true')
 parser.add_argument("--preprocessing",
                     choices=['generic', 'pong'],
-                    default='generic')
+                    default='pong')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('--log_dir')
 seconds_since_epoch = str(int(time.time()))
@@ -133,7 +136,7 @@ def start_worker_process(worker_n):
     print("Starting worker", worker_n)
     run_worker(env_id=args.env_id,
                preprocess_wrapper=preprocess_wrapper,
-               seed=args.seed,
+               seed=args.seed + worker_n,
                worker_n=worker_n,
                n_steps_to_run=args.n_steps,
                ckpt_timer=ckpt_timer,

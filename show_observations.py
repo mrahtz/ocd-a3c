@@ -22,6 +22,7 @@ In this code:
 """
 
 import argparse
+import hashlib
 import re
 
 from pylab import *
@@ -38,6 +39,7 @@ def parse_array(line):
 
     array = np.array(eval(line)[0])
     print("Found array with shape", array.shape)
+    print("sha256:", hashlib.sha256(str.encode(line)).hexdigest())
 
     return array
 

@@ -22,8 +22,6 @@ def list_set(l, i, val):
 class Worker:
 
     def __init__(self, sess, env_id, preprocess_wrapper, worker_n, seed, log_dir):
-        utils.set_random_seeds(seed)
-
         env = gym.make(env_id)
         env.seed(seed)
         self.env = preprocess_wrapper(env)
@@ -46,7 +44,11 @@ class Worker:
         #  considerably more robust than the other two methods."
         #
         # TensorFlow's RMSPropOptimizer defaults to centered=False,
-        # so we're good there. TODO: investigate shared statistics.
+        # so we're good there. For shared statistics - RMSPropOptimizer's
+        # gradient statistics variables are associated with the variables
+        # supplied to apply_gradients(), which happen to be in the global scope
+        # (see train_ops.py). So we get shared statistics without any special
+        # effort.
         #
         # In terms of hyperparameters:
         #
@@ -55,6 +57,7 @@ class Worker:
         # three best learning rates for each game. From the scatter plot of
         # performance for different learning rates, Figure 2, it looks like
         # 7e-4 is a safe bet which works across a variety of games.
+        # TODO: 7e-4
         #
         # RMSprop hyperparameters: Section 8, Experimental Setup, says:
         # "All experiments used...RMSProp decay factor of α = 0.99."
@@ -67,18 +70,22 @@ class Worker:
         # close to zero. So my speculation about why baselines uses a much
         # larger epsilon is: sometimes in RL the gradients can end up being
         # very small, and we want to limit the size of the update.
-        policy_optimizer = tf.train.RMSPropOptimizer(learning_rate=7e-4,
+        policy_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                                      decay=0.99, epsilon=1e-5)
-        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=7e-4,
+        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                                     decay=0.99, epsilon=1e-5)
 
-        self.update_policy_gradients, self.apply_policy_gradients, self.zero_policy_gradients, self.grad_bufs_policy = \
+        self.update_policy_gradients, self.apply_policy_gradients, \
+        self.zero_policy_gradients, self.grad_bufs_policy, \
+        grads_policy_norm = \
             create_train_ops(self.network.policy_loss,
                              policy_optimizer,
                              update_scope=worker_scope,
                              apply_scope='global')
 
-        self.update_value_gradients, self.apply_value_gradients, self.zero_value_gradients, self.grad_bufs_value = \
+        self.update_value_gradients, self.apply_value_gradients, \
+        self.zero_value_gradients, self.grad_bufs_value, \
+        grads_value_norm = \
             create_train_ops(self.network.value_loss,
                              value_optimizer,
                              update_scope=worker_scope,
@@ -88,6 +95,8 @@ class Worker:
                           self.network.value_loss)
         tf.summary.scalar('policy_entropy',
                           tf.reduce_mean(self.network.policy_entropy))
+        tf.summary.scalar('grads_policy_norm', grads_policy_norm)
+        tf.summary.scalar('grads_value_norm', grads_value_norm)
         self.summary_ops = tf.summary.merge_all()
 
         self.copy_ops = utils.create_copy_ops(from_scope='global',
@@ -154,7 +163,7 @@ class Worker:
                        self.zero_value_gradients])
         self.sync_network()
 
-        list_set(states, i, self.last_o)
+        list_set(states, i, np.copy(self.last_o))
 
         done = False
         while not done and i < self.t_max:
