@@ -90,6 +90,34 @@ class Worker:
                              update_scope=worker_scope,
                              apply_scope='global')
 
+        rms_vars_policy = [policy_optimizer.get_slot(var, 'rms')
+                           for var in tf.trainable_variables()]
+        rms_vars_policy = [v for v in rms_vars_policy if v is not None]
+        rms_max_policy = tf.reduce_max([tf.reduce_max(v)
+                                        for v in rms_vars_policy])
+        rms_min_policy = tf.reduce_min([tf.reduce_min(v)
+                                        for v in rms_vars_policy])
+        rms_avg_policy = tf.reduce_mean([tf.reduce_mean(v)
+                                         for v in rms_vars_policy])
+
+        rms_vars_value = [value_optimizer.get_slot(var, 'rms')
+                           for var in tf.trainable_variables()]
+        rms_vars_value = [v for v in rms_vars_value if v is not None]
+        rms_max_value = tf.reduce_max([tf.reduce_max(v)
+                                        for v in rms_vars_value])
+        rms_min_value = tf.reduce_min([tf.reduce_min(v)
+                                        for v in rms_vars_value])
+        rms_avg_value = tf.reduce_mean([tf.reduce_mean(v)
+                                         for v in rms_vars_value])
+
+        tf.summary.scalar('rms_max_policy', rms_max_policy)
+        tf.summary.scalar('rms_min_policy', rms_min_policy)
+        tf.summary.scalar('rms_avg_policy', rms_avg_policy)
+
+        tf.summary.scalar('rms_max_value', rms_max_value)
+        tf.summary.scalar('rms_min_value', rms_min_value)
+        tf.summary.scalar('rms_avg_value', rms_avg_value)
+
         tf.summary.scalar('value_loss',
                           self.network.value_loss)
         tf.summary.scalar('policy_entropy',
