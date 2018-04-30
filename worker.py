@@ -116,7 +116,7 @@ class Worker:
 
     def reset_env(self):
         self.last_o.clear()
-        self.env.reset()
+        self.last_o.append(self.env.reset())
 
         n_noops = np.random.randint(low=0, high=N_MAX_NOOPS + 1)
         print("%d no-ops..." % n_noops)
@@ -179,6 +179,7 @@ class Worker:
             a = np.random.choice(ACTIONS, p=a_p)
 
             o, r, done, _ = self.env.step(a)
+            self.last_o.append(o)
 
             if self.render:
                 self.env.render()
@@ -193,7 +194,6 @@ class Worker:
             actions.append(a - 1)
             rewards.append(r)
 
-            self.last_o.append(o)
             self.episode_rewards.append(r)
 
             i += 1
