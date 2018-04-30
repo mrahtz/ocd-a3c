@@ -171,8 +171,7 @@ class Worker:
                        self.zero_value_gradients])
         self.sync_network()
 
-        done = False
-        while not done and i < self.t_max:
+        for _ in range(self.t_max):
             s = np.moveaxis(self.last_o, source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             a_p = self.sess.run(self.network.a_softmax, feed_dict=feed_dict)[0]
@@ -195,8 +194,8 @@ class Worker:
                 self.value_log.append(v)
                 self.value_graph()
 
-
-            i += 1
+            if done:
+                break
 
         last_state = np.copy(self.last_o)
 
