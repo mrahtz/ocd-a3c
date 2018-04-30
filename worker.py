@@ -181,6 +181,13 @@ class Worker:
             o, r, done, _ = self.env.step(a)
             self.last_o.append(o)
 
+            # The state used to choose the action.
+            # Not the current state. The previous state.
+            states.append(np.copy(s))
+            actions.append(a - 1)
+            rewards.append(r)
+            self.episode_rewards.append(r)
+
             if self.render:
                 self.env.render()
                 feed_dict = {self.network.s: [s]}
@@ -188,13 +195,6 @@ class Worker:
                 self.value_log.append(v)
                 self.value_graph()
 
-            # The state used to choose the action.
-            # Not the current state. The previous state.
-            states.append(np.copy(s))
-            actions.append(a - 1)
-            rewards.append(r)
-
-            self.episode_rewards.append(r)
 
             i += 1
 
