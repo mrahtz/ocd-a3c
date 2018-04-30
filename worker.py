@@ -117,7 +117,6 @@ class Worker:
     def reset_env(self):
         self.last_o.clear()
         self.last_o.append(self.env.reset())
-
         n_noops = np.random.randint(low=0, high=N_MAX_NOOPS + 1)
         print("%d no-ops..." % n_noops)
         for i in range(n_noops):
@@ -165,14 +164,12 @@ class Worker:
         states = []
         actions = []
         rewards = []
-        i = 0
 
         self.sess.run([self.zero_policy_gradients,
                        self.zero_value_gradients])
         self.sync_network()
 
-        done = False
-        while not done and i < self.t_max:
+        for _ in range(self.t_max):
             s = np.moveaxis(self.last_o, source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             a_p = self.sess.run(self.network.a_softmax, feed_dict=feed_dict)[0]
@@ -195,8 +192,8 @@ class Worker:
                 self.value_log.append(v)
                 self.value_graph()
 
-
-            i += 1
+            if done:
+                break
 
         last_state = np.copy(self.last_o)
 
@@ -236,4 +233,4 @@ class Worker:
 
         self.steps += 1
 
-        return i, done
+        return len(states), done
