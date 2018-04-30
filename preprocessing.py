@@ -105,9 +105,15 @@ class NumberFrames(ObservationWrapper):
         return self.env.reset()
 
     def observation(self, obs):
+        # Make sure the numbers are clear even if some other wrapper takes
+        # maxes observations over pairs of time steps
+        if self.frames_since_reset % 2 == 0:
+            x = 0
+        else:
+            x = 70
         cv2.putText(obs,
                     str(self.frames_since_reset),
-                    org=(0, 70),  # x, y position of bottom-left corner of text
+                    org=(x, 70),  # x, y position of bottom-left corner of text
                     fontFace=cv2.FONT_HERSHEY_PLAIN,
                     fontScale=2.0,
                     color=(255, 255, 255),
