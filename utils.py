@@ -3,7 +3,6 @@ import queue
 import random
 import socket
 import subprocess
-import time
 from multiprocessing import Queue
 from threading import Thread
 
@@ -101,6 +100,8 @@ def logit_entropy(logits):
     nlogp = -logp
     probs = tf.nn.softmax(logits, axis=-1)
     nplogp = probs * nlogp
+    # This reduce_sum is just the final part of the entropy calculation.
+    # Don't worry - we return the entropy for each individual item in the batch.
     return tf.reduce_sum(nplogp, axis=-1, keepdims=True)
 
 
@@ -174,30 +175,3 @@ def set_random_seeds(seed):
     tf.set_random_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
-
-class Timer:
-    """
-    A simple timer class.
-
-    Set the timer duration with the duration_seconds argument to the
-    constructor.
-
-    Start the timer by calling reset().
-
-    Check if the timer is done by calling done().
-    """
-
-    def __init__(self, duration_seconds):
-        self.duration_seconds = duration_seconds
-        self.start_time = None
-
-    def reset(self):
-        self.start_time = time.time()
-
-    def done(self):
-        cur_time = time.time()
-        if cur_time - self.start_time > self.duration_seconds:
-            return True
-        else:
-            return False
-

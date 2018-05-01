@@ -4,6 +4,7 @@ import gym
 import numpy as np
 from easy_tf_log import tflog
 
+import preprocessing
 import utils
 from network import create_network
 from train_ops import *
@@ -11,6 +12,7 @@ from train_ops import *
 G = 0.99
 N_ACTIONS = 3
 ACTIONS = np.arange(N_ACTIONS) + 1
+N_FRAMES_STACKED = 4
 N_MAX_NOOPS = 30
 
 
@@ -21,10 +23,15 @@ def list_set(l, i, val):
 
 class Worker:
 
-    def __init__(self, sess, env_id, preprocess_wrapper, worker_n, seed, log_dir):
+    def __init__(self, sess, env_id, worker_n, seed, log_dir):
+        utils.set_random_seeds(seed)
+
         env = gym.make(env_id)
         env.seed(seed)
-        self.env = preprocess_wrapper(env)
+
+        self.env = preprocessing.EnvWrapper(env,
+                                            prepro2=preprocessing.prepro2,
+                                            frameskip=4)
 
         self.sess = sess
 
@@ -33,46 +40,9 @@ class Worker:
         self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
         self.scope = worker_scope
 
-        # From the paper, Section 4, Asynchronous RL Framework,
-        # subsection Optimization:
-        # "We investigated three different optimization algorithms in our
-        #  asynchronous framework – SGD with momentum, RMSProp without shared
-        #  statistics, and RMSProp with shared statistics.
-        #  We used the standard non-centered RMSProp update..."
-        # "A comparison on a subset of Atari 2600 games showed that a variant
-        #  of RMSProp where statistics g are shared across threads is
-        #  considerably more robust than the other two methods."
-        #
-        # TensorFlow's RMSPropOptimizer defaults to centered=False,
-        # so we're good there. For shared statistics - RMSPropOptimizer's
-        # gradient statistics variables are associated with the variables
-        # supplied to apply_gradients(), which happen to be in the global scope
-        # (see train_ops.py). So we get shared statistics without any special
-        # effort.
-        #
-        # In terms of hyperparameters:
-        #
-        # Learning rate: the paper actually runs a bunch of
-        # different learning rates and presents results averaged over the
-        # three best learning rates for each game. From the scatter plot of
-        # performance for different learning rates, Figure 2, it looks like
-        # 7e-4 is a safe bet which works across a variety of games.
-        # TODO: 7e-4
-        #
-        # RMSprop hyperparameters: Section 8, Experimental Setup, says:
-        # "All experiments used...RMSProp decay factor of α = 0.99."
-        # There's no mention of the epsilon used. I see that OpenAI's
-        # baselines implementation of A2C uses 1e-5 (https://git.io/vpCQt),
-        # instead of TensorFlow's default of 1e-10. Remember, RMSprop divides
-        # gradients by a factor based on recent gradient history. Epsilon is
-        # added to that factor to prevent a division by zero. If epsilon is
-        # too small, we'll get a very large update when the gradient history is
-        # close to zero. So my speculation about why baselines uses a much
-        # larger epsilon is: sometimes in RL the gradients can end up being
-        # very small, and we want to limit the size of the update.
-        policy_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
+        policy_optimizer = tf.train.RMSPropOptimizer(learning_rate=0.0005,
                                                      decay=0.99, epsilon=1e-5)
-        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
+        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=0.0005,
                                                     decay=0.99, epsilon=1e-5)
 
         self.update_policy_gradients, self.apply_policy_gradients, \
@@ -94,7 +64,7 @@ class Worker:
         tf.summary.scalar('value_loss',
                           self.network.value_loss)
         tf.summary.scalar('policy_entropy',
-                          tf.reduce_mean(self.network.policy_entropy))
+                          self.network.policy_entropy)
         tf.summary.scalar('grads_policy_norm', grads_policy_norm)
         tf.summary.scalar('grads_value_norm', grads_value_norm)
         self.summary_ops = tf.summary.merge_all()
@@ -102,6 +72,7 @@ class Worker:
         self.copy_ops = utils.create_copy_ops(from_scope='global',
                                               to_scope=self.scope)
 
+        self.frame_stack = deque(maxlen=N_FRAMES_STACKED)
         self.reset_env()
 
         self.t_max = 10000
@@ -114,11 +85,18 @@ class Worker:
         self.fig = None
 
     def reset_env(self):
-        self.last_o = self.env.reset()
+        self.frame_stack.clear()
+        self.env.reset()
+
         n_noops = np.random.randint(low=0, high=N_MAX_NOOPS + 1)
         print("%d no-ops..." % n_noops)
         for i in range(n_noops):
-            self.last_o, _, _, _ = self.env.step(0)
+            o, _, _, _ = self.env.step(0)
+            self.frame_stack.append(o)
+        while len(self.frame_stack) < N_FRAMES_STACKED:
+            print("One more...")
+            o, _, _, _ = self.env.step(0)
+            self.frame_stack.append(o)
         print("No-ops done")
 
     @staticmethod
@@ -163,17 +141,17 @@ class Worker:
                        self.zero_value_gradients])
         self.sync_network()
 
-        list_set(states, i, np.copy(self.last_o))
+        list_set(states, i, np.copy(self.frame_stack))
 
         done = False
         while not done and i < self.t_max:
-            s = np.moveaxis(self.last_o, source=0, destination=-1)
+            s = np.moveaxis(self.frame_stack, source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             a_p = self.sess.run(self.network.a_softmax, feed_dict=feed_dict)[0]
             a = np.random.choice(ACTIONS, p=a_p)
             list_set(actions, i, a)
 
-            self.last_o, r, done, _ = self.env.step(a)
+            o, r, done, _ = self.env.step(a)
 
             if self.render:
                 self.env.render()
@@ -182,9 +160,10 @@ class Worker:
                 self.value_log.append(v)
                 self.value_graph()
 
+            self.frame_stack.append(o)
             self.episode_rewards.append(r)
             list_set(rewards, i, r)
-            list_set(states, i + 1, np.copy(self.last_o))
+            list_set(states, i + 1, np.copy(self.frame_stack))
 
             i += 1
 

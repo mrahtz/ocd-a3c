@@ -9,19 +9,15 @@ from multiprocessing import Process
 import easy_tf_log
 import tensorflow as tf
 
-import preprocessing
-import utils
 from network import create_network
-from utils import get_port_range, MemoryProfiler, get_git_rev, Timer
+from utils import get_port_range, MemoryProfiler, get_git_rev
 from worker import Worker
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
-def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
-               ckpt_timer, load_ckpt_file, render, log_dir):
-    utils.set_random_seeds(seed)
-
+def run_worker(env_id, seed, worker_n, n_steps_to_run, ckpt_freq,
+               load_ckpt_file, render, log_dir):
     mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
     memory_profiler = MemoryProfiler(pid=-1, log_path=mem_log)
     memory_profiler.start()
@@ -39,18 +35,15 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
     with tf.device("/job:worker/task:%d" % worker_n):
         w = Worker(sess=sess,
                    env_id=env_id,
-                   preprocess_wrapper=preprocess_wrapper,
                    worker_n=worker_n,
-                   seed=seed,
+                   seed=seed + worker_n,
                    log_dir=worker_log_dir)
         if render:
             w.render = True
 
     if worker_n == 0:
         saver = tf.train.Saver()
-        checkpoint_dir = osp.join(log_dir, 'checkpoints')
-        os.makedirs(checkpoint_dir)
-        checkpoint_file = osp.join(checkpoint_dir, 'network.ckpt')
+        checkpoint_file = os.path.join('checkpoints', 'network.ckpt')
 
     print("Waiting for cluster connection...")
     sess.run(tf.global_variables_initializer())
@@ -64,7 +57,6 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
     print("Cluster established!")
     updates = 0
     steps = 0
-    ckpt_timer.reset()
     while steps < n_steps_to_run:
         start_time = time.time()
 
@@ -78,25 +70,21 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
 
         if done:
             w.reset_env()
-        if worker_n == 0 and ckpt_timer.done():
+        if worker_n == 0 and updates % ckpt_freq == 0:
             saver.save(sess, checkpoint_file)
             print("Checkpoint saved to '{}'".format(checkpoint_file))
-            ckpt_timer.reset()
 
     memory_profiler.stop()
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("env_id")
-parser.add_argument("--n_steps", type=int, default=10000000)
-parser.add_argument("--n_workers", type=int, default=1)
-parser.add_argument("--ckpt_interval_seconds", type=int, default=60)
+parser.add_argument("--n_steps", type=int, default=10)
+parser.add_argument("--n_workers", type=int, default=16)
+parser.add_argument("--ckpt_freq", type=int, default=5)
 parser.add_argument("--load_ckpt")
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--render", action='store_true')
-parser.add_argument("--preprocessing",
-                    choices=['generic', 'pong'],
-                    default='pong')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('--log_dir')
 seconds_since_epoch = str(int(time.time()))
@@ -118,13 +106,6 @@ if "MovingDot" in args.env_id:
 
     gym_moving_dot  # TODO prevent PyCharm from removing the import
 
-if args.preprocessing == 'generic':
-    preprocess_wrapper = preprocessing.generic_preprocess
-elif args.preprocessing == 'pong':
-    preprocess_wrapper = preprocessing.pong_preprocess
-
-ckpt_timer = Timer(duration_seconds=args.ckpt_interval_seconds)
-
 cluster_dict = {}
 ports = get_port_range(start_port=2200, n_ports=args.n_workers)
 cluster_dict["worker"] = ["localhost:{}".format(port)
@@ -135,11 +116,10 @@ cluster = tf.train.ClusterSpec(cluster_dict)
 def start_worker_process(worker_n):
     print("Starting worker", worker_n)
     run_worker(env_id=args.env_id,
-               preprocess_wrapper=preprocess_wrapper,
-               seed=args.seed + worker_n,
+               seed=args.seed,
                worker_n=worker_n,
                n_steps_to_run=args.n_steps,
-               ckpt_timer=ckpt_timer,
+               ckpt_freq=args.ckpt_freq,
                load_ckpt_file=args.load_ckpt,
                render=args.render,
                log_dir=log_dir)

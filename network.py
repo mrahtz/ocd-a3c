@@ -1,5 +1,4 @@
 from collections import namedtuple
-from math import sqrt
 
 import tensorflow as tf
 
@@ -15,7 +14,7 @@ Network = namedtuple('Network',
 
 def create_network(scope):
     with tf.variable_scope(scope):
-        graph_s = tf.placeholder(tf.float32, [None, 84, 84, 4])
+        graph_s = tf.placeholder(tf.float32, [None, 80, 80, 4])
         graph_action = tf.placeholder(tf.int64, [None])
         graph_r = tf.placeholder(tf.float32, [None])
 
@@ -24,25 +23,21 @@ def create_network(scope):
             filters=32,
             kernel_size=8,
             strides=4,
-            activation=tf.nn.relu,
-            kernel_initializer=tf.orthogonal_initializer(gain=sqrt(2)))
+            activation=tf.nn.relu)
 
         x = tf.layers.conv2d(
             inputs=x,
             filters=64,
             kernel_size=4,
             strides=2,
-            activation=tf.nn.relu,
-            kernel_initializer=tf.orthogonal_initializer(gain=sqrt(2)))
-
+            activation=tf.nn.relu)
 
         x = tf.layers.conv2d(
             inputs=x,
             filters=64,
             kernel_size=3,
             strides=1,
-            activation=tf.nn.relu,
-            kernel_initializer=tf.orthogonal_initializer(gain=sqrt(2)))
+            activation=tf.nn.relu)
 
         w, h, f = x.get_shape()[1:]
         x = tf.reshape(x, [-1, int(w * h * f)])
@@ -50,21 +45,19 @@ def create_network(scope):
         x = tf.layers.dense(
             inputs=x,
             units=512,
-            activation=tf.nn.relu,
-            kernel_initializer=tf.orthogonal_initializer(gain=sqrt(2)))
+            activation=tf.nn.relu)
 
         a_logits = tf.layers.dense(
             inputs=x,
             units=N_ACTIONS,
-            activation=None,
-            kernel_initializer=tf.orthogonal_initializer())
+            activation=None)
+
         a_softmax = tf.nn.softmax(a_logits)
 
         graph_v = tf.layers.dense(
             inputs=x,
             units=1,
-            activation=None,
-            kernel_initializer=tf.orthogonal_initializer())
+            activation=None)
         # Shape is currently (?, 1)
         # Convert to just (?)
         graph_v = graph_v[:, 0]
@@ -79,7 +72,7 @@ def create_network(scope):
         # Negative log probability: lower is better for actions we want to
         #                           encourage
         # 1e-7: prevent log(0)
-        nlp = -1 * tf.log(p + 1e-7)
+        nlp = -tf.log(p + 1e-7)
 
         check_nlp = tf.assert_rank(nlp, 1)
         check_advantage = tf.assert_rank(advantage, 1)
@@ -87,15 +80,15 @@ def create_network(scope):
             # Note that the advantage is treated as a constant for the
             # policy network update step
             policy_loss = nlp * tf.stop_gradient(advantage)
-            policy_loss = tf.reduce_sum(policy_loss)
+            policy_loss = tf.reduce_mean(policy_loss)
 
-            policy_entropy = logit_entropy(a_logits)
+            policy_entropy = tf.reduce_mean(logit_entropy(a_logits))
             # We want to maximise entropy, which is the same as
             # minimising negative entropy
-            policy_loss -= tf.reduce_sum(BETA * policy_entropy)
+            policy_loss -= BETA * policy_entropy
 
             value_loss = advantage ** 2
-            value_loss = tf.reduce_sum(value_loss)
+            value_loss = tf.reduce_mean(value_loss)
 
         network = Network(
             s=graph_s,
