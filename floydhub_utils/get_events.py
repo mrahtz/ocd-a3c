@@ -22,7 +22,8 @@ def get(job_id, out_dir):
     for event_file in event_files:
         print("Downloading {}...".format(event_file))
         cmd = "floyd data getfile {}/output {}".format(job_id, event_file)
-        subprocess.call(cmd.split())
+        ret = subprocess.call(cmd.split())
+        print("'{}': return code was {}".format(event_file, ret))
 
         path = os.path.dirname(event_file)
         fname = os.path.basename(event_file)
