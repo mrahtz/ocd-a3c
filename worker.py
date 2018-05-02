@@ -117,6 +117,7 @@ class Worker:
     def reset_env(self):
         self.last_o.clear()
         self.last_o.append(self.env.reset())
+        # TODO: comment no-ops
         n_noops = np.random.randint(low=0, high=N_MAX_NOOPS + 1)
         print("%d no-ops..." % n_noops)
         for i in range(n_noops):
