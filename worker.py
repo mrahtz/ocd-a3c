@@ -117,16 +117,16 @@ class Worker:
     def reset_env(self):
         self.last_o.clear()
         self.last_o.append(self.env.reset())
-        # n_noops = np.random.randint(low=0, high=N_MAX_NOOPS + 1)
-        # print("%d no-ops..." % n_noops)
-        # for i in range(n_noops):
-        #     o, _, _, _ = self.env.step(0)
-        #     self.last_o.append(o)
+        n_noops = np.random.randint(low=0, high=N_MAX_NOOPS + 1)
+        print("%d no-ops..." % n_noops)
+        for i in range(n_noops):
+            o, _, _, _ = self.env.step(0)
+            self.last_o.append(o)
         while len(self.last_o) < N_FRAMES_STACKED:
             print("One more...")
             o, _, _, _ = self.env.step(0)
             self.last_o.append(o)
-        # print("No-ops done")
+        print("No-ops done")
 
     @staticmethod
     def log_rewards(episode_rewards):
