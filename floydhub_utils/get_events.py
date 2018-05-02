@@ -7,6 +7,7 @@ Download all TensorFlow event files from the specified jobs' output files.
 import argparse
 import os
 import os.path as osp
+import shutil
 import subprocess
 import time
 from multiprocessing import Process
@@ -20,16 +21,17 @@ def get(job_id, out_dir):
     download_dir = osp.join(out_dir, job_id)
     os.makedirs(download_dir, exist_ok=True)
     for event_file in event_files:
-        print("Downloading {}...".format(event_file))
-        cmd = "floyd data getfile {}/output {}".format(job_id, event_file)
-        ret = subprocess.call(cmd.split())
-        print("'{}': return code was {}".format(event_file, ret))
-
         path = os.path.dirname(event_file)
-        fname = os.path.basename(event_file)
         full_dir = osp.join(download_dir, path)
         os.makedirs(full_dir, exist_ok=True)
-        os.rename(fname, osp.join(full_dir, fname))
+        shutil.copyfile('.floydexpt', osp.join(full_dir, '.floydexpt'))
+
+        print("Downloading {}...".format(event_file))
+        cmd = "floyd data getfile {}/output {}".format(job_id, event_file)
+        # We need to download directly into the target directory in case
+        # there are multiple files with the same name (which would overwrite
+        # each other if downloaded into the same directory).
+        subprocess.call(cmd.split(), cwd=full_dir)
 
 
 def main():
