@@ -107,16 +107,7 @@ class Worker:
         self.value_log = deque(maxlen=100)
         self.fig = None
 
-        self.reset_env()
-
-    def reset_env(self):
         self.last_o = self.env.reset()
-        # TODO: comment no-ops
-        n_noops = np.random.randint(low=0, high=self.max_n_noops + 1)
-        print("%d no-ops..." % n_noops)
-        for i in range(n_noops):
-            self.last_o, _, _, _ = self.env.step(0)
-        print("No-ops done")
 
     @staticmethod
     def log_rewards(episode_rewards):
@@ -194,6 +185,7 @@ class Worker:
 
         if done:
             returns = utils.rewards_to_discounted_returns(rewards, G)
+            self.last_o = self.env.reset()
         else:
             # If we're ending in a non-terminal state, in order to calculate
             # returns, we need to know the return of the final state.
@@ -222,4 +214,4 @@ class Worker:
 
         self.steps += 1
 
-        return len(states), done
+        return len(states)

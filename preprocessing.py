@@ -83,6 +83,14 @@ former, the agent has access to 12 frames' worth of observations, whereas in
 the latter, only 4 frames' worth.
 
 Empirically, also, frame skip then frame stack does perform better.
+
+Finally, 'Human-level control through deep reinforcement learning' says:
+
+  The trained agents were evaluated by playing each game 30 times for up to
+  5 min each time with different initial random conditions ('no-op'; see
+  Extended Data Table 1).
+  
+Extended Data Table 1 lists "no-op max" as 30.
 """
 
 
@@ -256,6 +264,29 @@ class FrameSkipWrapper(Wrapper):
                 break
         return obs, reward_sum, done, info
 
+class RandomStartWrapper(Wrapper):
+    """
+    Start each episode with a random number of no-ops.
+    """
+
+    def __init__(self, env, max_n_noops):
+        Wrapper.__init__(self, env)
+        self.max_n_noops = max_n_noops
+
+    def step(self, action):
+        return self.env.step(action)
+
+    def reset(self):
+        obs = self.env.reset()
+        n_noops = np.random.randint(low=0, high=self.max_n_noops + 1)
+        noop_action_index = get_noop_action_index(self.env)
+        for _ in range(n_noops):
+            obs, _, done, _ = self.env.step(noop_action_index)
+            if done:
+                raise Exception("Environment signalled done during initial "
+                                "no-ops")
+        return obs
+
 
 class NormalizeWrapper(ObservationWrapper):
     """
@@ -292,7 +323,8 @@ class PongFeaturesWrapper(ObservationWrapper):
         return obs
 
 
-def generic_preprocess(env):
+def generic_preprocess(env, max_n_noops):
+    env = RandomStartWrapper(env, max_n_noops)
     env = MaxWrapper(env)
     env = ExtractLuminanceAndScaleWrapper(env)
     env = NormalizeWrapper(env)
@@ -301,7 +333,8 @@ def generic_preprocess(env):
     return env
 
 
-def pong_preprocess(env):
+def pong_preprocess(env, max_n_noops):
+    env = RandomStartWrapper(env, max_n_noops)
     env = PongFeaturesWrapper(env)
     env = FrameSkipWrapper(env)
     env = FrameStackWrapper(env)

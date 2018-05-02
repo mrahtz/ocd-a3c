@@ -70,7 +70,7 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
     while steps < n_steps_to_run:
         start_time = time.time()
 
-        steps_ran, done = w.run_update()
+        steps_ran = w.run_update()
         steps += steps_ran
         updates += 1
 
@@ -78,8 +78,6 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
         steps_per_second = steps_ran / (end_time - start_time)
         easy_tf_log.tflog('steps_per_second', steps_per_second)
 
-        if done:
-            w.reset_env()
         if worker_n == 0 and ckpt_timer.done():
             saver.save(sess, checkpoint_file)
             print("Checkpoint saved to '{}'".format(checkpoint_file))
