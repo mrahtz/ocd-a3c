@@ -202,7 +202,7 @@ class NumberFrames(ObservationWrapper):
 
     def reset(self):
         self.frames_since_reset = 0
-        return self.env.reset()
+        return self.observation(self.env.reset())
 
     def observation(self, obs):
         # Make sure the numbers are clear even if some other wrapper takes
