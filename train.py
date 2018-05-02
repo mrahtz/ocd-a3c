@@ -138,7 +138,6 @@ cluster = tf.train.ClusterSpec(cluster_dict)
 
 
 def start_worker_process(worker_n, seed):
-    print("Starting worker", worker_n)
     run_worker(env_id=args.env_id,
                preprocess_wrapper=preprocess_wrapper,
                seed=seed,
@@ -155,6 +154,7 @@ def start_worker_process(worker_n, seed):
 
 worker_processes = []
 memory_profiler_processes = []
+print("Starting {} workers".format(args.n_workers))
 for worker_n in range(args.n_workers):
     seed = args.seed * args.n_workers + worker_n
     p = Process(target=start_worker_process, args=(worker_n, seed), daemon=True)

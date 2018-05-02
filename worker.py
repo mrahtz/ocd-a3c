@@ -27,6 +27,7 @@ class Worker:
         self.sess = sess
 
         worker_scope = "worker_%d" % worker_n
+        self.worker_n = worker_n
         self.network = create_network(worker_scope, debug)
         self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
         self.scope = worker_scope
@@ -111,12 +112,6 @@ class Worker:
 
         self.last_o = self.env.reset()
 
-    @staticmethod
-    def log_rewards(episode_rewards):
-        reward_sum = sum(episode_rewards)
-        print("Reward sum was", reward_sum)
-        tflog('episode_reward', reward_sum)
-
     def sync_network(self):
         self.sess.run(self.copy_ops)
 
@@ -180,8 +175,14 @@ class Worker:
         last_state = np.copy(self.last_o)
 
         if done:
-            print("Episode %d finished" % self.episode_n)
-            self.log_rewards(self.episode_rewards)
+            reward_sum = sum(self.episode_rewards)
+            print("Worker {} episode {} finished; reward {}".format(
+                self.worker_n,
+                self.episode_n,
+                reward_sum)
+            )
+            tflog('episode_reward', reward_sum)
+
             self.episode_rewards = []
             self.episode_n += 1
 
