@@ -6,7 +6,7 @@ from easy_tf_log import tflog
 
 import utils
 from network import create_network
-from preprocessing import NumberFrames
+from debug_wrappers import NumberFrames
 from train_ops import *
 
 G = 0.99

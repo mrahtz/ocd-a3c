@@ -7,8 +7,8 @@ import numpy as np
 from numpy.testing import assert_array_equal
 
 from preprocessing import MaxWrapper, FrameStackWrapper, FrameSkipWrapper, \
-    ExtractLuminanceAndScaleWrapper, generic_preprocess, pong_preprocess, \
-    ConcatFrameStack, NumberFrames
+    ExtractLuminanceAndScaleWrapper, generic_preprocess, pong_preprocess
+from debug_wrappers import NumberFrames, ConcatFrameStack
 
 
 class DummyEnv(gym.Env):
@@ -182,7 +182,7 @@ class TestPreprocessing(unittest.TestCase):
 
     def test_full_preprocessing_rewards(self):
         env = DummyEnv()
-        env_wrapped = generic_preprocess(env)
+        env_wrapped = generic_preprocess(env, max_n_noops=0)
         env_wrapped.reset()
         _, r1, _, _ = env_wrapped.step(0)
         _, r2, _, _ = env_wrapped.step(0)
@@ -210,7 +210,8 @@ class TestPreprocessing(unittest.TestCase):
         """
         from pylab import subplot, imshow, show, tight_layout
         env = DummyEnv(dot_width=2, dot_height=2, draw_n_dots=True)
-        env_wrapped = generic_preprocess(env)
+        env = NumberFrames(env)
+        env_wrapped = generic_preprocess(env, max_n_noops=0)
 
         obs1 = env_wrapped.reset()
         obs2, _, _, _ = env_wrapped.step(0)
@@ -243,9 +244,10 @@ class TestPreprocessing(unittest.TestCase):
         """
         from gym.utils import play as gym_play
         env = gym.make('PongNoFrameskip-v4')
-
-        env_wrapped = ConcatFrameStack(wrap_fn(NumberFrames(env)))
-        gym_play.play(env_wrapped, fps=15, zoom=4)
+        env = NumberFrames(env)
+        env = wrap_fn(env, max_n_noops=0)
+        env = ConcatFrameStack(env)
+        gym_play.play(env, fps=15, zoom=4)
 
 
 if __name__ == '__main__':
