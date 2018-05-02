@@ -4,7 +4,6 @@ import gym
 import numpy as np
 from easy_tf_log import tflog
 
-import preprocessing
 import utils
 from network import create_network
 from train_ops import *
@@ -12,18 +11,15 @@ from train_ops import *
 G = 0.99
 N_ACTIONS = 3
 ACTIONS = np.arange(N_ACTIONS) + 1
-N_FRAMES_STACKED = 4
 
 
 class Worker:
 
-    def __init__(self, sess, env_id, worker_n, seed, log_dir, max_n_noops):
+    def __init__(self, sess, env_id, preprocess_wrapper, worker_n, seed,
+                 log_dir, max_n_noops):
         env = gym.make(env_id)
         env.seed(seed)
-
-        self.env = preprocessing.EnvWrapper(env,
-                                            prepro2=preprocessing.prepro2,
-                                            frameskip=4)
+        self.env = preprocess_wrapper(env)
 
         self.sess = sess
 
@@ -111,22 +107,15 @@ class Worker:
         self.value_log = deque(maxlen=100)
         self.fig = None
 
-        self.last_o = deque(maxlen=N_FRAMES_STACKED)
         self.reset_env()
 
     def reset_env(self):
-        self.last_o.clear()
-        self.last_o.append(self.env.reset())
+        self.last_o = self.env.reset()
         # TODO: comment no-ops
         n_noops = np.random.randint(low=0, high=self.max_n_noops + 1)
         print("%d no-ops..." % n_noops)
         for i in range(n_noops):
-            o, _, _, _ = self.env.step(0)
-            self.last_o.append(o)
-        while len(self.last_o) < N_FRAMES_STACKED:
-            print("One more...")
-            o, _, _, _ = self.env.step(0)
-            self.last_o.append(o)
+            self.last_o, _, _, _ = self.env.step(0)
         print("No-ops done")
 
     @staticmethod
@@ -176,8 +165,7 @@ class Worker:
             a_p = self.sess.run(self.network.a_softmax, feed_dict=feed_dict)[0]
             a = np.random.choice(ACTIONS, p=a_p)
 
-            o, r, done, _ = self.env.step(a)
-            self.last_o.append(o)
+            self.last_o, r, done, _ = self.env.step(a)
 
             # The state used to choose the action.
             # Not the current state. The previous state.

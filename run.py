@@ -9,6 +9,7 @@ from multiprocessing import Process
 import easy_tf_log
 import tensorflow as tf
 
+import preprocessing
 import utils
 from network import create_network
 from utils import get_port_range, MemoryProfiler, get_git_rev, Timer
@@ -17,8 +18,8 @@ from worker import Worker
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
-def run_worker(env_id, seed, worker_n, n_steps_to_run, ckpt_timer,
-               load_ckpt_file, render, log_dir, max_n_noops):
+def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
+               ckpt_timer, load_ckpt_file, render, log_dir, max_n_noops):
     utils.set_random_seeds(seed)
 
     mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
@@ -38,6 +39,7 @@ def run_worker(env_id, seed, worker_n, n_steps_to_run, ckpt_timer,
     with tf.device("/job:worker/task:%d" % worker_n):
         w = Worker(sess=sess,
                    env_id=env_id,
+                   preprocess_wrapper=preprocess_wrapper,
                    worker_n=worker_n,
                    seed=seed,
                    log_dir=worker_log_dir,
@@ -95,6 +97,9 @@ parser.add_argument("--load_ckpt")
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--render", action='store_true')
 parser.add_argument("--max_n_noops", type=int, default=30)
+parser.add_argument("--preprocessing",
+                    choices=['generic', 'pong'],
+                    default='pong')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('--log_dir')
 seconds_since_epoch = str(int(time.time()))
@@ -116,6 +121,11 @@ if "MovingDot" in args.env_id:
 
     gym_moving_dot  # TODO prevent PyCharm from removing the import
 
+if args.preprocessing == 'generic':
+    preprocess_wrapper = preprocessing.generic_preprocess
+elif args.preprocessing == 'pong':
+    preprocess_wrapper = preprocessing.pong_preprocess
+
 ckpt_timer = Timer(duration_seconds=args.ckpt_interval_seconds)
 
 cluster_dict = {}
@@ -128,6 +138,7 @@ cluster = tf.train.ClusterSpec(cluster_dict)
 def start_worker_process(worker_n, seed):
     print("Starting worker", worker_n)
     run_worker(env_id=args.env_id,
+               preprocess_wrapper=preprocess_wrapper,
                seed=seed,
                worker_n=worker_n,
                n_steps_to_run=args.n_steps,
