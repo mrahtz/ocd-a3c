@@ -110,11 +110,11 @@ class Worker:
 
     def reset_env(self):
         self.last_o = self.env.reset()
-        # n_noops = np.random.randint(low=0, high=N_MAX_NOOPS + 1)
-        # print("%d no-ops..." % n_noops)
-        # for i in range(n_noops):
-        #     self.last_o, _, _, _ = self.env.step(0)
-        # print("No-ops done")
+        n_noops = np.random.randint(low=0, high=N_MAX_NOOPS + 1)
+        print("%d no-ops..." % n_noops)
+        for i in range(n_noops):
+            self.last_o, _, _, _ = self.env.step(0)
+        print("No-ops done")
 
     @staticmethod
     def log_rewards(episode_rewards):
