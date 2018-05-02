@@ -19,7 +19,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
 def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
-               ckpt_timer, load_ckpt_file, render, log_dir):
+               ckpt_timer, load_ckpt_file, render, log_dir, max_n_noops):
     utils.set_random_seeds(seed)
 
     mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
@@ -42,7 +42,8 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
                    preprocess_wrapper=preprocess_wrapper,
                    worker_n=worker_n,
                    seed=seed,
-                   log_dir=worker_log_dir)
+                   log_dir=worker_log_dir,
+                   max_n_noops=max_n_noops)
         init_op = tf.global_variables_initializer()
         if render:
             w.render = True
@@ -95,6 +96,7 @@ parser.add_argument("--ckpt_interval_seconds", type=int, default=60)
 parser.add_argument("--load_ckpt")
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--render", action='store_true')
+parser.add_argument("--max_n_noops", type=int, default=30)
 parser.add_argument("--preprocessing",
                     choices=['generic', 'pong'],
                     default='pong')
@@ -143,7 +145,8 @@ def start_worker_process(worker_n, seed):
                ckpt_timer=ckpt_timer,
                load_ckpt_file=args.load_ckpt,
                render=args.render,
-               log_dir=log_dir)
+               log_dir=log_dir,
+               max_n_noops=args.max_n_noops)
 
 
 worker_processes = []

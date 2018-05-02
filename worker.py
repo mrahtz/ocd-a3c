@@ -11,12 +11,12 @@ from train_ops import *
 G = 0.99
 N_ACTIONS = 3
 ACTIONS = np.arange(N_ACTIONS) + 1
-N_MAX_NOOPS = 30
 
 
 class Worker:
 
-    def __init__(self, sess, env_id, preprocess_wrapper, worker_n, seed, log_dir):
+    def __init__(self, sess, env_id, preprocess_wrapper, worker_n, seed,
+                 log_dir, max_n_noops):
         env = gym.make(env_id)
         env.seed(seed)
         self.env = preprocess_wrapper(env)
@@ -97,21 +97,22 @@ class Worker:
         self.copy_ops = utils.create_copy_ops(from_scope='global',
                                               to_scope=self.scope)
 
-        self.reset_env()
-
         self.t_max = 10000
         self.steps = 0
         self.episode_rewards = []
         self.render = False
         self.episode_n = 1
+        self.max_n_noops = max_n_noops
 
         self.value_log = deque(maxlen=100)
         self.fig = None
 
+        self.reset_env()
+
     def reset_env(self):
         self.last_o = self.env.reset()
         # TODO: comment no-ops
-        n_noops = np.random.randint(low=0, high=N_MAX_NOOPS + 1)
+        n_noops = np.random.randint(low=0, high=self.max_n_noops + 1)
         print("%d no-ops..." % n_noops)
         for i in range(n_noops):
             self.last_o, _, _, _ = self.env.step(0)
