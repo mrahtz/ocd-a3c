@@ -6,6 +6,7 @@ from easy_tf_log import tflog
 
 import utils
 from network import create_network
+from preprocessing import NumberFrames
 from train_ops import *
 
 G = 0.99
@@ -16,15 +17,17 @@ ACTIONS = np.arange(N_ACTIONS) + 1
 class Worker:
 
     def __init__(self, sess, env_id, preprocess_wrapper, worker_n, seed,
-                 log_dir, max_n_noops):
+                 log_dir, max_n_noops, debug):
         env = gym.make(env_id)
         env.seed(seed)
-        self.env = preprocess_wrapper(env)
+        if debug:
+            env = NumberFrames(env)
+        self.env = preprocess_wrapper(env, max_n_noops)
 
         self.sess = sess
 
         worker_scope = "worker_%d" % worker_n
-        self.network = create_network(worker_scope)
+        self.network = create_network(worker_scope, debug)
         self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
         self.scope = worker_scope
 
@@ -97,7 +100,6 @@ class Worker:
         self.copy_ops = utils.create_copy_ops(from_scope='global',
                                               to_scope=self.scope)
 
-        self.t_max = 10000
         self.steps = 0
         self.episode_rewards = []
         self.render = False
@@ -141,7 +143,7 @@ class Worker:
         self.fig.canvas.update()
         self.fig.canvas.flush_events()
 
-    def run_update(self):
+    def run_update(self, n_steps):
         states = []
         actions = []
         rewards = []
@@ -150,7 +152,7 @@ class Worker:
                        self.zero_value_gradients])
         self.sync_network()
 
-        for _ in range(self.t_max):
+        for _ in range(n_steps):
             s = np.moveaxis(self.last_o, source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             a_p = self.sess.run(self.network.a_softmax, feed_dict=feed_dict)[0]

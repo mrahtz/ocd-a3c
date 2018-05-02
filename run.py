@@ -19,7 +19,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
 def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
-               ckpt_timer, load_ckpt_file, render, log_dir, max_n_noops):
+               ckpt_timer, load_ckpt_file, render, log_dir, max_n_noops,
+               debug, steps_per_update):
     utils.set_random_seeds(seed)
 
     mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
@@ -43,7 +44,8 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
                    worker_n=worker_n,
                    seed=seed,
                    log_dir=worker_log_dir,
-                   max_n_noops=max_n_noops)
+                   max_n_noops=max_n_noops,
+                   debug=debug)
         init_op = tf.global_variables_initializer()
         if render:
             w.render = True
@@ -70,7 +72,7 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
     while steps < n_steps_to_run:
         start_time = time.time()
 
-        steps_ran = w.run_update()
+        steps_ran = w.run_update(steps_per_update)
         steps += steps_ran
         updates += 1
 
@@ -95,6 +97,8 @@ parser.add_argument("--load_ckpt")
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--render", action='store_true')
 parser.add_argument("--max_n_noops", type=int, default=30)
+parser.add_argument("--debug", action='store_true')
+parser.add_argument("--steps_per_update", type=int, default=100000)
 parser.add_argument("--preprocessing",
                     choices=['generic', 'pong'],
                     default='pong')
@@ -144,7 +148,9 @@ def start_worker_process(worker_n, seed):
                load_ckpt_file=args.load_ckpt,
                render=args.render,
                log_dir=log_dir,
-               max_n_noops=args.max_n_noops)
+               max_n_noops=args.max_n_noops,
+               debug=args.debug,
+               steps_per_update=args.steps_per_update)
 
 
 worker_processes = []

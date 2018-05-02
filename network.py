@@ -12,7 +12,7 @@ Network = namedtuple('Network',
                      'policy_entropy')
 
 
-def create_network(scope):
+def create_network(scope, debug=False):
     with tf.variable_scope(scope):
         graph_s = tf.placeholder(tf.float32, [None, 84, 84, 4])
         graph_action = tf.placeholder(tf.int64, [None])
@@ -24,6 +24,14 @@ def create_network(scope):
             kernel_size=8,
             strides=4,
             activation=tf.nn.relu)
+
+        if debug:
+            # Dump observations as fed into the network to stderr,
+            # for viewing with show_observations.py.
+            x = tf.Print(x, [graph_s],
+                         message='\ndebug observations:',
+                         # max no. of values to display; max int32
+                         summarize=2147483647)
 
         x = tf.layers.conv2d(
             inputs=x,
@@ -64,10 +72,21 @@ def create_network(scope):
 
         advantage = graph_r - graph_v
 
+        if debug:
+            advantage = tf.Print(advantage, [graph_r],
+                                 message='\ndebug returns:',
+                                 summarize=2147483647)
+
         p = 0
         for i in range(N_ACTIONS):
             p += tf.cast(tf.equal(graph_action, i), tf.float32) * a_softmax[:,
                                                                   i]
+
+        if debug:
+            p = tf.Print(p, [graph_action],
+                         message='\ndebug actions:',
+                         summarize=2147483647)
+
         # Log probability: higher is better for actions we want to encourage
         # Negative log probability: lower is better for actions we want to
         #                           encourage
