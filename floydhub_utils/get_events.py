@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 Download all TensorFlow event files from the specified jobs' output files.
 """
@@ -7,12 +6,15 @@ Download all TensorFlow event files from the specified jobs' output files.
 import argparse
 import os
 import os.path as osp
+import random
 import shutil
 import subprocess
+import time
 from multiprocessing import Pool
 
 
 def list_files(job_id):
+    time.sleep(random.random())
     print("Listing files...")
     cmd = "floyd data listfiles {}/output".format(job_id)
     files = subprocess.check_output(cmd.split()).decode().split('\n')
@@ -22,6 +24,7 @@ def list_files(job_id):
 
 
 def get_file(job_id, job_path, download_dir):
+    time.sleep(random.random())
     full_dir = osp.join(download_dir, job_id, osp.dirname(job_path))
     os.makedirs(full_dir, exist_ok=True)
     shutil.copyfile('.floydexpt', osp.join(full_dir, '.floydexpt'))
@@ -43,9 +46,9 @@ def main():
 
     with Pool(processes=args.n_parallel) as pool:
         job_ids_with_files = pool.map(list_files, args.job_ids)
-        job_ids_with_files = [item
-                              for sublist in job_ids_with_files
-                              for item in sublist]
+        job_ids_with_files = [
+            item for sublist in job_ids_with_files for item in sublist
+        ]
         worker_args = [(job_id, job_path, args.download_dir)
                        for job_id, job_path in job_ids_with_files]
         pool.starmap(get_file, worker_args)
