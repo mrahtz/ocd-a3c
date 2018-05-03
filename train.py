@@ -78,7 +78,10 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
 
         end_time = time.time()
         steps_per_second = steps_ran / (end_time - start_time)
-        easy_tf_log.tflog('steps_per_second', steps_per_second)
+
+        easy_tf_log.tflog('misc/steps_per_second', steps_per_second)
+        easy_tf_log.tflog('misc/steps', steps)
+        easy_tf_log.tflog('misc/updates', updates)
 
         if worker_n == 0 and ckpt_timer.done():
             saver.save(sess, checkpoint_file)

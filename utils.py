@@ -175,6 +175,7 @@ def set_random_seeds(seed):
     np.random.seed(seed)
     random.seed(seed)
 
+
 class Timer:
     """
     A simple timer class.
@@ -201,3 +202,16 @@ class Timer:
         else:
             return False
 
+
+def add_rmsprop_monitoring_ops(rmsprop_optimizer, label):
+    rms_vars = [rmsprop_optimizer.get_slot(var, 'rms')
+                for var in tf.trainable_variables()]
+    rms_vars = [v for v in rms_vars if v is not None]
+    rms_max = tf.reduce_max([tf.reduce_max(v) for v in rms_vars])
+    rms_min = tf.reduce_min([tf.reduce_min(v) for v in rms_vars])
+    rms_avg = tf.reduce_mean([tf.reduce_mean(v) for v in rms_vars])
+    rms_norm = tf.global_norm(rms_vars)
+    tf.summary.scalar('rmsprop/rms_max_{}'.format(label), rms_max)
+    tf.summary.scalar('rmsprop/rms_min_{}'.format(label), rms_min)
+    tf.summary.scalar('rmsprop/rms_avg_{}'.format(label), rms_avg)
+    tf.summary.scalar('rmsprop/rms_norm_{}'.format(label), rms_norm)
