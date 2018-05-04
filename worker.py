@@ -1,34 +1,25 @@
 from collections import deque
 
-import gym
 import numpy as np
 from easy_tf_log import tflog
 
 import utils
 from network import create_network
-from debug_wrappers import NumberFrames
 from train_ops import *
 
 G = 0.99
-N_ACTIONS = 3
-ACTIONS = np.arange(N_ACTIONS) + 1
 
 
 class Worker:
 
-    def __init__(self, sess, env_id, preprocess_wrapper, worker_n, seed,
-                 log_dir, max_n_noops, debug):
-        env = gym.make(env_id)
-        env.seed(seed)
-        if debug:
-            env = NumberFrames(env)
-        self.env = preprocess_wrapper(env, max_n_noops)
-
+    def __init__(self, sess, env, worker_n, log_dir, max_n_noops, debug):
+        self.env = env
         self.sess = sess
 
         worker_scope = "worker_%d" % worker_n
         self.worker_n = worker_n
-        self.network = create_network(worker_scope, debug)
+        self.network = create_network(scope=worker_scope, debug=debug,
+                                      n_actions=env.action_space.n)
         self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
         self.scope = worker_scope
 
@@ -93,7 +84,7 @@ class Worker:
         utils.add_rmsprop_monitoring_ops(policy_optimizer, 'policy')
         utils.add_rmsprop_monitoring_ops(value_optimizer, 'value')
 
-        tf.summary.scalar('rl/value_loss',self.network.value_loss)
+        tf.summary.scalar('rl/value_loss', self.network.value_loss)
         tf.summary.scalar('rl/policy_entropy',
                           tf.reduce_mean(self.network.policy_entropy))
         tf.summary.scalar('gradients/norm_policy', grads_policy_norm)
@@ -153,7 +144,7 @@ class Worker:
             s = np.moveaxis(self.last_o, source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             a_p = self.sess.run(self.network.a_softmax, feed_dict=feed_dict)[0]
-            a = np.random.choice(ACTIONS, p=a_p)
+            a = np.random.choice(self.env.action_space.n, p=a_p)
 
             self.last_o, r, done, _ = self.env.step(a)
 
