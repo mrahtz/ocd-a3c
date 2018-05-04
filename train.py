@@ -101,7 +101,7 @@ parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--render", action='store_true')
 parser.add_argument("--max_n_noops", type=int, default=30)
 parser.add_argument("--debug", action='store_true')
-parser.add_argument("--steps_per_update", type=int, default=100000)
+parser.add_argument("--steps_per_update", type=int, default=5)
 parser.add_argument("--preprocessing",
                     choices=['generic', 'pong'],
                     default='pong')
