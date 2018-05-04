@@ -97,7 +97,13 @@ def create_network(scope, debug=False):
         check_advantage = tf.assert_rank(advantage, 1)
         with tf.control_dependencies([check_nlp, check_advantage]):
             # Note that the advantage is treated as a constant for the
-            # policy network update step
+            # policy network update step.
+            # Note also that we're calculating advantages on-the-fly using
+            # the value approximator. This might make us worry: what if we're
+            # using the loss for training, and the advantages are calculated
+            # /after/ training has changed the network? But for A3C, we don't
+            # need to worry, because we compute the gradients seperately from
+            # applying them.
             policy_loss = nlp * tf.stop_gradient(advantage)
             policy_loss = tf.reduce_sum(policy_loss)
 
