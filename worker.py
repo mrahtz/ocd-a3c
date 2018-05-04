@@ -193,7 +193,7 @@ class Worker:
         feed_dict = {self.network.s: states,
                      self.network.a: actions,
                      self.network.r: returns}
-        summaries, _, _ = self.sess.run([self.summary_ops, self.update_gradients],
+        summaries, _ = self.sess.run([self.summary_ops, self.update_gradients],
                                         feed_dict)
         self.summary_writer.add_summary(summaries, self.steps)
 
