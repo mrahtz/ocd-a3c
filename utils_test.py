@@ -2,13 +2,14 @@
 
 import random
 import socket
+import time
 import unittest
 
 import numpy as np
 import tensorflow as tf
 
 from utils import create_copy_ops, logit_entropy, rewards_to_discounted_returns, \
-    get_port_range, set_random_seeds
+    get_port_range, set_random_seeds, Timer
 
 
 class TestMiscUtils(unittest.TestCase):
@@ -58,6 +59,26 @@ class TestMiscUtils(unittest.TestCase):
 
         s2.close()
         s1.close()
+
+    def test_timer(self):
+        timer = Timer(duration_seconds=1)
+
+        timer.reset()
+        self.assertEqual(timer.done(), False)
+        time.sleep(0.8)
+        self.assertEqual(timer.done(), False)
+        time.sleep(0.3)
+        self.assertEqual(timer.done(), True)
+        time.sleep(0.3)
+        self.assertEqual(timer.done(), True)
+
+        timer.reset()
+
+        self.assertEqual(timer.done(), False)
+        time.sleep(0.9)
+        self.assertEqual(timer.done(), False)
+        time.sleep(0.2)
+        self.assertEqual(timer.done(), True)
 
     def test_random_seed(self):
         # Note: TensorFlow random seeding doesn't work completely as expected.
