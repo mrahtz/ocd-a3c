@@ -35,7 +35,7 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
     server = tf.train.Server(cluster, job_name="worker", task_index=worker_n)
     sess = tf.Session(server.target)
 
-    with tf.device("/job:worker/task:0"):
+    with tf.device("/job:parameter_server/task:0"):
         create_network('global')
     with tf.device("/job:worker/task:%d" % worker_n):
         w = Worker(sess=sess,
@@ -134,10 +134,15 @@ elif args.preprocessing == 'pong':
 ckpt_timer = Timer(duration_seconds=args.ckpt_interval_seconds)
 
 cluster_dict = {}
-ports = get_port_range(start_port=2200, n_ports=args.n_workers)
+ports = get_port_range(start_port=2200, n_ports=(args.n_workers + 1))
+cluster_dict["parameter_server"] = ["localhost:{}".format(ports[0])]
 cluster_dict["worker"] = ["localhost:{}".format(port)
-                          for port in ports]
+                          for port in ports[1:]]
 cluster = tf.train.ClusterSpec(cluster_dict)
+
+def start_parameter_server():
+    server = tf.train.Server(cluster, job_name="parameter_server")
+    server.join()
 
 
 def start_worker_process(worker_n, seed):
@@ -154,6 +159,8 @@ def start_worker_process(worker_n, seed):
                debug=args.debug,
                steps_per_update=args.steps_per_update)
 
+parameter_server_process = Process(target=start_parameter_server, daemon=True)
+parameter_server_process.start()
 
 worker_processes = []
 memory_profiler_processes = []
@@ -166,3 +173,4 @@ for worker_n in range(args.n_workers):
 
 for p in worker_processes:
     p.join()
+parameter_server_process.terminate()
