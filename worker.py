@@ -2,11 +2,10 @@ from collections import deque
 
 import gym
 import numpy as np
-from easy_tf_log import tflog
 
 import utils
 from network import create_network
-from debug_wrappers import NumberFrames
+from debug_wrappers import NumberFrames, MonitorEnv
 from multi_scope_train_op import *
 
 G = 0.99
@@ -22,7 +21,9 @@ class Worker:
         env.seed(seed)
         if debug:
             env = NumberFrames(env)
-        self.env = preprocess_wrapper(env, max_n_noops)
+        env = preprocess_wrapper(env, max_n_noops)
+        env = MonitorEnv(env, "Worker {}".format(worker_n))
+        self.env = env
 
         self.sess = sess
 
@@ -100,9 +101,7 @@ class Worker:
                                               to_scope=self.scope)
 
         self.steps = 0
-        self.episode_rewards = []
         self.render = False
-        self.episode_n = 1
         self.max_n_noops = max_n_noops
 
         self.value_log = deque(maxlen=100)
@@ -156,7 +155,6 @@ class Worker:
             states.append(np.copy(s))
             actions.append(a - 1)
             rewards.append(r)
-            self.episode_rewards.append(r)
 
             if self.render:
                 self.env.render()
@@ -169,18 +167,6 @@ class Worker:
                 break
 
         last_state = np.copy(self.last_o)
-
-        if done:
-            reward_sum = sum(self.episode_rewards)
-            print("Worker {} episode {} finished; reward {}".format(
-                self.worker_n,
-                self.episode_n,
-                reward_sum)
-            )
-            tflog('rl/episode_reward', reward_sum)
-
-            self.episode_rewards = []
-            self.episode_n += 1
 
         if done:
             returns = utils.rewards_to_discounted_returns(rewards, G)
