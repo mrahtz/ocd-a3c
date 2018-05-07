@@ -108,7 +108,8 @@ parser.add_argument("--preprocessing",
 group = parser.add_mutually_exclusive_group()
 group.add_argument('--log_dir')
 seconds_since_epoch = str(int(time.time()))
-group.add_argument('--run_name', default=seconds_since_epoch)
+group.add_argument('--run_name',
+                   default='test-run_{}'.format(seconds_since_epoch))
 args = parser.parse_args()
 
 if args.log_dir:
