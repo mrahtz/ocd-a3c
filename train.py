@@ -28,9 +28,7 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
     memory_profiler.start()
 
     worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
-    easy_tf_log_dir = osp.join(worker_log_dir, 'easy_tf_log')
-    os.makedirs(easy_tf_log_dir)
-    easy_tf_log.set_dir(easy_tf_log_dir)
+    os.makedirs(worker_log_dir)
 
     server = tf.train.Server(cluster, job_name="worker", task_index=worker_n)
     sess = tf.Session(server.target)
@@ -49,6 +47,8 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
         init_op = tf.global_variables_initializer()
         if render:
             w.render = True
+
+    easy_tf_log.set_writer(w.summary_writer.event_writer)
 
     # Worker 0 initialises the global network as well as the per-worker networks
     # Other workers only initialise their own per-worker networks
