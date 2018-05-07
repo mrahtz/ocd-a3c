@@ -151,7 +151,7 @@ class Worker:
             # The state used to choose the action.
             # Not the current state. The previous state.
             states.append(np.copy(s))
-            actions.append(a - 1)
+            actions.append(a)
             rewards.append(r)
             self.episode_rewards.append(r)
 

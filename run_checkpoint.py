@@ -33,7 +33,7 @@ def run_agent(env, sess, network):
             s = np.moveaxis(obs, 0, -1)
             feed_dict = {network.s: [s]}
             action_probs = sess.run(network.a_softmax, feed_dict)[0]
-            action = np.random.choice(env.action_space, p=action_probs)
+            action = np.random.choice(env.action_space.n, p=action_probs)
             obs, reward, done, _ = env.step(action)
             episode_reward += reward
             env.render()
