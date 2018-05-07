@@ -7,7 +7,7 @@ from easy_tf_log import tflog
 import utils
 from network import create_network
 from debug_wrappers import NumberFrames
-from train_ops import *
+from multi_scope_train_op import *
 
 G = 0.99
 N_ACTIONS = 3
@@ -46,8 +46,8 @@ class Worker:
         # so we're good there. For shared statistics - RMSPropOptimizer's
         # gradient statistics variables are associated with the variables
         # supplied to apply_gradients(), which happen to be in the global scope
-        # (see train_ops.py). So we get shared statistics without any special
-        # effort.
+        # (see multi_scope_train_op.py). So we get shared statistics without any
+        # specialeffort.
         #
         # In terms of hyperparameters:
         #
@@ -74,21 +74,17 @@ class Worker:
         value_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                                     decay=0.99, epsilon=1e-5)
 
-        self.update_policy_gradients, self.apply_policy_gradients, \
-        self.zero_policy_gradients, self.grad_bufs_policy, \
-        grads_policy_norm = \
-            create_train_ops(self.network.policy_loss,
-                             policy_optimizer,
-                             update_scope=worker_scope,
-                             apply_scope='global')
+        self.policy_train_op, grads_policy_norm = create_train_op(
+            self.network.policy_loss,
+            policy_optimizer,
+            compute_scope=worker_scope,
+            apply_scope='global')
 
-        self.update_value_gradients, self.apply_value_gradients, \
-        self.zero_value_gradients, self.grad_bufs_value, \
-        grads_value_norm = \
-            create_train_ops(self.network.value_loss,
-                             value_optimizer,
-                             update_scope=worker_scope,
-                             apply_scope='global')
+        self.value_train_op, grads_value_norm = create_train_op(
+            self.network.value_loss,
+            value_optimizer,
+            compute_scope=worker_scope,
+            apply_scope='global')
 
         utils.add_rmsprop_monitoring_ops(policy_optimizer, 'policy')
         utils.add_rmsprop_monitoring_ops(value_optimizer, 'value')
@@ -114,7 +110,7 @@ class Worker:
 
         self.last_o = self.env.reset()
 
-    def sync_network(self):
+    def sync_scopes(self):
         self.sess.run(self.copy_ops)
 
     def value_graph(self):
@@ -145,9 +141,7 @@ class Worker:
         actions = []
         rewards = []
 
-        self.sess.run([self.zero_policy_gradients,
-                       self.zero_value_gradients])
-        self.sync_network()
+        self.sync_scopes()
 
         for _ in range(n_steps):
             s = np.moveaxis(self.last_o, source=0, destination=-1)
@@ -207,15 +201,10 @@ class Worker:
                      self.network.a: actions,
                      self.network.r: returns}
         summaries, _, _ = self.sess.run([self.summary_ops,
-                                         self.update_policy_gradients,
-                                         self.update_value_gradients],
+                                         self.policy_train_op,
+                                         self.value_train_op],
                                         feed_dict)
         self.summary_writer.add_summary(summaries, self.steps)
-
-        self.sess.run([self.apply_policy_gradients,
-                       self.apply_value_gradients])
-        self.sess.run([self.zero_policy_gradients,
-                       self.zero_value_gradients])
 
         self.steps += 1
 
