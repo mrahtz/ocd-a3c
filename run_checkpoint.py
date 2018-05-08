@@ -11,7 +11,6 @@ import gym
 import numpy as np
 import tensorflow as tf
 
-import worker
 from network import create_network
 from preprocessing import generic_preprocess
 
@@ -19,7 +18,7 @@ from preprocessing import generic_preprocess
 def main():
     args = parse_args()
     env = gym.make(args.env_id)
-    env = generic_preprocess(env)
+    env = generic_preprocess(env, max_n_noops=0)
     sess, network = get_network(args.ckpt_dir, env.action_space.n)
     run_agent(env, sess, network)
 
