@@ -63,7 +63,7 @@ class Worker:
         # very small, and we want to limit the size of the update.
         policy_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                                      decay=0.99, epsilon=1e-5)
-        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
+        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-5,
                                                     decay=0.99, epsilon=1e-5)
 
         self.policy_train_op, grads_policy_norm = create_train_op(
