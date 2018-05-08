@@ -64,6 +64,7 @@ def create_network(scope, n_actions, debug=False):
         graph_v = tf.layers.dense(
             inputs=x,
             units=1,
+            kernel_initializer=tf.orthogonal_initializer(gain=0.1),
             activation=None)
         # Shape is currently (?, 1)
         # Convert to just (?)
