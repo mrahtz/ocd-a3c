@@ -142,7 +142,9 @@ elif args.preprocessing == 'pong':
 ckpt_timer = Timer(duration_seconds=args.ckpt_interval_seconds)
 
 cluster_dict = {}
-ports = get_port_range(start_port=2200, n_ports=args.n_workers)
+ports = get_port_range(start_port=2200,
+                       n_ports=args.n_workers,
+                       random_stagger=True)
 cluster_dict["worker"] = ["localhost:{}".format(port)
                           for port in ports]
 cluster = tf.train.ClusterSpec(cluster_dict)
