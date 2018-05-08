@@ -1,6 +1,7 @@
 from collections import deque
 
 import numpy as np
+from easy_tf_log import tflog
 
 import utils
 from network import create_network
@@ -99,6 +100,8 @@ class Worker:
 
         self.last_o = self.env.reset()
 
+        self.episode_values = []
+
     def sync_scopes(self):
         self.sess.run(self.copy_ops)
 
@@ -135,8 +138,11 @@ class Worker:
         for _ in range(n_steps):
             s = np.moveaxis(self.last_o, source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
-            a_p = self.sess.run(self.network.a_softmax, feed_dict=feed_dict)[0]
+            [a_p], [v] = self.sess.run([self.network.a_softmax,
+                                        self.network.graph_v],
+                                       feed_dict=feed_dict)
             a = np.random.choice(self.env.action_space.n, p=a_p)
+            self.episode_values.append(v)
 
             self.last_o, r, done, _ = self.env.step(a)
 
@@ -148,8 +154,6 @@ class Worker:
 
             if self.render:
                 self.env.render()
-                feed_dict = {self.network.s: [s]}
-                v = self.sess.run(self.network.graph_v, feed_dict=feed_dict)[0]
                 self.value_log.append(v)
                 self.value_graph()
 
@@ -161,6 +165,8 @@ class Worker:
         if done:
             returns = utils.rewards_to_discounted_returns(rewards, G)
             self.last_o = self.env.reset()
+            tflog('rl/episode_value_sum', sum(self.episode_values))
+            self.episode_values = []
         else:
             # If we're ending in a non-terminal state, in order to calculate
             # returns, we need to know the return of the final state.
