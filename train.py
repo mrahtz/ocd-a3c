@@ -7,10 +7,12 @@ import time
 from multiprocessing import Process
 
 import easy_tf_log
+import gym
 import tensorflow as tf
 
 import preprocessing
 import utils
+from debug_wrappers import NumberFrames
 from network import create_network
 from utils import get_port_range, MemoryProfiler, get_git_rev, Timer
 from worker import Worker
@@ -23,6 +25,12 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
                debug, steps_per_update):
     utils.set_random_seeds(seed)
 
+    env = gym.make(env_id)
+    env.seed(seed)
+    if debug:
+        env = NumberFrames(env)
+    env = preprocess_wrapper(env, max_n_noops)
+
     mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
     memory_profiler = MemoryProfiler(pid=-1, log_path=mem_log)
     memory_profiler.start()
@@ -34,13 +42,11 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
     sess = tf.Session(server.target)
 
     with tf.device("/job:worker/task:0"):
-        create_network('global')
+        create_network(scope='global', n_actions=env.action_space.n)
     with tf.device("/job:worker/task:%d" % worker_n):
         w = Worker(sess=sess,
-                   env_id=env_id,
-                   preprocess_wrapper=preprocess_wrapper,
+                   env=env,
                    worker_n=worker_n,
-                   seed=seed,
                    log_dir=worker_log_dir,
                    max_n_noops=max_n_noops,
                    debug=debug)

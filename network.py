@@ -4,7 +4,6 @@ import tensorflow as tf
 
 from utils import logit_entropy
 
-N_ACTIONS = 3
 BETA = 0.01
 
 Network = namedtuple('Network',
@@ -12,7 +11,7 @@ Network = namedtuple('Network',
                      'policy_entropy')
 
 
-def create_network(scope, debug=False):
+def create_network(scope, n_actions, debug=False):
     with tf.variable_scope(scope):
         graph_s = tf.placeholder(tf.float32, [None, 84, 84, 4])
         graph_action = tf.placeholder(tf.int64, [None])
@@ -57,7 +56,7 @@ def create_network(scope, debug=False):
 
         a_logits = tf.layers.dense(
             inputs=x,
-            units=N_ACTIONS,
+            units=n_actions,
             activation=None)
 
         a_softmax = tf.nn.softmax(a_logits)
@@ -78,7 +77,7 @@ def create_network(scope, debug=False):
                                  summarize=2147483647)
 
         p = 0
-        for i in range(N_ACTIONS):
+        for i in range(n_actions):
             p += tf.cast(tf.equal(graph_action, i), tf.float32) * a_softmax[:,
                                                                   i]
 
