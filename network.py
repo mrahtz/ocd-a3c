@@ -69,7 +69,7 @@ def create_network(scope, n_actions, debug=False):
         # Convert to just (?)
         graph_v = graph_v[:, 0]
 
-        advantage = graph_r - graph_v
+        advantage = graph_r
 
         if debug:
             advantage = tf.Print(advantage, [graph_r],

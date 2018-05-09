@@ -183,8 +183,7 @@ class Worker:
                      self.network.a: actions,
                      self.network.r: returns}
         summaries, _, _ = self.sess.run([self.summary_ops,
-                                         self.policy_train_op,
-                                         self.value_train_op],
+                                         self.policy_train_op],
                                         feed_dict)
         self.summary_writer.add_summary(summaries, self.steps)
 
