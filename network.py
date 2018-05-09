@@ -8,7 +8,7 @@ BETA = 0.01
 
 Network = namedtuple('Network',
                      's a r a_softmax graph_v policy_loss value_loss '
-                     'policy_entropy')
+                     'policy_entropy advantage')
 
 
 def create_network(scope, n_actions, debug=False):
@@ -122,6 +122,7 @@ def create_network(scope, n_actions, debug=False):
             graph_v=graph_v,
             policy_loss=policy_loss,
             value_loss=value_loss,
-            policy_entropy=policy_entropy)
+            policy_entropy=policy_entropy,
+            advantage=advantage)
 
         return network
