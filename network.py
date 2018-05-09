@@ -7,7 +7,7 @@ from utils import logit_entropy
 BETA = 0.01
 
 Network = namedtuple('Network',
-                     's a r a_softmax graph_v loss value_loss '
+                     's a r a_softmax graph_v policy_loss value_loss '
                      'policy_entropy')
 
 
@@ -64,13 +64,12 @@ def create_network(scope, n_actions, debug=False):
         graph_v = tf.layers.dense(
             inputs=x,
             units=1,
-            kernel_initializer=tf.orthogonal_initializer(gain=0.1),
             activation=None)
         # Shape is currently (?, 1)
         # Convert to just (?)
         graph_v = graph_v[:, 0]
 
-        advantage = graph_r - graph_v
+        advantage = graph_r
 
         if debug:
             advantage = tf.Print(advantage, [graph_r],
@@ -91,7 +90,7 @@ def create_network(scope, n_actions, debug=False):
         # Negative log probability: lower is better for actions we want to
         #                           encourage
         # 1e-7: prevent log(0)
-        nlp = -tf.log(p + 1e-7)
+        nlp = -1 * tf.log(p + 1e-7)
 
         check_nlp = tf.assert_rank(nlp, 1)
         check_advantage = tf.assert_rank(advantage, 1)
@@ -105,17 +104,15 @@ def create_network(scope, n_actions, debug=False):
             # need to worry, because we compute the gradients seperately from
             # applying them.
             policy_loss = nlp * tf.stop_gradient(advantage)
-            policy_loss = tf.reduce_mean(policy_loss)
+            policy_loss = tf.reduce_sum(policy_loss)
 
-            policy_entropy = tf.reduce_mean(logit_entropy(a_logits))
+            policy_entropy = logit_entropy(a_logits)
             # We want to maximise entropy, which is the same as
             # minimising negative entropy
-            policy_loss -= BETA * policy_entropy
+            policy_loss -= tf.reduce_sum(BETA * policy_entropy)
 
             value_loss = advantage ** 2
-            value_loss = tf.reduce_mean(value_loss)
-
-            loss = policy_loss + 0.25 * value_loss
+            value_loss = tf.reduce_sum(value_loss)
 
         network = Network(
             s=graph_s,
@@ -123,7 +120,7 @@ def create_network(scope, n_actions, debug=False):
             r=graph_r,
             a_softmax=a_softmax,
             graph_v=graph_v,
-            loss=loss,
+            policy_loss=policy_loss,
             value_loss=value_loss,
             policy_entropy=policy_entropy)
 
