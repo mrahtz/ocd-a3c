@@ -95,7 +95,7 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
         easy_tf_log.tflog('misc/updates', updates)
 
         if worker_n == 0 and ckpt_timer.done():
-            saver.save(sess, checkpoint_file)
+            saver.save(sess, checkpoint_file, steps)
             print("Checkpoint saved to '{}'".format(checkpoint_file))
             ckpt_timer.reset()
 
