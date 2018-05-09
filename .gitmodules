@@ -1,3 +1,0 @@
-[submodule "runs"]
-	path = runs
-	url = https://github.com/mrahtz/tensorflow-a3c-runs
