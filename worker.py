@@ -77,7 +77,7 @@ class Worker:
                           tf.reduce_mean(self.network.policy_entropy))
         tf.summary.scalar('rl/advantage',
                           tf.reduce_mean(self.network.advantage))
-        tf.summary.scalar('gradients/norm_policy', grads_norm)
+        tf.summary.scalar('gradients/norm', grads_norm)
         self.summary_ops = tf.summary.merge_all()
 
         self.copy_ops = utils.create_copy_ops(from_scope='global',
