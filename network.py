@@ -4,7 +4,6 @@ import tensorflow as tf
 
 from utils import logit_entropy
 
-N_ACTIONS = 3
 BETA = 0.01
 
 Network = namedtuple('Network',
@@ -12,7 +11,7 @@ Network = namedtuple('Network',
                      'policy_entropy')
 
 
-def create_network(scope):
+def create_network(scope, n_actions, debug=False):
     with tf.variable_scope(scope):
         graph_s = tf.placeholder(tf.float32, [None, 84, 84, 4])
         graph_action = tf.placeholder(tf.int64, [None])
@@ -24,6 +23,14 @@ def create_network(scope):
             kernel_size=8,
             strides=4,
             activation=tf.nn.relu)
+
+        if debug:
+            # Dump observations as fed into the network to stderr,
+            # for viewing with show_observations.py.
+            x = tf.Print(x, [graph_s],
+                         message='\ndebug observations:',
+                         # max no. of values to display; max int32
+                         summarize=2147483647)
 
         x = tf.layers.conv2d(
             inputs=x,
@@ -49,7 +56,7 @@ def create_network(scope):
 
         a_logits = tf.layers.dense(
             inputs=x,
-            units=N_ACTIONS,
+            units=n_actions,
             activation=None)
 
         a_softmax = tf.nn.softmax(a_logits)
@@ -57,6 +64,7 @@ def create_network(scope):
         graph_v = tf.layers.dense(
             inputs=x,
             units=1,
+            kernel_initializer=tf.orthogonal_initializer(gain=0.1),
             activation=None)
         # Shape is currently (?, 1)
         # Convert to just (?)
@@ -64,10 +72,21 @@ def create_network(scope):
 
         advantage = graph_r - graph_v
 
+        if debug:
+            advantage = tf.Print(advantage, [graph_r],
+                                 message='\ndebug returns:',
+                                 summarize=2147483647)
+
         p = 0
-        for i in range(N_ACTIONS):
+        for i in range(n_actions):
             p += tf.cast(tf.equal(graph_action, i), tf.float32) * a_softmax[:,
                                                                   i]
+
+        if debug:
+            p = tf.Print(p, [graph_action],
+                         message='\ndebug actions:',
+                         summarize=2147483647)
+
         # Log probability: higher is better for actions we want to encourage
         # Negative log probability: lower is better for actions we want to
         #                           encourage
@@ -78,7 +97,13 @@ def create_network(scope):
         check_advantage = tf.assert_rank(advantage, 1)
         with tf.control_dependencies([check_nlp, check_advantage]):
             # Note that the advantage is treated as a constant for the
-            # policy network update step
+            # policy network update step.
+            # Note also that we're calculating advantages on-the-fly using
+            # the value approximator. This might make us worry: what if we're
+            # using the loss for training, and the advantages are calculated
+            # /after/ training has changed the network? But for A3C, we don't
+            # need to worry, because we compute the gradients seperately from
+            # applying them.
             policy_loss = nlp * tf.stop_gradient(advantage)
             policy_loss = tf.reduce_mean(policy_loss)
 

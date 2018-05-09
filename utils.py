@@ -52,11 +52,11 @@ def with_prob(p):
         return False
 
 
-def rewards_to_discounted_returns(r, discount_factor):
-    returns = np.zeros_like(np.array(r), dtype=np.float32)
-    returns[-1] = r[-1]
-    for i in range(len(r) - 2, -1, -1):
-        returns[i] = r[i] + discount_factor * returns[i + 1]
+def rewards_to_discounted_returns(rewards, discount_factor):
+    returns = np.zeros_like(rewards, dtype=np.float32)
+    returns[-1] = rewards[-1]
+    for i in range(len(rewards) - 2, -1, -1):
+        returns[i] = rewards[i] + discount_factor * returns[i + 1]
     return returns
 
 
@@ -101,8 +101,6 @@ def logit_entropy(logits):
     nlogp = -logp
     probs = tf.nn.softmax(logits, axis=-1)
     nplogp = probs * nlogp
-    # This reduce_sum is just the final part of the entropy calculation.
-    # Don't worry - we return the entropy for each individual item in the batch.
     return tf.reduce_sum(nplogp, axis=-1, keepdims=True)
 
 
@@ -177,6 +175,7 @@ def set_random_seeds(seed):
     np.random.seed(seed)
     random.seed(seed)
 
+
 class Timer:
     """
     A simple timer class.
@@ -203,3 +202,16 @@ class Timer:
         else:
             return False
 
+
+def add_rmsprop_monitoring_ops(rmsprop_optimizer, label):
+    rms_vars = [rmsprop_optimizer.get_slot(var, 'rms')
+                for var in tf.trainable_variables()]
+    rms_vars = [v for v in rms_vars if v is not None]
+    rms_max = tf.reduce_max([tf.reduce_max(v) for v in rms_vars])
+    rms_min = tf.reduce_min([tf.reduce_min(v) for v in rms_vars])
+    rms_avg = tf.reduce_mean([tf.reduce_mean(v) for v in rms_vars])
+    rms_norm = tf.global_norm(rms_vars)
+    tf.summary.scalar('rmsprop/rms_max_{}'.format(label), rms_max)
+    tf.summary.scalar('rmsprop/rms_min_{}'.format(label), rms_min)
+    tf.summary.scalar('rmsprop/rms_avg_{}'.format(label), rms_avg)
+    tf.summary.scalar('rmsprop/rms_norm_{}'.format(label), rms_norm)

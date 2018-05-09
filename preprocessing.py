@@ -5,7 +5,7 @@ import numpy as np
 from gym import Wrapper, ObservationWrapper, spaces
 
 """
-Observation processing.
+Environment preprocessing.
 
 Section 8 ("Experimental Setup") of the paper says:
 "The Atari experiments used the same input preprocessing as
@@ -82,7 +82,15 @@ agent much less temporal scope than frame stack then frame skip. In the
 former, the agent has access to 12 frames' worth of observations, whereas in
 the latter, only 4 frames' worth.
 
-Empirically, also, frame skip then frame stack does perform better.
+Empirically, also, frame skip then frame stack seems to do better.
+
+Finally, 'Human-level control through deep reinforcement learning' says:
+
+  The trained agents were evaluated by playing each game 30 times for up to
+  5 min each time with different initial random conditions ('no-op'; see
+  Extended Data Table 1).
+  
+Extended Data Table 1 lists "no-op max" as 30 (set as an argument to train.py).
 """
 
 
@@ -174,71 +182,6 @@ class FrameStackWrapper(Wrapper):
         return np.array(self.frame_stack), reward, done, info
 
 
-class ConcatFrameStack(ObservationWrapper):
-    """
-    Concatenate a stack horizontally into one long frame (for debugging).
-    """
-
-    def __init__(self, env):
-        ObservationWrapper.__init__(self, env)
-        # Important so that gym's play.py picks up the right resolution
-        self.observation_space = spaces.Box(low=0, high=255,
-                                            shape=(84, 4 * 84),
-                                            dtype=np.uint8)
-
-    def observation(self, obs):
-        assert obs.shape[0] == 4
-        return np.hstack(obs)
-
-
-class NumberFrames(ObservationWrapper):
-    """
-    Draw number of frames since reset (for debugging).
-    """
-
-    def __init__(self, env):
-        ObservationWrapper.__init__(self, env)
-        self.frames_since_reset = None
-
-    def reset(self):
-        self.frames_since_reset = 0
-        return self.env.reset()
-
-    def observation(self, obs):
-        # Make sure the numbers are clear even if some other wrapper takes
-        # maxes observations over pairs of time steps
-        if self.frames_since_reset % 2 == 0:
-            x = 0
-        else:
-            x = 70
-        cv2.putText(obs,
-                    str(self.frames_since_reset),
-                    org=(x, 70),  # x, y position of bottom-left corner of text
-                    fontFace=cv2.FONT_HERSHEY_PLAIN,
-                    fontScale=2.0,
-                    color=(255, 255, 255),
-                    thickness=2)
-        self.frames_since_reset += 1
-        return obs
-
-
-class EarlyReset(Wrapper):
-    """
-    Reset the environment after 100 steps (for debugging).
-    """
-
-    def reset(self):
-        self.n_steps = 0
-        return self.env.reset()
-
-    def step(self, action):
-        obs, reward, done, info = self.env.step(action)
-        self.n_steps += 1
-        if self.n_steps >= 100:
-            done = True
-        return obs, reward, done, info
-
-
 class FrameSkipWrapper(Wrapper):
     """
     Repeat the chosen action for 4 frames, only returning the last frame.
@@ -257,6 +200,30 @@ class FrameSkipWrapper(Wrapper):
         return obs, reward_sum, done, info
 
 
+class RandomStartWrapper(Wrapper):
+    """
+    Start each episode with a random number of no-ops.
+    """
+
+    def __init__(self, env, max_n_noops):
+        Wrapper.__init__(self, env)
+        self.max_n_noops = max_n_noops
+
+    def step(self, action):
+        return self.env.step(action)
+
+    def reset(self):
+        obs = self.env.reset()
+        n_noops = np.random.randint(low=0, high=self.max_n_noops + 1)
+        noop_action_index = get_noop_action_index(self.env)
+        for _ in range(n_noops):
+            obs, _, done, _ = self.env.step(noop_action_index)
+            if done:
+                raise Exception("Environment signalled done during initial "
+                                "no-ops")
+        return obs
+
+
 class NormalizeWrapper(ObservationWrapper):
     """
     Normalize observations to range [0, 1].
@@ -270,6 +237,20 @@ class NormalizeWrapper(ObservationWrapper):
     def observation(self, obs):
         return obs / 255.0
 
+
+def generic_preprocess(env, max_n_noops):
+    env = RandomStartWrapper(env, max_n_noops)
+    env = MaxWrapper(env)
+    env = ExtractLuminanceAndScaleWrapper(env)
+    env = NormalizeWrapper(env)
+    env = FrameSkipWrapper(env)
+    env = FrameStackWrapper(env)
+    return env
+
+"""
+We also have a wrapper to extract hand-crafted features from Pong for early 
+debug testing.
+"""
 
 class PongFeaturesWrapper(ObservationWrapper):
     """
@@ -292,16 +273,8 @@ class PongFeaturesWrapper(ObservationWrapper):
         return obs
 
 
-def generic_preprocess(env):
-    env = MaxWrapper(env)
-    env = ExtractLuminanceAndScaleWrapper(env)
-    env = NormalizeWrapper(env)
-    env = FrameSkipWrapper(env)
-    env = FrameStackWrapper(env)
-    return env
-
-
-def pong_preprocess(env):
+def pong_preprocess(env, max_n_noops):
+    env = RandomStartWrapper(env, max_n_noops)
     env = PongFeaturesWrapper(env)
     env = FrameSkipWrapper(env)
     env = FrameStackWrapper(env)
