@@ -73,8 +73,10 @@ class Worker:
         utils.add_rmsprop_monitoring_ops(optimizer, 'combined_loss')
 
         tf.summary.scalar('rl/value_loss', self.network.value_loss)
+        tf.summary.scalar('rl/policy_loss', self.network.policy_loss)
+        tf.summary.scalar('rl/combined_loss', self.network.loss)
         tf.summary.scalar('rl/policy_entropy', self.network.policy_entropy)
-        tf.summary.scalar('rl/advantage',
+        tf.summary.scalar('rl/advantage_mean',
                           tf.reduce_mean(self.network.advantage))
         tf.summary.scalar('gradients/norm', grads_norm)
         self.summary_ops = tf.summary.merge_all()
@@ -151,14 +153,17 @@ class Worker:
             if done:
                 break
 
-        tflog('batch_reward_sum', sum(rewards))
+        tflog('rl/batch_reward_sum', sum(rewards))
 
         last_state = np.copy(self.last_o)
 
         if done:
             returns = utils.rewards_to_discounted_returns(rewards, G)
             self.last_o = self.env.reset()
-            tflog('rl/episode_value_sum', sum(self.episode_values))
+            episode_value_sum = sum(self.episode_values)
+            episode_value_mean = episode_value_sum / len(self.episode_values)
+            tflog('rl/episode_value_sum', episode_value_sum)
+            tflog('rl/episode_value_mean', episode_value_mean)
             self.episode_values = []
         else:
             # If we're ending in a non-terminal state, in order to calculate

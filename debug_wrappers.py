@@ -84,7 +84,7 @@ class MonitorEnv(Wrapper):
             reward_sum = sum(self.episode_rewards)
             print("{}Episode {} finished; reward sum {}".format(
                 self.log_prefix, self.episode_n, reward_sum))
-            tflog('rl/episode_reward', reward_sum)
+            tflog('rl/episode_reward_sum', reward_sum)
             tflog('rl/episode_length_steps', self.episode_length_steps)
             self.episode_done = True
 
