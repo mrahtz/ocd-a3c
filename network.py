@@ -112,7 +112,7 @@ def create_network(scope, n_actions, debug=False):
             policy_loss -= BETA * policy_entropy
 
             value_loss = advantage ** 2
-            value_loss = tf.reudce_mean(value_loss)
+            value_loss = tf.reduce_mean(value_loss)
 
             loss = policy_loss + 0.25 * value_loss
 
