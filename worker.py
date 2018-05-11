@@ -70,7 +70,7 @@ class Worker:
             compute_scope=worker_scope,
             apply_scope='global')
 
-        utils.add_rmsprop_monitoring_ops(optimizer, 'policy')
+        utils.add_rmsprop_monitoring_ops(optimizer, 'combined_loss')
 
         tf.summary.scalar('rl/value_loss', self.network.value_loss)
         tf.summary.scalar('rl/policy_entropy',
