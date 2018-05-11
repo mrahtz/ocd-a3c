@@ -63,6 +63,8 @@ class Worker:
         # very small, and we want to limit the size of the update.
         policy_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                                      decay=0.99, epsilon=1e-5)
+        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-6,
+                                                    decay=0.99, epsilon=1e-5)
 
         self.policy_train_op, grads_policy_norm = create_train_op(
             self.network.policy_loss,
@@ -70,11 +72,20 @@ class Worker:
             compute_scope=worker_scope,
             apply_scope='global')
 
-        utils.add_rmsprop_monitoring_ops(policy_optimizer, 'policy')
+        self.value_train_op, grads_value_norm = create_train_op(
+            self.network.value_loss,
+            value_optimizer,
+            compute_scope=worker_scope,
+            apply_scope='global')
 
+        utils.add_rmsprop_monitoring_ops(policy_optimizer, 'policy')
+        utils.add_rmsprop_monitoring_ops(value_optimizer, 'value')
+
+        tf.summary.scalar('rl/value_loss', self.network.value_loss)
         tf.summary.scalar('rl/policy_entropy',
                           tf.reduce_mean(self.network.policy_entropy))
         tf.summary.scalar('gradients/norm_policy', grads_policy_norm)
+        tf.summary.scalar('gradients/norm_value', grads_value_norm)
         self.summary_ops = tf.summary.merge_all()
 
         self.copy_ops = utils.create_copy_ops(from_scope='global',
@@ -84,13 +95,38 @@ class Worker:
         self.render = False
         self.max_n_noops = max_n_noops
 
+        self.value_log = deque(maxlen=100)
         self.fig = None
 
         self.last_o = self.env.reset()
 
+        self.episode_values = []
 
     def sync_scopes(self):
         self.sess.run(self.copy_ops)
+
+    def value_graph(self):
+        import matplotlib.pyplot as plt
+        if self.fig is None:
+            self.fig, self.ax = plt.subplots()
+            self.fig.set_size_inches(2, 2)
+            self.ax.set_xlim([0, 100])
+            self.ax.set_ylim([0, 2.0])
+            self.line, = self.ax.plot([], [])
+
+            self.fig.show()
+            self.fig.canvas.draw()
+            self.bg = self.fig.canvas.copy_from_bbox(self.ax.bbox)
+
+        self.fig.canvas.restore_region(self.bg)
+
+        ydata = list(self.value_log)
+        xdata = list(range(len(self.value_log)))
+        self.line.set_data(xdata, ydata)
+
+        self.ax.draw_artist(self.line)
+        self.fig.canvas.update()
+        self.fig.canvas.flush_events()
 
     def run_update(self, n_steps):
         states = []
@@ -106,6 +142,7 @@ class Worker:
                                         self.network.graph_v],
                                        feed_dict=feed_dict)
             a = np.random.choice(self.env.action_space.n, p=a_p)
+            self.episode_values.append(v)
 
             self.last_o, r, done, _ = self.env.step(a)
 
@@ -117,6 +154,8 @@ class Worker:
 
             if self.render:
                 self.env.render()
+                self.value_log.append(v)
+                self.value_graph()
 
             if done:
                 break
@@ -126,14 +165,26 @@ class Worker:
         if done:
             returns = utils.rewards_to_discounted_returns(rewards, G)
             self.last_o = self.env.reset()
+            tflog('rl/episode_value_sum', sum(self.episode_values))
+            self.episode_values = []
         else:
-            assert("Not done?")
+            # If we're ending in a non-terminal state, in order to calculate
+            # returns, we need to know the return of the final state.
+            # We estimate this using the value network.
+            s = np.moveaxis(last_state, source=0, destination=-1)
+            feed_dict = {self.network.s: [s]}
+            last_value = self.sess.run(self.network.graph_v,
+                                       feed_dict=feed_dict)[0]
+            rewards += [last_value]
+            returns = utils.rewards_to_discounted_returns(rewards, G)
+            returns = returns[:-1]  # Chop off last_value
 
         feed_dict = {self.network.s: states,
                      self.network.a: actions,
                      self.network.r: returns}
-        summaries, _ = self.sess.run([self.summary_ops,
-                                         self.policy_train_op],
+        summaries, _, _ = self.sess.run([self.summary_ops,
+                                         self.policy_train_op,
+                                         self.value_train_op],
                                         feed_dict)
         self.summary_writer.add_summary(summaries, self.steps)
 
