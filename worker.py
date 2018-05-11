@@ -1,34 +1,26 @@
 from collections import deque
 
-import gym
 import numpy as np
 from easy_tf_log import tflog
 
 import utils
 from network import create_network
-from debug_wrappers import NumberFrames
-from train_ops import *
+from debug_wrappers import NumberFrames, MonitorEnv
+from multi_scope_train_op import *
 
 G = 0.99
-N_ACTIONS = 3
-ACTIONS = np.arange(N_ACTIONS) + 1
 
 
 class Worker:
 
-    def __init__(self, sess, env_id, preprocess_wrapper, worker_n, seed,
-                 log_dir, max_n_noops, debug):
-        env = gym.make(env_id)
-        env.seed(seed)
-        if debug:
-            env = NumberFrames(env)
-        self.env = preprocess_wrapper(env, max_n_noops)
-
+    def __init__(self, sess, env, worker_n, log_dir, max_n_noops, debug):
         self.sess = sess
+        self.env = env
 
         worker_scope = "worker_%d" % worker_n
         self.worker_n = worker_n
-        self.network = create_network(worker_scope, debug)
+        self.network = create_network(scope=worker_scope, debug=debug,
+                                      n_actions=env.action_space.n)
         self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
         self.scope = worker_scope
 
@@ -46,8 +38,8 @@ class Worker:
         # so we're good there. For shared statistics - RMSPropOptimizer's
         # gradient statistics variables are associated with the variables
         # supplied to apply_gradients(), which happen to be in the global scope
-        # (see train_ops.py). So we get shared statistics without any special
-        # effort.
+        # (see multi_scope_train_op.py). So we get shared statistics without any
+        # specialeffort.
         #
         # In terms of hyperparameters:
         #
@@ -72,17 +64,18 @@ class Worker:
         optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                               decay=0.99, epsilon=1e-5)
 
-        self.update_gradients, self.apply_gradients, self.zero_gradients, self.grad_bufs, grads_norm = \
-            create_train_ops(self.network.loss,
-                             optimizer,
-                             max_grad_norm=0.5,
-                             update_scope=worker_scope,
-                             apply_scope='global')
+        self.train_op, grads_norm = create_train_op(
+            self.network.loss,
+            optimizer,
+            compute_scope=worker_scope,
+            apply_scope='global')
 
-        utils.add_rmsprop_monitoring_ops(optimizer, 'loss')
+        utils.add_rmsprop_monitoring_ops(optimizer, 'combined_loss')
 
-        tf.summary.scalar('rl/value_loss',self.network.value_loss)
+        tf.summary.scalar('rl/value_loss', self.network.value_loss)
         tf.summary.scalar('rl/policy_entropy', self.network.policy_entropy)
+        tf.summary.scalar('rl/advantage',
+                          tf.reduce_mean(self.network.advantage))
         tf.summary.scalar('gradients/norm', grads_norm)
         self.summary_ops = tf.summary.merge_all()
 
@@ -90,9 +83,7 @@ class Worker:
                                               to_scope=self.scope)
 
         self.steps = 0
-        self.episode_rewards = []
         self.render = False
-        self.episode_n = 1
         self.max_n_noops = max_n_noops
 
         self.value_log = deque(maxlen=100)
@@ -100,7 +91,9 @@ class Worker:
 
         self.last_o = self.env.reset()
 
-    def sync_network(self):
+        self.episode_values = []
+
+    def sync_scopes(self):
         self.sess.run(self.copy_ops)
 
     def value_graph(self):
@@ -131,53 +124,42 @@ class Worker:
         actions = []
         rewards = []
 
-        self.sess.run(self.zero_gradients)
-        self.sync_network()
+        self.sync_scopes()
 
         for _ in range(n_steps):
             s = np.moveaxis(self.last_o, source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
-            a_p = self.sess.run(self.network.a_softmax, feed_dict=feed_dict)[0]
-            a = np.random.choice(ACTIONS, p=a_p)
+            [a_p], [v] = self.sess.run([self.network.a_softmax,
+                                        self.network.graph_v],
+                                       feed_dict=feed_dict)
+            a = np.random.choice(self.env.action_space.n, p=a_p)
+            self.episode_values.append(v)
 
             self.last_o, r, done, _ = self.env.step(a)
 
             # The state used to choose the action.
             # Not the current state. The previous state.
             states.append(np.copy(s))
-            actions.append(a - 1)
+            actions.append(a)
             rewards.append(r)
-            self.episode_rewards.append(r)
 
             if self.render:
                 self.env.render()
-                feed_dict = {self.network.s: [s]}
-                v = self.sess.run(self.network.graph_v, feed_dict=feed_dict)[0]
                 self.value_log.append(v)
                 self.value_graph()
 
             if done:
                 break
 
-        last_state = np.copy(self.last_o)
-
-        if done:
-            reward_sum = sum(self.episode_rewards)
-            print("Worker {} episode {} finished; reward {}".format(
-                self.worker_n,
-                self.episode_n,
-                reward_sum)
-            )
-            tflog('rl/episode_reward', reward_sum)
-
-            self.episode_rewards = []
-            self.episode_n += 1
-
         tflog('batch_reward_sum', sum(rewards))
+
+        last_state = np.copy(self.last_o)
 
         if done:
             returns = utils.rewards_to_discounted_returns(rewards, G)
             self.last_o = self.env.reset()
+            tflog('rl/episode_value_sum', sum(self.episode_values))
+            self.episode_values = []
         else:
             # If we're ending in a non-terminal state, in order to calculate
             # returns, we need to know the return of the final state.
@@ -193,12 +175,10 @@ class Worker:
         feed_dict = {self.network.s: states,
                      self.network.a: actions,
                      self.network.r: returns}
-        summaries, _ = self.sess.run([self.summary_ops, self.update_gradients],
-                                        feed_dict)
+        summaries, _ = self.sess.run([self.summary_ops,
+                                      self.train_op],
+                                     feed_dict)
         self.summary_writer.add_summary(summaries, self.steps)
-
-        self.sess.run(self.apply_gradients)
-        self.sess.run(self.zero_gradients)
 
         self.steps += 1
 

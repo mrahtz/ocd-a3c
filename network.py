@@ -4,15 +4,14 @@ import tensorflow as tf
 
 from utils import logit_entropy
 
-N_ACTIONS = 3
 BETA = 0.01
 
 Network = namedtuple('Network',
-                     's a r a_softmax graph_v loss value_loss '
-                     'policy_entropy')
+                     's a r a_softmax graph_v policy_loss value_loss loss '
+                     'policy_entropy advantage')
 
 
-def create_network(scope, debug=False):
+def create_network(scope, n_actions, debug=False):
     with tf.variable_scope(scope):
         graph_s = tf.placeholder(tf.float32, [None, 84, 84, 4])
         graph_action = tf.placeholder(tf.int64, [None])
@@ -57,7 +56,7 @@ def create_network(scope, debug=False):
 
         a_logits = tf.layers.dense(
             inputs=x,
-            units=N_ACTIONS,
+            units=n_actions,
             activation=None)
 
         a_softmax = tf.nn.softmax(a_logits)
@@ -78,7 +77,7 @@ def create_network(scope, debug=False):
                                  summarize=2147483647)
 
         p = 0
-        for i in range(N_ACTIONS):
+        for i in range(n_actions):
             p += tf.cast(tf.equal(graph_action, i), tf.float32) * a_softmax[:,
                                                                   i]
 
@@ -97,7 +96,13 @@ def create_network(scope, debug=False):
         check_advantage = tf.assert_rank(advantage, 1)
         with tf.control_dependencies([check_nlp, check_advantage]):
             # Note that the advantage is treated as a constant for the
-            # policy network update step
+            # policy network update step.
+            # Note also that we're calculating advantages on-the-fly using
+            # the value approximator. This might make us worry: what if we're
+            # using the loss for training, and the advantages are calculated
+            # /after/ training has changed the network? But for A3C, we don't
+            # need to worry, because we compute the gradients seperately from
+            # applying them.
             policy_loss = nlp * tf.stop_gradient(advantage)
             policy_loss = tf.reduce_mean(policy_loss)
 
@@ -107,7 +112,7 @@ def create_network(scope, debug=False):
             policy_loss -= BETA * policy_entropy
 
             value_loss = advantage ** 2
-            value_loss = tf.reduce_mean(value_loss)
+            value_loss = tf.reudce_mean(value_loss)
 
             loss = policy_loss + 0.25 * value_loss
 
@@ -117,8 +122,10 @@ def create_network(scope, debug=False):
             r=graph_r,
             a_softmax=a_softmax,
             graph_v=graph_v,
-            loss=loss,
+            policy_loss=policy_loss,
             value_loss=value_loss,
-            policy_entropy=policy_entropy)
+            policy_entropy=policy_entropy,
+            advantage=advantage,
+            loss=loss)
 
         return network

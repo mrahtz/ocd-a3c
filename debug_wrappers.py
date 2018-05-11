@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from easy_tf_log import tflog
 from gym import ObservationWrapper, Wrapper, spaces
 
 
@@ -48,6 +49,45 @@ class EarlyReset(Wrapper):
         self.n_steps += 1
         if self.n_steps >= 100:
             done = True
+        return obs, reward, done, info
+
+class MonitorEnv(Wrapper):
+
+    """
+    Log per-episode rewards and episode lengths.
+    """
+
+    def __init__(self, env, log_prefix=""):
+        Wrapper.__init__(self, env)
+        if log_prefix:
+            self.log_prefix = log_prefix + ": "
+        else:
+            self.log_prefix = ""
+        self.episode_n = -1
+
+    def reset(self):
+        self.episode_rewards = []
+        self.episode_length_steps = 0
+        self.episode_n += 1
+        self.episode_done = False
+        return self.env.reset()
+
+    def step(self, action):
+        if self.episode_done:
+            raise Exception("Attempted to call step() after episode done")
+
+        obs, reward, done, info = self.env.step(action)
+
+        self.episode_rewards.append(reward)
+        self.episode_length_steps += 1
+        if done:
+            reward_sum = sum(self.episode_rewards)
+            print("{}Episode {} finished; reward sum {}".format(
+                self.log_prefix, self.episode_n, reward_sum))
+            tflog('rl/episode_reward', reward_sum)
+            tflog('rl/episode_length_steps', self.episode_length_steps)
+            self.episode_done = True
+
         return obs, reward, done, info
 
 

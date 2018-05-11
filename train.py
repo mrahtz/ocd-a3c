@@ -7,10 +7,12 @@ import time
 from multiprocessing import Process
 
 import easy_tf_log
+import gym
 import tensorflow as tf
 
 import preprocessing
 import utils
+from debug_wrappers import NumberFrames, MonitorEnv
 from network import create_network
 from utils import get_port_range, MemoryProfiler, get_git_rev, Timer
 from worker import Worker
@@ -23,26 +25,29 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
                debug, steps_per_update):
     utils.set_random_seeds(seed)
 
+    env = gym.make(env_id)
+    env.seed(seed)
+    if debug:
+        env = NumberFrames(env)
+    env = preprocess_wrapper(env, max_n_noops)
+    env = MonitorEnv(env, "Worker {}".format(worker_n))
+
     mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
     memory_profiler = MemoryProfiler(pid=-1, log_path=mem_log)
     memory_profiler.start()
 
     worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
-    easy_tf_log_dir = osp.join(worker_log_dir, 'easy_tf_log')
-    os.makedirs(easy_tf_log_dir)
-    easy_tf_log.set_dir(easy_tf_log_dir)
+    os.makedirs(worker_log_dir)
 
     server = tf.train.Server(cluster, job_name="worker", task_index=worker_n)
     sess = tf.Session(server.target)
 
     with tf.device("/job:parameter_server/task:0"):
-        create_network('global')
+        create_network('global', n_actions=env.action_space.n)
     with tf.device("/job:worker/task:%d" % worker_n):
         w = Worker(sess=sess,
-                   env_id=env_id,
-                   preprocess_wrapper=preprocess_wrapper,
+                   env=env,
                    worker_n=worker_n,
-                   seed=seed,
                    log_dir=worker_log_dir,
                    max_n_noops=max_n_noops,
                    debug=debug)
@@ -50,12 +55,18 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
         if render:
             w.render = True
 
+    easy_tf_log.set_writer(w.summary_writer.event_writer)
+
     # Worker 0 initialises the global network as well as the per-worker networks
     # Other workers only initialise their own per-worker networks
     sess.run(init_op)
 
     if worker_n == 0:
-        saver = tf.train.Saver()
+        # Why save_relative_paths=True?
+        # So that the plain-text 'checkpoint' file written uses relative paths,
+        # which seems to be needed in order to avoid confusing saver.restore()
+        # when restoring from FloydHub runs.
+        saver = tf.train.Saver(max_to_keep=1, save_relative_paths=True)
         checkpoint_dir = osp.join(log_dir, 'checkpoints')
         os.makedirs(checkpoint_dir)
         checkpoint_file = osp.join(checkpoint_dir, 'network.ckpt')
@@ -84,7 +95,7 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
         easy_tf_log.tflog('misc/updates', updates)
 
         if worker_n == 0 and ckpt_timer.done():
-            saver.save(sess, checkpoint_file)
+            saver.save(sess, checkpoint_file, steps)
             print("Checkpoint saved to '{}'".format(checkpoint_file))
             ckpt_timer.reset()
 
@@ -108,7 +119,8 @@ parser.add_argument("--preprocessing",
 group = parser.add_mutually_exclusive_group()
 group.add_argument('--log_dir')
 seconds_since_epoch = str(int(time.time()))
-group.add_argument('--run_name', default=seconds_since_epoch)
+group.add_argument('--run_name',
+                   default='test-run_{}'.format(seconds_since_epoch))
 args = parser.parse_args()
 
 if args.log_dir:
@@ -134,7 +146,9 @@ elif args.preprocessing == 'pong':
 ckpt_timer = Timer(duration_seconds=args.ckpt_interval_seconds)
 
 cluster_dict = {}
-ports = get_port_range(start_port=2200, n_ports=(args.n_workers + 1))
+ports = get_port_range(start_port=2200,
+                       n_ports=(args.n_workers + 1),
+                       random_stagger=True)
 cluster_dict["parameter_server"] = ["localhost:{}".format(ports[0])]
 cluster_dict["worker"] = ["localhost:{}".format(port)
                           for port in ports[1:]]
