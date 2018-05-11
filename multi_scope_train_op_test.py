@@ -12,6 +12,28 @@ class TestMultiScopeTrainOp(unittest.TestCase):
         tf.reset_default_graph()
         self.sess = tf.Session()
 
+    def test_gradient_clipping(self):
+        with tf.variable_scope('compute_scope'):
+            v_compute = tf.Variable(1.0)
+            loss = 1e6 * v_compute
+        with tf.variable_scope('apply_scope'):
+            v_apply = tf.Variable(1.0)
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate=1)
+        train_op, grads_tensor = create_train_op(loss, optimizer,
+                                                 'compute_scope',
+                                                 'apply_scope',
+                                                 max_grad_norm=1e3)
+
+        self.sess.run(tf.global_variables_initializer())
+        # Without clipping, the gradient would be 1e6
+        grads = self.sess.run(grads_tensor)
+        self.assertAlmostEqual(grads, 1e3, places=3)
+
+        self.sess.run(train_op)
+        v_apply_val = self.sess.run(v_apply)
+        # We started at 1.0, and should have taken one step of -1000
+        self.assertAlmostEqual(v_apply_val, 1.0 - 1000.0, places=3)
+
     def test_compute_scope(self):
         """
         Test whether gradients are really calculated in the compute scope
@@ -119,7 +141,6 @@ class TestMultiScopeTrainOp(unittest.TestCase):
         # Loss in item 1 of batch will be w1 + [2, 2] . w2
         self.sess.run(train_op, feed_dict={w2_mult: [[1, 1],
                                                      [2, 2]]})
-
 
         # Losses will be w1 + [3, 4] . w1,
         #                w1 + [5, 6] . w2
