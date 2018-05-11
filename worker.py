@@ -13,7 +13,8 @@ G = 0.99
 
 class Worker:
 
-    def __init__(self, sess, env, worker_n, log_dir, max_n_noops, debug):
+    def __init__(self, sess, env, worker_n, log_dir, max_n_noops, debug,
+                 learning_rate):
         self.sess = sess
         self.env = env
 
@@ -61,10 +62,12 @@ class Worker:
         # close to zero. So my speculation about why baselines uses a much
         # larger epsilon is: sometimes in RL the gradients can end up being
         # very small, and we want to limit the size of the update.
-        policy_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
-                                                     decay=0.99, epsilon=1e-5)
-        value_optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
-                                                    decay=0.99, epsilon=1e-5)
+        policy_optimizer = tf.train.RMSPropOptimizer(
+            learning_rate=learning_rate,
+            decay=0.99, epsilon=1e-5)
+        value_optimizer = tf.train.RMSPropOptimizer(
+            learning_rate=learning_rate,
+            decay=0.99, epsilon=1e-5)
 
         self.policy_train_op, grads_policy_norm = create_train_op(
             self.network.policy_loss,
