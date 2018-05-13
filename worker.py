@@ -68,7 +68,8 @@ class Worker:
             self.network.loss,
             optimizer,
             compute_scope=worker_scope,
-            apply_scope='global')
+            apply_scope='global',
+            max_grad_norm=0.5)
 
         utils.add_rmsprop_monitoring_ops(optimizer, 'combined_loss')
 
