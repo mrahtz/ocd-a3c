@@ -3,6 +3,7 @@ import queue
 import random
 import socket
 import subprocess
+import threading
 import time
 from multiprocessing import Queue
 from threading import Thread
@@ -203,6 +204,20 @@ class Timer:
             return True
         else:
             return False
+
+
+class ThreadSafeCounter:
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.val = 0
+
+    def increment(self, n=1):
+        with self.lock:
+            self.val += n
+
+    def __int__(self):
+        return self.val
 
 
 def add_rmsprop_monitoring_ops(rmsprop_optimizer, label):

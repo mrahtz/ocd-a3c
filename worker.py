@@ -1,12 +1,11 @@
 from collections import deque
 
+import easy_tf_log
 import numpy as np
-from easy_tf_log import tflog
 
 import utils
-from network import create_network
-from debug_wrappers import NumberFrames, MonitorEnv
 from multi_scope_train_op import *
+from network import create_network
 
 G = 0.99
 
@@ -23,6 +22,9 @@ class Worker:
                                       n_actions=env.action_space.n)
         self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
         self.scope = worker_scope
+
+        self.logger = easy_tf_log.Logger()
+        self.logger.set_writer(self.summary_writer.event_writer)
 
         # From the paper, Section 4, Asynchronous RL Framework,
         # subsection Optimization:
@@ -61,6 +63,7 @@ class Worker:
         # close to zero. So my speculation about why baselines uses a much
         # larger epsilon is: sometimes in RL the gradients can end up being
         # very small, and we want to limit the size of the update.
+        # TODO
         optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                               decay=0.99, epsilon=1e-5)
 
@@ -78,17 +81,23 @@ class Worker:
 
         utils.add_rmsprop_monitoring_ops(optimizer, 'combined_loss')
 
-        with tf.name_scope(worker_scope):
-            tf.summary.scalar('rl/value_loss', self.network.value_loss)
-            tf.summary.scalar('rl/policy_loss', self.network.policy_loss)
-            tf.summary.scalar('rl/combined_loss', self.network.loss)
-            tf.summary.scalar('rl/policy_entropy', self.network.policy_entropy)
-            tf.summary.scalar('rl/advantage_mean',
-                              tf.reduce_mean(self.network.advantage))
-            tf.summary.scalar('gradients/norm', grads_norm)
-            tf.summary.scalar('gradients/norm_policy', grads_norm_policy)
-            tf.summary.scalar('gradients/norm_value', grads_norm_value)
-        self.summary_ops = tf.summary.merge_all(scope=worker_scope)
+        tf.summary.scalar
+        log_name_vals = [
+            ('rl/value_loss', self.network.value_loss),
+            ('rl/policy_loss', self.network.policy_loss),
+            ('rl/combined_loss', self.network.loss),
+            ('rl/policy_entropy', self.network.policy_entropy),
+            ('rl/advantage_mean', tf.reduce_mean(self.network.advantage)),
+            ('gradients/norm', grads_norm),
+            ('gradients/norm_policy', grads_norm_policy),
+            ('gradients/norm_value', grads_norm_value),
+        ]
+        summaries = []
+        for name, val in log_name_vals:
+            summary = tf.summary.scalar("worker_{}/".format(worker_n) + name,
+                                        val)
+            summaries.append(summary)
+        self.summary_ops = tf.summary.merge(summaries)
 
         self.copy_ops = utils.create_copy_ops(from_scope='global',
                                               to_scope=self.scope)
@@ -130,6 +139,9 @@ class Worker:
         self.fig.canvas.update()
         self.fig.canvas.flush_events()
 
+    def logkv(self, key, value):
+        self.logger.logkv("worker_{}/".format(self.worker_n) + key, value)
+
     def run_update(self, n_steps):
         states = []
         actions = []
@@ -162,7 +174,7 @@ class Worker:
             if done:
                 break
 
-        tflog('rl/batch_reward_sum', sum(rewards))
+        self.logkv('rl/batch_reward_sum', sum(rewards))
 
         last_state = np.copy(self.last_o)
 
@@ -171,8 +183,8 @@ class Worker:
             self.last_o = self.env.reset()
             episode_value_sum = sum(self.episode_values)
             episode_value_mean = episode_value_sum / len(self.episode_values)
-            tflog('rl/episode_value_sum', episode_value_sum)
-            tflog('rl/episode_value_mean', episode_value_mean)
+            self.logkv('rl/episode_value_sum', episode_value_sum)
+            self.logkv('rl/episode_value_mean', episode_value_mean)
             self.episode_values = []
         else:
             # If we're ending in a non-terminal state, in order to calculate
