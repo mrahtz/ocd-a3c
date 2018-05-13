@@ -32,6 +32,14 @@ def make_workers(sess, env_id, preprocess_wrapper, max_n_noops, debug,
     create_network('global', n_actions=dummy_env.action_space.n)
     optimizer = optimizer_plz()
 
+    # ALE /seems/ to be basically thread-safe, as long as environments aren't
+    # created at the same time. See
+    # https://github.com/mgbellemare/Arcade-Learning-Environment/issues/86.
+
+    # Also, https://www.tensorflow.org/api_docs/python/tf/Graph notes that
+    # graph construction isn't thread-safe. So we all do all graph
+    # construction sequentially before starting the worker threads.
+
     print("Starting {} workers".format(n_workers))
     workers = []
     for worker_n in range(n_workers):
