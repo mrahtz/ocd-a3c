@@ -4,7 +4,6 @@ import argparse
 import os
 import os.path as osp
 import time
-from multiprocessing import Process
 from threading import Thread
 
 import easy_tf_log
@@ -110,37 +109,44 @@ def start_worker_process(worker):
                steps_per_update=args.steps_per_update)
 
 
+def make_workers(env_id, max_n_noops, debug, n_workers, seed):
+    dummy_env = gym.make(env_id)
+    create_network('global', n_actions=dummy_env.action_space.n)
+
+    print("Starting {} workers".format(n_workers))
+    workers = []
+    for worker_n in range(n_workers):
+        env = gym.make(env_id)
+        seed = seed * n_workers + worker_n
+        env.seed(seed)
+        if args.debug:
+            env = NumberFrames(env)
+        env = preprocess_wrapper(env, max_n_noops)
+        env = MonitorEnv(env, "Worker {}".format(worker_n))
+
+        worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
+        os.makedirs(worker_log_dir)
+
+        w = Worker(sess=sess,
+                   env=env,
+                   worker_n=worker_n,
+                   log_dir=worker_log_dir,
+                   max_n_noops=max_n_noops,
+                   debug=debug)
+        workers.append(w)
+
+    # TODO
+    easy_tf_log.set_writer(w.summary_writer.event_writer)
+
+    return workers
+
+
 utils.set_random_seeds(args.seed)
 
 sess = tf.Session()
 
-dummy_env = gym.make(args.env_id)
-create_network('global', n_actions=dummy_env.action_space.n)
-
-workers = []
-print("Starting {} workers".format(args.n_workers))
-for worker_n in range(args.n_workers):
-    env = gym.make(args.env_id)
-    seed = args.seed * args.n_workers + worker_n
-    env.seed(seed)
-    if args.debug:
-        env = NumberFrames(env)
-    env = preprocess_wrapper(env, args.max_n_noops)
-    env = MonitorEnv(env, "Worker {}".format(worker_n))
-
-    worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
-    os.makedirs(worker_log_dir)
-
-    w = Worker(sess=sess,
-               env=env,
-               worker_n=worker_n,
-               log_dir=worker_log_dir,
-               max_n_noops=args.max_n_noops,
-               debug=args.debug)
-    workers.append(w)
-
-    # TODO
-    easy_tf_log.set_writer(w.summary_writer.event_writer)
+workers = make_workers(args.env_id, args.max_n_noops, args.debug,
+                       args.n_workers, args.seed)
 
 # Why save_relative_paths=True?
 # So that the plain-text 'checkpoint' file written uses relative paths,
@@ -159,12 +165,12 @@ if args.load_ckpt:
 else:
     sess.run(tf.global_variables_initializer())
 
-worker_processes = []
+worker_threads = []
 for worker_n in range(args.n_workers):
-    p = Thread(target=start_worker_process, args=(workers[worker_n], ),
+    p = Thread(target=start_worker_process, args=(workers[worker_n],),
                daemon=True)
     p.start()
-    worker_processes.append(p)
+    worker_threads.append(p)
 
-for p in worker_processes:
+for p in worker_threads:
     p.join()

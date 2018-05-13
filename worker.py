@@ -17,8 +17,8 @@ class Worker:
         self.sess = sess
         self.env = env
 
-        worker_scope = "worker_%d" % worker_n
         self.worker_n = worker_n
+        worker_scope = "worker_{}".format(worker_n)
         self.network = create_network(scope=worker_scope, debug=debug,
                                       n_actions=env.action_space.n)
         self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
