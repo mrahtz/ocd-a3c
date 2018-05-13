@@ -71,6 +71,11 @@ class Worker:
             apply_scope='global',
             max_grad_norm=0.5)
 
+        grads_norm_policy = tf.global_norm(
+            tf.gradients(self.network.policy_loss, tf.trainable_variables()))
+        grads_norm_value = tf.global_norm(
+            tf.gradients(self.network.value_loss, tf.trainable_variables()))
+
         utils.add_rmsprop_monitoring_ops(optimizer, 'combined_loss')
 
         tf.summary.scalar('rl/value_loss', self.network.value_loss)
@@ -80,6 +85,8 @@ class Worker:
         tf.summary.scalar('rl/advantage_mean',
                           tf.reduce_mean(self.network.advantage))
         tf.summary.scalar('gradients/norm', grads_norm)
+        tf.summary.scalar('gradients/norm_policy', grads_norm_policy)
+        tf.summary.scalar('gradients/norm_value', grads_norm_value)
         self.summary_ops = tf.summary.merge_all()
 
         self.copy_ops = utils.create_copy_ops(from_scope='global',
