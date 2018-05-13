@@ -78,16 +78,17 @@ class Worker:
 
         utils.add_rmsprop_monitoring_ops(optimizer, 'combined_loss')
 
-        tf.summary.scalar('rl/value_loss', self.network.value_loss)
-        tf.summary.scalar('rl/policy_loss', self.network.policy_loss)
-        tf.summary.scalar('rl/combined_loss', self.network.loss)
-        tf.summary.scalar('rl/policy_entropy', self.network.policy_entropy)
-        tf.summary.scalar('rl/advantage_mean',
-                          tf.reduce_mean(self.network.advantage))
-        tf.summary.scalar('gradients/norm', grads_norm)
-        tf.summary.scalar('gradients/norm_policy', grads_norm_policy)
-        tf.summary.scalar('gradients/norm_value', grads_norm_value)
-        self.summary_ops = tf.summary.merge_all()
+        with tf.name_scope(worker_scope):
+            tf.summary.scalar('rl/value_loss', self.network.value_loss)
+            tf.summary.scalar('rl/policy_loss', self.network.policy_loss)
+            tf.summary.scalar('rl/combined_loss', self.network.loss)
+            tf.summary.scalar('rl/policy_entropy', self.network.policy_entropy)
+            tf.summary.scalar('rl/advantage_mean',
+                              tf.reduce_mean(self.network.advantage))
+            tf.summary.scalar('gradients/norm', grads_norm)
+            tf.summary.scalar('gradients/norm_policy', grads_norm_policy)
+            tf.summary.scalar('gradients/norm_value', grads_norm_value)
+        self.summary_ops = tf.summary.merge_all(scope=worker_scope)
 
         self.copy_ops = utils.create_copy_ops(from_scope='global',
                                               to_scope=self.scope)
