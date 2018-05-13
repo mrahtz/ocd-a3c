@@ -6,8 +6,7 @@ import numpy as np
 import utils
 from multi_scope_train_op import *
 from network import create_network
-
-G = 0.99
+from params import DISCOUNT_FACTOR
 
 
 class Worker:
@@ -15,65 +14,64 @@ class Worker:
     def __init__(self, sess, env, worker_n, log_dir, debug, optimizer):
         self.sess = sess
         self.env = env
-
         self.worker_n = worker_n
-        worker_scope = "worker_{}".format(worker_n)
-        self.network = create_network(scope=worker_scope, debug=debug,
-                                      n_actions=env.action_space.n)
-        self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
-        self.scope = worker_scope
 
+        worker_name = "worker_{}".format(worker_n)
+        self.network = create_network(scope=worker_name, debug=debug,
+                                      n_actions=env.action_space.n)
+
+        self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
         self.logger = easy_tf_log.Logger()
         self.logger.set_writer(self.summary_writer.event_writer)
 
         self.train_op, grads_norm = create_train_op(
             self.network.loss,
             optimizer,
-            compute_scope=worker_scope,
+            compute_scope=worker_name,
             apply_scope='global',
             max_grad_norm=0.5)
 
+        self.summaries_op = self.make_summaries_op(self.network, grads_norm,
+                                                   optimizer, worker_name)
+
+        self.copy_ops = utils.create_copy_ops(from_scope='global',
+                                              to_scope=worker_name)
+
+        self.render = False
+        self.value_log = deque(maxlen=100)
+        self.fig = None
+
+        self.steps = 0
+        self.last_o = self.env.reset()
+        self.episode_values = []
+
+    @staticmethod
+    def make_summaries_op(network, grads_norm, optimizer, worker_name):
         grads_norm_policy = tf.global_norm(
-            tf.gradients(self.network.policy_loss, tf.trainable_variables()))
+            tf.gradients(network.policy_loss, tf.trainable_variables()))
         grads_norm_value = tf.global_norm(
-            tf.gradients(self.network.value_loss, tf.trainable_variables()))
-
-        # TODO
-        utils.add_rmsprop_monitoring_ops(optimizer, 'combined_loss')
-
-        tf.summary.scalar
-        log_name_vals = [
-            ('rl/value_loss', self.network.value_loss),
-            ('rl/policy_loss', self.network.policy_loss),
-            ('rl/combined_loss', self.network.loss),
-            ('rl/policy_entropy', self.network.policy_entropy),
-            ('rl/advantage_mean', tf.reduce_mean(self.network.advantage)),
+            tf.gradients(network.value_loss, tf.trainable_variables()))
+        summary_pairs = [
+            ('rl/value_loss', network.value_loss),
+            ('rl/policy_loss', network.policy_loss),
+            ('rl/combined_loss', network.loss),
+            ('rl/policy_entropy', network.policy_entropy),
+            ('rl/advantage_mean', tf.reduce_mean(network.advantage)),
             ('gradients/norm', grads_norm),
             ('gradients/norm_policy', grads_norm_policy),
             ('gradients/norm_value', grads_norm_value),
         ]
         summaries = []
-        for name, val in log_name_vals:
-            summary = tf.summary.scalar("worker_{}/".format(worker_n) + name,
-                                        val)
+        for name, val in summary_pairs:
+            full_name = "{}/{}".format(worker_name, name)
+            summary = tf.summary.scalar(full_name, val)
             summaries.append(summary)
-        self.summary_ops = tf.summary.merge(summaries)
 
-        self.copy_ops = utils.create_copy_ops(from_scope='global',
-                                              to_scope=self.scope)
+        rmsprop_summaries = utils.make_rmsprop_monitoring_ops(optimizer,
+                                                              worker_name)
+        summaries.extend(rmsprop_summaries)
 
-        self.steps = 0
-        self.render = False
-
-        self.value_log = deque(maxlen=100)
-        self.fig = None
-
-        self.last_o = self.env.reset()
-
-        self.episode_values = []
-
-    def sync_scopes(self):
-        self.sess.run(self.copy_ops)
+        return tf.summary.merge(summaries)
 
     def value_graph(self):
         import matplotlib.pyplot as plt
@@ -106,7 +104,7 @@ class Worker:
         actions = []
         rewards = []
 
-        self.sync_scopes()
+        self.sess.run(self.copy_ops)
 
         for _ in range(n_steps):
             s = np.moveaxis(self.last_o, source=0, destination=-1)
@@ -138,7 +136,8 @@ class Worker:
         last_state = np.copy(self.last_o)
 
         if done:
-            returns = utils.rewards_to_discounted_returns(rewards, G)
+            returns = utils.rewards_to_discounted_returns(rewards,
+                                                          DISCOUNT_FACTOR)
             self.last_o = self.env.reset()
             episode_value_sum = sum(self.episode_values)
             episode_value_mean = episode_value_sum / len(self.episode_values)
@@ -154,14 +153,14 @@ class Worker:
             last_value = self.sess.run(self.network.graph_v,
                                        feed_dict=feed_dict)[0]
             rewards += [last_value]
-            returns = utils.rewards_to_discounted_returns(rewards, G)
+            returns = utils.rewards_to_discounted_returns(rewards,
+                                                          DISCOUNT_FACTOR)
             returns = returns[:-1]  # Chop off last_value
 
         feed_dict = {self.network.s: states,
                      self.network.a: actions,
                      self.network.r: returns}
-        summaries, _ = self.sess.run([self.summary_ops,
-                                      self.train_op],
+        summaries, _ = self.sess.run([self.summaries_op, self.train_op],
                                      feed_dict)
         self.summary_writer.add_summary(summaries, self.steps)
 

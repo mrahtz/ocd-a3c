@@ -26,10 +26,8 @@ def run_worker(worker, n_steps_to_run, steps_per_update, step_counter,
         update_counter.increment(1)
 
 
-def make_workers(sess, env_id, preprocess_wrapper, max_n_noops, debug,
-                 n_workers, seed, log_dir):
-    dummy_env = gym.make(env_id)
-    create_network('global', n_actions=dummy_env.action_space.n)
+def make_workers(sess, envs, n_workers, debug, log_dir):
+    create_network('global', n_actions=envs[0].action_space.n)
     optimizer = optimizer_plz()
 
     # ALE /seems/ to be basically thread-safe, as long as environments aren't
@@ -43,19 +41,10 @@ def make_workers(sess, env_id, preprocess_wrapper, max_n_noops, debug,
     print("Starting {} workers".format(n_workers))
     workers = []
     for worker_n in range(n_workers):
-        env = gym.make(env_id)
-        seed = seed * n_workers + worker_n
-        env.seed(seed)
-        if debug:
-            env = NumberFrames(env)
-        env = preprocess_wrapper(env, max_n_noops)
-        env = MonitorEnv(env, "worker_{}".format(worker_n))
-
         worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
         os.makedirs(worker_log_dir)
-
         w = Worker(sess=sess,
-                   env=env,
+                   env=envs[worker_n],
                    worker_n=worker_n,
                    log_dir=worker_log_dir,
                    debug=debug,
@@ -128,15 +117,29 @@ def optimizer_plz():
     return optimizer
 
 
+def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug):
+    envs = []
+    for env_n in range(n_envs):
+        env = gym.make(env_id)
+        env_seed = seed * n_envs + env_n
+        env.seed(env_seed)
+        if debug:
+            env = NumberFrames(env)
+        env = preprocess_wrapper(env, max_n_noops)
+        env = MonitorEnv(env, "worker_{}".format(env_n))
+        envs.append(env)
+    return envs
+
+
 def main():
     args, log_dir, preprocess_wrapper, ckpt_timer = parse_args()
     easy_tf_log.set_dir(log_dir)
 
     sess = tf.Session()
     utils.set_random_seeds(args.seed)
-    workers = make_workers(sess, args.env_id,
-                           preprocess_wrapper, args.max_n_noops, args.debug,
-                           args.n_workers, args.seed, log_dir)
+    envs = make_envs(args.env_id, preprocess_wrapper, args.max_n_noops,
+                     args.n_workers, args.seed, args.debug)
+    workers = make_workers(sess, envs, args.n_workers, args.debug, log_dir)
 
     # Why save_relative_paths=True?
     # So that the plain-text 'checkpoint' file written uses relative paths,

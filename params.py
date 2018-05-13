@@ -44,3 +44,6 @@ def parse_args():
     ckpt_timer = Timer(duration_seconds=args.ckpt_interval_seconds)
 
     return args, log_dir, preprocess_wrapper, ckpt_timer
+
+
+DISCOUNT_FACTOR = 0.99
