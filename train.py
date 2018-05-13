@@ -172,9 +172,12 @@ def main():
         cur_t = time.time()
         cur_steps = int(step_counter)
         steps_per_second = (cur_steps - prev_steps) / (cur_t - prev_t)
+        print(steps_per_second)
         easy_tf_log.tflog('misc/steps_per_second', steps_per_second)
         easy_tf_log.tflog('misc/steps', int(step_counter))
         easy_tf_log.tflog('misc/updates', int(update_counter))
+        prev_t = cur_t
+        prev_steps = cur_steps
 
         if ckpt_timer.done():
             saver.save(sess, checkpoint_file, int(step_counter))
