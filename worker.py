@@ -139,6 +139,7 @@ class Worker:
             returns = utils.rewards_to_discounted_returns(rewards,
                                                           DISCOUNT_FACTOR)
             self.last_o = self.env.reset()
+            print("resetting env")
             episode_value_sum = sum(self.episode_values)
             episode_value_mean = episode_value_sum / len(self.episode_values)
             self.logkv('rl/episode_value_sum', episode_value_sum)

@@ -3,7 +3,7 @@
 import os
 import os.path as osp
 import time
-from threading import Thread
+from multiprocessing import Process
 
 import easy_tf_log
 import gym
@@ -18,54 +18,38 @@ from worker import Worker
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
-def run_worker(worker, n_steps_to_run, steps_per_update, step_counter,
-               update_counter):
-    while int(step_counter) < n_steps_to_run:
-        steps_ran = worker.run_update(steps_per_update)
-        step_counter.increment(steps_ran)
-        update_counter.increment(1)
+def run_worker(worker_n, debug, log_dir, n_steps_to_run,
+                 steps_per_update, step_counter, update_counter, env_id,
+               n_workers, max_n_noops, preprocess_wrapper, seed):
+    env = gym.make(env_id)
+    env_seed = seed * n_workers + worker_n
+    env.seed(env_seed)
+    if debug:
+        env = NumberFrames(env)
+    env = preprocess_wrapper(env, max_n_noops)
+    env = MonitorEnv(env, "worker_{}".format(worker_n))
 
-
-def make_workers(sess, envs, n_workers, debug, log_dir):
-    create_network('global', n_actions=envs[0].action_space.n)
+    tf.reset_default_graph()
+    sess = tf.Session()
+    create_network('global', n_actions=env.action_space.n)
     optimizer = optimizer_plz()
 
-    # ALE /seems/ to be basically thread-safe, as long as environments aren't
-    # created at the same time. See
-    # https://github.com/mgbellemare/Arcade-Learning-Environment/issues/86.
+    worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
+    os.makedirs(worker_log_dir)
+    w = Worker(sess=sess,
+               env=env,
+               worker_n=worker_n,
+               log_dir=worker_log_dir,
+               debug=debug,
+               optimizer=optimizer)
+    easy_tf_log.set_writer(w.summary_writer.event_writer)
 
-    # Also, https://www.tensorflow.org/api_docs/python/tf/Graph notes that
-    # graph construction isn't thread-safe. So we all do all graph
-    # construction sequentially before starting the worker threads.
+    sess.run(tf.global_variables_initializer())
 
-    print("Starting {} workers".format(n_workers))
-    workers = []
-    for worker_n in range(n_workers):
-        worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
-        os.makedirs(worker_log_dir)
-        w = Worker(sess=sess,
-                   env=envs[worker_n],
-                   worker_n=worker_n,
-                   log_dir=worker_log_dir,
-                   debug=debug,
-                   optimizer=optimizer)
-        workers.append(w)
-
-    return workers
-
-
-def start_workers(args, step_counter, update_counter, workers):
-    worker_threads = []
-    for worker_n, worker in enumerate(workers):
-        p_args = (worker,
-                  args.n_steps,
-                  args.steps_per_update,
-                  step_counter,
-                  update_counter)
-        p = Thread(target=run_worker, args=p_args)
-        p.start()
-        worker_threads.append(p)
-    return worker_threads
+    while int(step_counter) < n_steps_to_run:
+        steps_ran = w.run_update(steps_per_update)
+        step_counter.increment(steps_ran)
+        update_counter.increment(1)
 
 
 def optimizer_plz():
@@ -116,54 +100,23 @@ def optimizer_plz():
                                           decay=0.99, epsilon=1e-5)
     return optimizer
 
-
-def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug):
-    envs = []
-    for env_n in range(n_envs):
-        env = gym.make(env_id)
-        env_seed = seed * n_envs + env_n
-        env.seed(env_seed)
-        if debug:
-            env = NumberFrames(env)
-        env = preprocess_wrapper(env, max_n_noops)
-        env = MonitorEnv(env, "worker_{}".format(env_n))
-        envs.append(env)
-    return envs
-
-
 def main():
     args, log_dir, preprocess_wrapper, ckpt_timer = parse_args()
     easy_tf_log.set_dir(log_dir)
 
-    sess = tf.Session()
-    utils.set_random_seeds(args.seed)
-    envs = make_envs(args.env_id, preprocess_wrapper, args.max_n_noops,
-                     args.n_workers, args.seed, args.debug)
-    workers = make_workers(sess, envs, args.n_workers, args.debug, log_dir)
+    step_counter = utils.MultiprocessCounter()
+    update_counter = utils.MultiprocessCounter()
 
-    # Why save_relative_paths=True?
-    # So that the plain-text 'checkpoint' file written uses relative paths,
-    # which seems to be needed in order to avoid confusing saver.restore()
-    # when restoring from FloydHub runs.
-    saver = tf.train.Saver(max_to_keep=1, save_relative_paths=True)
-    checkpoint_dir = osp.join(log_dir, 'checkpoints')
-    os.makedirs(checkpoint_dir)
-    checkpoint_file = osp.join(checkpoint_dir, 'network.ckpt')
+    def s(worker_n):
+        run_worker(worker_n, args.debug, log_dir, args.n_steps,
+                   args.steps_per_update, step_counter, update_counter,
+                   args.env_id, args.n_workers, args.max_n_noops,
+                   preprocess_wrapper, args.seed)
+    worker_threads = [Process(target=s, args=[i])
+                      for i in range(args.n_workers)]
+    for w in worker_threads:
+        w.start()
 
-    if args.load_ckpt:
-        print("Restoring from checkpoint '%s'..." % args.load_ckpt,
-              end='', flush=True)
-        saver.restore(sess, args.load_ckpt)
-        print("done!")
-    else:
-        sess.run(tf.global_variables_initializer())
-
-    step_counter = utils.ThreadSafeCounter()
-    update_counter = utils.ThreadSafeCounter()
-
-    worker_threads = start_workers(args, step_counter, update_counter, workers)
-
-    ckpt_timer.reset()
     prev_t = time.time()
     prev_steps = int(step_counter)
     while True:
@@ -178,11 +131,6 @@ def main():
         easy_tf_log.tflog('misc/updates', int(update_counter))
         prev_t = cur_t
         prev_steps = cur_steps
-
-        if ckpt_timer.done():
-            saver.save(sess, checkpoint_file, int(step_counter))
-            print("Checkpoint saved to '{}'".format(checkpoint_file))
-            ckpt_timer.reset()
 
         alive = [t.is_alive() for t in worker_threads]
         if not any(alive):
