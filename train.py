@@ -10,9 +10,10 @@ import gym
 import tensorflow as tf
 
 import utils
-from debug_wrappers import NumberFrames, MonitorEnv
+from debug_wrappers import NumberFrames, MonitorEnv, EarlyReset
 from network import create_network
 from params import parse_args
+from preprocessing import SubProcessEnv
 from worker import Worker
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
@@ -42,7 +43,6 @@ def make_workers(sess, envs, n_workers, debug, log_dir):
     workers = []
     for worker_n in range(n_workers):
         worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
-        os.makedirs(worker_log_dir)
         w = Worker(sess=sess,
                    env=envs[worker_n],
                    worker_n=worker_n,
@@ -117,16 +117,28 @@ def optimizer_plz():
     return optimizer
 
 
-def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug):
+def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug,
+              log_dir):
+    def make_make_env_fn(env_n):
+        def thunk():
+            # MonitorEnv uses easy_tf_log, and we need to reinitialize it
+            # since we're in a subprocess.
+            worker_log_dir = osp.join(log_dir, "worker_{}".format(env_n))
+            easy_tf_log.set_dir(worker_log_dir)
+            env = gym.make(env_id)
+            env_seed = seed * n_envs + env_n
+            env.seed(env_seed)
+            if debug:
+                env = NumberFrames(env)
+            env = preprocess_wrapper(env, max_n_noops)
+            env = MonitorEnv(env, "worker_{}".format(env_n))
+            return env
+
+        return thunk
+
     envs = []
     for env_n in range(n_envs):
-        env = gym.make(env_id)
-        env_seed = seed * n_envs + env_n
-        env.seed(env_seed)
-        if debug:
-            env = NumberFrames(env)
-        env = preprocess_wrapper(env, max_n_noops)
-        env = MonitorEnv(env, "worker_{}".format(env_n))
+        env = SubProcessEnv(make_make_env_fn(env_n))
         envs.append(env)
     return envs
 
@@ -138,7 +150,7 @@ def main():
     sess = tf.Session()
     utils.set_random_seeds(args.seed)
     envs = make_envs(args.env_id, preprocess_wrapper, args.max_n_noops,
-                     args.n_workers, args.seed, args.debug)
+                     args.n_workers, args.seed, args.debug, log_dir)
     workers = make_workers(sess, envs, args.n_workers, args.debug, log_dir)
 
     # Why save_relative_paths=True?
@@ -187,6 +199,9 @@ def main():
         alive = [t.is_alive() for t in worker_threads]
         if not any(alive):
             break
+
+    for env in envs:
+        env.close()
 
 
 if __name__ == '__main__':
