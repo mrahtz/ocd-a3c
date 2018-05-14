@@ -284,27 +284,28 @@ def pong_preprocess(env, max_n_noops):
     env = FrameStackWrapper(env)
     return env
 
-def f(pipe):
-    env = gym.make('PongNoFrameskip-v4')
-    env = generic_preprocess(env, max_n_noops=30)
-    env = MonitorEnv(env, "worker_x")
-    while True:
-        cmd, data = pipe.recv()
-        if cmd == 'step':
-            action = data
-            obs, reward, done, info = env.step(action)
-            pipe.send((obs, reward, done, info))
-        elif cmd == 'reset':
-            obs = env.reset()
-            pipe.send(obs)
 
+class SubProcessEnv():
+    @staticmethod
+    def env_process(pipe, make_env_fn):
+        env = make_env_fn()
+        pipe.send((env.observation_space, env.action_space))
+        while True:
+            cmd, data = pipe.recv()
+            if cmd == 'step':
+                action = data
+                obs, reward, done, info = env.step(action)
+                pipe.send((obs, reward, done, info))
+            elif cmd == 'reset':
+                obs = env.reset()
+                pipe.send(obs)
 
-class SneakyEnv(gym.Env):
-    def __init__(self):
+    def __init__(self, make_env_fn):
         p1, p2 = Pipe()
-        Process(target=f, args=[p1]).start()
-        self.pipe = p2
-        self.action_space = gym.spaces.Discrete(6)
+        self.pipe = p1
+        self.proc = Process(target=self.env_process, args=[p2, make_env_fn])
+        self.proc.start()
+        self.observation_space, self.action_space = self.pipe.recv()
 
     def reset(self):
         self.pipe.send(('reset', None))
@@ -313,3 +314,7 @@ class SneakyEnv(gym.Env):
     def step(self, action):
         self.pipe.send(('step', action))
         return self.pipe.recv()
+
+    def close(self):
+        self.proc.terminate()
+
