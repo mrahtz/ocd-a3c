@@ -1,4 +1,3 @@
-import multiprocessing
 import os.path as osp
 import queue
 import random
@@ -207,17 +206,18 @@ class Timer:
             return False
 
 
-class MultiprocessCounter:
+class ThreadSafeCounter:
 
     def __init__(self):
-        self.value = multiprocessing.Value('i', 0)
+        self.lock = threading.Lock()
+        self.val = 0
 
     def increment(self, n=1):
-        with self.value.get_lock():
-            self.value.value += n
+        with self.lock:
+            self.val += n
 
     def __int__(self):
-        return self.value.value
+        return self.val
 
 
 def make_rmsprop_monitoring_ops(rmsprop_optimizer, prefix):
@@ -240,3 +240,4 @@ def make_rmsprop_monitoring_ops(rmsprop_optimizer, prefix):
         summary = tf.summary.scalar(full_name, val)
         summaries.append(summary)
     return summaries
+
