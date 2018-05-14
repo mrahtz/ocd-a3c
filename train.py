@@ -62,7 +62,11 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
     sess.run(init_op)
 
     if worker_n == 0:
-        saver = tf.train.Saver()
+        # Why save_relative_paths=True?
+        # So that the plain-text 'checkpoint' file written uses relative paths,
+        # which seems to be needed in order to avoid confusing saver.restore()
+        # when restoring from FloydHub runs.
+        saver = tf.train.Saver(max_to_keep=1, save_relative_paths=True)
         checkpoint_dir = osp.join(log_dir, 'checkpoints')
         os.makedirs(checkpoint_dir)
         checkpoint_file = osp.join(checkpoint_dir, 'network.ckpt')
@@ -91,7 +95,7 @@ def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
         easy_tf_log.tflog('misc/updates', updates)
 
         if worker_n == 0 and ckpt_timer.done():
-            saver.save(sess, checkpoint_file)
+            saver.save(sess, checkpoint_file, steps)
             print("Checkpoint saved to '{}'".format(checkpoint_file))
             ckpt_timer.reset()
 

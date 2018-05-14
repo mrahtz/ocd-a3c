@@ -7,8 +7,8 @@ from utils import logit_entropy
 BETA = 0.01
 
 Network = namedtuple('Network',
-                     's a r a_softmax graph_v policy_loss value_loss '
-                     'policy_entropy')
+                     's a r a_softmax graph_v policy_loss value_loss loss '
+                     'policy_entropy advantage')
 
 
 def create_network(scope, n_actions, debug=False):
@@ -114,6 +114,8 @@ def create_network(scope, n_actions, debug=False):
             value_loss = advantage ** 2
             value_loss = tf.reduce_sum(value_loss)
 
+            loss = policy_loss + 0.1 * value_loss
+
         network = Network(
             s=graph_s,
             a=graph_action,
@@ -122,6 +124,8 @@ def create_network(scope, n_actions, debug=False):
             graph_v=graph_v,
             policy_loss=policy_loss,
             value_loss=value_loss,
-            policy_entropy=policy_entropy)
+            policy_entropy=policy_entropy,
+            advantage=advantage,
+            loss=loss)
 
         return network
