@@ -289,6 +289,9 @@ class SubProcessEnv():
     @staticmethod
     def env_process(pipe, make_env_fn):
         env = make_env_fn()
+        # env = gym.make('PongNoFrameskip-v4')
+        # env = generic_preprocess(env, max_n_noops=30)
+        # env = MonitorEnv(env, "worker_x")
         pipe.send((env.observation_space, env.action_space))
         while True:
             cmd, data = pipe.recv()
