@@ -5,7 +5,7 @@ import socket
 import subprocess
 import threading
 import time
-from multiprocessing import Queue
+from multiprocessing import Queue, Pipe, Process
 from threading import Thread
 
 import numpy as np
@@ -241,3 +241,36 @@ def make_rmsprop_monitoring_ops(rmsprop_optimizer, prefix):
         summaries.append(summary)
     return summaries
 
+
+class SubProcessEnv():
+    @staticmethod
+    def env_process(pipe, make_env_fn):
+        env = make_env_fn()
+        pipe.send((env.observation_space, env.action_space))
+        while True:
+            cmd, data = pipe.recv()
+            if cmd == 'step':
+                action = data
+                obs, reward, done, info = env.step(action)
+                pipe.send((obs, reward, done, info))
+            elif cmd == 'reset':
+                obs = env.reset()
+                pipe.send(obs)
+
+    def __init__(self, make_env_fn):
+        p1, p2 = Pipe()
+        self.pipe = p1
+        self.proc = Process(target=self.env_process, args=[p2, make_env_fn])
+        self.proc.start()
+        self.observation_space, self.action_space = self.pipe.recv()
+
+    def reset(self):
+        self.pipe.send(('reset', None))
+        return self.pipe.recv()
+
+    def step(self, action):
+        self.pipe.send(('step', action))
+        return self.pipe.recv()
+
+    def close(self):
+        self.proc.terminate()

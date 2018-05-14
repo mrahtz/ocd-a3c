@@ -13,7 +13,7 @@ import utils
 from debug_wrappers import NumberFrames, MonitorEnv, EarlyReset
 from network import create_network
 from params import parse_args
-from preprocessing import SubProcessEnv
+from utils import SubProcessEnv
 from worker import Worker
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
