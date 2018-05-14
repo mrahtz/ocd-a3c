@@ -160,9 +160,10 @@ class Worker:
         feed_dict = {self.network.s: states,
                      self.network.a: actions,
                      self.network.r: returns}
-        summaries, _ = self.sess.run([self.summaries_op, self.train_op],
-                                     feed_dict)
-        self.summary_writer.add_summary(summaries, self.steps)
+        self.sess.run(self.train_op, feed_dict)
+        # summaries, _ = self.sess.run([self.summaries_op, self.train_op],
+        #                              feed_dict)
+        # self.summary_writer.add_summary(summaries, self.steps)
 
         self.steps += 1
 
