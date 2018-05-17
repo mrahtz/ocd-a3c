@@ -5,14 +5,12 @@ import tensorflow as tf
 
 from utils import logit_entropy
 
-BETA = 0.01
-
 Network = namedtuple('Network',
                      's a r a_softmax graph_v policy_loss value_loss loss '
                      'policy_entropy advantage')
 
 
-def create_network(scope, n_actions, debug=False):
+def create_network(scope, n_actions, debug=False, entropy_bonus=0.01):
     with tf.variable_scope(scope):
         graph_s = tf.placeholder(tf.float32, [None, 84, 84, 4])
         graph_action = tf.placeholder(tf.int64, [None])
@@ -123,7 +121,7 @@ def create_network(scope, n_actions, debug=False):
             policy_entropy = tf.reduce_mean(logit_entropy(a_logits))
             # We want to maximise entropy, which is the same as
             # minimising negative entropy
-            policy_loss -= BETA * policy_entropy
+            policy_loss -= entropy_bonus * policy_entropy
 
             value_loss = advantage ** 2
             value_loss = tf.reduce_mean(value_loss)
