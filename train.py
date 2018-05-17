@@ -10,7 +10,7 @@ import gym
 import tensorflow as tf
 
 import utils
-from debug_wrappers import NumberFrames, MonitorEnv, EarlyReset
+from debug_wrappers import NumberFrames, MonitorEnv
 from network import create_network
 from params import parse_args
 from utils import SubProcessEnv
