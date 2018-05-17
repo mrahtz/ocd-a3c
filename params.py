@@ -37,6 +37,7 @@ def parse_args():
         if osp.exists(log_dir):
             raise Exception("Log directory '%s' already exists" % log_dir)
     os.makedirs(log_dir, exist_ok=True)
+    
     if args.preprocessing == 'generic':
         preprocess_wrapper = preprocessing.generic_preprocess
     elif args.preprocessing == 'pong':
