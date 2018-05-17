@@ -125,6 +125,7 @@ def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug,
             # since we're in a subprocess.
             worker_log_dir = osp.join(log_dir, "worker_{}".format(env_n))
             easy_tf_log.set_dir(worker_log_dir)
+
             env = gym.make(env_id)
             env_seed = seed * n_envs + env_n
             env.seed(env_seed)
