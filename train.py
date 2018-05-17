@@ -121,10 +121,8 @@ def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug,
               log_dir):
     def make_make_env_fn(env_n):
         def thunk():
-            # MonitorEnv uses easy_tf_log, and we need to reinitialize it
-            # since we're in a subprocess.
-            worker_log_dir = osp.join(log_dir, "worker_{}".format(env_n))
-            easy_tf_log.set_dir(worker_log_dir)
+            env_log_dir = osp.join(log_dir, "worker_{}".format(env_n), "env")
+            easy_tf_log.set_dir(env_log_dir)
 
             env = gym.make(env_id)
             # We calculate the env seed like this so that changing the
