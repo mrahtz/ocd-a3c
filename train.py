@@ -127,6 +127,8 @@ def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug,
             easy_tf_log.set_dir(worker_log_dir)
 
             env = gym.make(env_id)
+            # We calculate the env seed like this so that changing the
+            # global seed completely changes the whole set of env seeds.
             env_seed = seed * n_envs + env_n
             env.seed(env_seed)
             if debug:
