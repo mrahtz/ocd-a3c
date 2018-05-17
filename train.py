@@ -147,8 +147,8 @@ def main():
     args, log_dir, preprocess_wrapper, ckpt_timer = parse_args()
     easy_tf_log.set_dir(log_dir)
 
-    sess = tf.Session()
     utils.set_random_seeds(args.seed)
+    sess = tf.Session()
     envs = make_envs(args.env_id, preprocess_wrapper, args.max_n_noops,
                      args.n_workers, args.seed, args.debug, log_dir)
     workers = make_workers(sess, envs, args.n_workers, args.debug, log_dir)
