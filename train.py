@@ -171,8 +171,8 @@ def main():
     else:
         sess.run(tf.global_variables_initializer())
 
-    step_counter = utils.ThreadSafeCounter()
-    update_counter = utils.ThreadSafeCounter()
+    step_counter = utils.ProcessSafeCounter()
+    update_counter = utils.ProcessSafeCounter()
 
     worker_threads = start_workers(args, step_counter, update_counter, workers)
 

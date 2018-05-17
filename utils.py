@@ -1,9 +1,9 @@
+import multiprocessing
 import os.path as osp
 import queue
 import random
 import socket
 import subprocess
-import threading
 import time
 from multiprocessing import Queue, Pipe, Process
 from threading import Thread
@@ -206,20 +206,6 @@ class Timer:
             return False
 
 
-class ThreadSafeCounter:
-
-    def __init__(self):
-        self.lock = threading.Lock()
-        self.val = 0
-
-    def increment(self, n=1):
-        with self.lock:
-            self.val += n
-
-    def __int__(self):
-        return self.val
-
-
 def make_rmsprop_monitoring_ops(rmsprop_optimizer, prefix):
     rms_vars = [rmsprop_optimizer.get_slot(var, 'rms')
                 for var in tf.trainable_variables()]
@@ -240,6 +226,22 @@ def make_rmsprop_monitoring_ops(rmsprop_optimizer, prefix):
         summary = tf.summary.scalar(full_name, val)
         summaries.append(summary)
     return summaries
+
+
+class ProcessSafeCounter:
+
+    def __init__(self):
+        self.value = multiprocessing.Value('i', 0)
+
+    def increment(self, n=1):
+        with self.value.get_lock():
+            self.value.value += n
+
+    def __int__(self):
+        return self.value.value
+
+    def __repr__(self):
+        return str(self.value.value)
 
 
 class SubProcessEnv():
