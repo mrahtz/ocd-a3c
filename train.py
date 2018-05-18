@@ -180,7 +180,7 @@ def main():
     prev_t = time.time()
     prev_steps = int(step_counter)
     while True:
-        time.sleep(1.0)
+        time.sleep(60.0)
 
         cur_t = time.time()
         cur_steps = int(step_counter)

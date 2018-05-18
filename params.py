@@ -12,7 +12,7 @@ def parse_args():
     parser.add_argument("env_id")
     parser.add_argument("--n_steps", type=int, default=10000000)
     parser.add_argument("--n_workers", type=int, default=1)
-    parser.add_argument("--ckpt_interval_seconds", type=int, default=60)
+    parser.add_argument("--ckpt_interval_seconds", type=int, default=300)
     parser.add_argument("--load_ckpt")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--render", action='store_true')
