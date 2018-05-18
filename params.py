@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 import time
 from os import path as osp
 
@@ -45,6 +46,11 @@ def parse_args():
         if osp.exists(log_dir):
             raise Exception("Log directory '%s' already exists" % log_dir)
     os.makedirs(log_dir, exist_ok=True)
+
+    with open(osp.join(log_dir, 'args.txt'), 'w') as args_file:
+        args_file.write(' '.join(sys.argv))
+        args_file.write('\n')
+        args_file.write(str(args))
 
     if (args.lr_schedule == 'linear' and
             args.lr_decay_to_zero_by_n_steps is None):
