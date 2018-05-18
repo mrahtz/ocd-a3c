@@ -61,8 +61,7 @@ class Worker:
         # close to zero. So my speculation about why baselines uses a much
         # larger epsilon is: sometimes in RL the gradients can end up being
         # very small, and we want to limit the size of the update.
-        self.lr = tf.Variable(0.0)
-        optimizer = tf.train.RMSPropOptimizer(learning_rate=self.lr,
+        optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                               decay=0.99, epsilon=1e-5)
 
         self.train_op, grads_norm = create_train_op(
@@ -171,11 +170,6 @@ class Worker:
             rewards += [last_value]
             returns = utils.rewards_to_discounted_returns(rewards, G)
             returns = returns[:-1]  # Chop off last_value
-
-        if self.steps < 5:
-            self.sess.run(self.lr.assign(2e-4))
-        else:
-            self.sess.run(self.lr.assign(5e-4))
 
         feed_dict = {self.network.s: states,
                      self.network.a: actions,
