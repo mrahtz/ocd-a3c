@@ -27,9 +27,10 @@ def run_worker(worker, n_steps_to_run, steps_per_update, step_counter,
         update_counter.increment(1)
 
 
-def make_workers(sess, envs, n_workers, debug, log_dir):
+def make_workers(sess, envs, n_workers, lr, debug, log_dir):
     create_network('global', n_actions=envs[0].action_space.n)
-    optimizer = optimizer_plz()
+
+    optimizer = optimizer_plz(lr)
 
     # ALE /seems/ to be basically thread-safe, as long as environments aren't
     # created at the same time. See
@@ -54,6 +55,20 @@ def make_workers(sess, envs, n_workers, debug, log_dir):
     return workers
 
 
+def make_lr(lr_args, step_counter):
+    initial_lr = tf.constant(lr_args['initial'])
+    if lr_args['schedule'] == 'constant':
+        lr = initial_lr
+    elif lr_args['schedule'] == 'linear':
+        steps = tf.cast(step_counter, tf.float32)
+        zero_by_steps = tf.cast(lr_args['zero_by_steps'], tf.float32)
+        lr = initial_lr * (1 - steps / zero_by_steps)
+        lr = tf.clip_by_value(lr,
+                              clip_value_min=0.0,
+                              clip_value_max=float('inf'))
+    return lr
+
+
 def start_workers(args, step_counter, update_counter, workers):
     worker_threads = []
     for worker_n, worker in enumerate(workers):
@@ -68,7 +83,7 @@ def start_workers(args, step_counter, update_counter, workers):
     return worker_threads
 
 
-def optimizer_plz():
+def optimizer_plz(learning_rate):
     # From the paper, Section 4, Asynchronous RL Framework,
     # subsection Optimization:
     # "We investigated three different optimization algorithms in our
@@ -112,7 +127,7 @@ def optimizer_plz():
     # larger epsilon is: sometimes in RL the gradients can end up being
     # very small, and we want to limit the size of the update.
 
-    optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
+    optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate,
                                           decay=0.99, epsilon=1e-5)
     return optimizer
 
@@ -145,14 +160,17 @@ def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug,
 
 
 def main():
-    args, log_dir, preprocess_wrapper, ckpt_timer = parse_args()
+    args, lr_args, log_dir, preprocess_wrapper, ckpt_timer = parse_args()
     easy_tf_log.set_dir(log_dir)
 
     utils.set_random_seeds(args.seed)
     sess = tf.Session()
     envs = make_envs(args.env_id, preprocess_wrapper, args.max_n_noops,
                      args.n_workers, args.seed, args.debug, log_dir)
-    workers = make_workers(sess, envs, args.n_workers, args.debug, log_dir)
+    step_counter = utils.GraphCounter(sess)
+    update_counter = utils.GraphCounter(sess)
+    lr = make_lr(lr_args, step_counter.value)
+    workers = make_workers(sess, envs, args.n_workers, lr, args.debug, log_dir)
 
     # Why save_relative_paths=True?
     # So that the plain-text 'checkpoint' file written uses relative paths,
@@ -171,9 +189,6 @@ def main():
     else:
         sess.run(tf.global_variables_initializer())
 
-    step_counter = utils.ProcessSafeCounter()
-    update_counter = utils.ProcessSafeCounter()
-
     worker_threads = start_workers(args, step_counter, update_counter, workers)
 
     ckpt_timer.reset()
@@ -188,6 +203,7 @@ def main():
         easy_tf_log.tflog('misc/steps_per_second', steps_per_second)
         easy_tf_log.tflog('misc/steps', int(step_counter))
         easy_tf_log.tflog('misc/updates', int(update_counter))
+        easy_tf_log.tflog('misc/lr', sess.run(lr))
         prev_t = cur_t
         prev_steps = cur_steps
 

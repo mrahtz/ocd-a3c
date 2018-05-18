@@ -244,6 +244,22 @@ class ProcessSafeCounter:
         return str(self.value.value)
 
 
+class GraphCounter:
+
+    def __init__(self, sess):
+        self.sess = sess
+        self.value = tf.Variable(0, trainable=False)
+        self.increment_by = tf.placeholder(tf.int32)
+        self.increment_op = self.value.assign_add(self.increment_by)
+
+    def __int__(self):
+        return int(self.sess.run(self.value))
+
+    def increment(self, n=1):
+        self.sess.run(self.increment_op,
+                      feed_dict={self.increment_by: n})
+
+
 class SubProcessEnv():
     @staticmethod
     def env_process(pipe, make_env_fn):
