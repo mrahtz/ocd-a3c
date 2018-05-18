@@ -27,7 +27,8 @@ def run_worker(worker, n_steps_to_run, steps_per_update, step_counter,
         update_counter.increment(1)
 
 
-def make_workers(sess, envs, n_workers, lr, debug, log_dir, value_loss_coef):
+def make_workers(sess, envs, n_workers, lr, debug, log_dir, value_loss_coef,
+                 max_grad_norm):
     create_network('global', n_actions=envs[0].action_space.n)
 
     optimizer = optimizer_plz(lr)
@@ -50,7 +51,8 @@ def make_workers(sess, envs, n_workers, lr, debug, log_dir, value_loss_coef):
                    log_dir=worker_log_dir,
                    debug=debug,
                    optimizer=optimizer,
-                   value_loss_coef=value_loss_coef)
+                   value_loss_coef=value_loss_coef,
+                   max_grad_norm=max_grad_norm)
         workers.append(w)
 
     return workers
@@ -172,7 +174,7 @@ def main():
     update_counter = utils.GraphCounter(sess)
     lr = make_lr(lr_args, step_counter.value)
     workers = make_workers(sess, envs, args.n_workers, lr, args.debug,
-                           log_dir, args.value_loss_coef)
+                           log_dir, args.value_loss_coef, args.max_grad_norm)
 
     # Why save_relative_paths=True?
     # So that the plain-text 'checkpoint' file written uses relative paths,

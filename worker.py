@@ -12,7 +12,7 @@ from params import DISCOUNT_FACTOR
 class Worker:
 
     def __init__(self, sess, env, worker_n, log_dir, debug, optimizer,
-                 value_loss_coef):
+                 value_loss_coef, max_grad_norm):
         self.sess = sess
         self.env = env
         self.worker_n = worker_n
@@ -31,7 +31,7 @@ class Worker:
             optimizer,
             compute_scope=worker_name,
             apply_scope='global',
-            max_grad_norm=0.5)
+            max_grad_norm=max_grad_norm)
 
         self.summaries_op = self.make_summaries_op(self.network, grads_norm,
                                                    optimizer, worker_name)
