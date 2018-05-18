@@ -41,7 +41,7 @@ class Worker:
         self.value_log = deque(maxlen=100)
         self.fig = None
 
-        self.steps = 0
+        self.updates = 0
         self.last_o = self.env.reset()
         self.episode_values = []
 
@@ -161,10 +161,11 @@ class Worker:
         feed_dict = {self.network.s: states,
                      self.network.a: actions,
                      self.network.r: returns}
-        summaries, _ = self.sess.run([self.summaries_op, self.train_op],
-                                     feed_dict)
-        self.summary_writer.add_summary(summaries, self.steps)
+        self.sess.run(self.train_op, feed_dict)
+        if self.updates != 0 and self.updates % 1000 == 0:
+            summaries = self.sess.run(self.summaries_op, feed_dict)
+            self.summary_writer.add_summary(summaries, self.updates)
 
-        self.steps += 1
+        self.updates += 1
 
         return len(states)
