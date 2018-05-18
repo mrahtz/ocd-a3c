@@ -162,7 +162,7 @@ class Worker:
                      self.network.a: actions,
                      self.network.r: returns}
         self.sess.run(self.train_op, feed_dict)
-        if self.updates != 0 and self.updates % 1000 == 0:
+        if self.updates != 0 and self.updates % 100 == 0:
             summaries = self.sess.run(self.summaries_op, feed_dict)
             self.summary_writer.add_summary(summaries, self.updates)
 
