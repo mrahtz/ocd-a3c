@@ -11,19 +11,23 @@ Network = namedtuple('Network',
 
 
 def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
-                   value_loss_coef=0.25):
+                   value_loss_coef=0.25, weight_inits='ortho'):
     with tf.variable_scope(scope):
         graph_s = tf.placeholder(tf.float32, [None, 84, 84, 4])
         graph_action = tf.placeholder(tf.int64, [None])
         graph_r = tf.placeholder(tf.float32, [None])
 
+        if weight_inits == 'ortho':
+            kernel_initializer = tf.orthogonal_initializer(gain=sqrt(2))
+        elif weight_inits == 'glorot':
+            kernel_initializer = None
         x = tf.layers.conv2d(
             inputs=graph_s,
             filters=32,
             kernel_size=8,
             strides=4,
             activation=tf.nn.relu,
-            kernel_initializer=tf.orthogonal_initializer(gain=sqrt(2)))
+            kernel_initializer=kernel_initializer)
 
         if debug:
             # Dump observations as fed into the network to stderr,
@@ -33,36 +37,52 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
                          # max no. of values to display; max int32
                          summarize=2147483647)
 
+        if weight_inits == 'ortho':
+            kernel_initializer = tf.orthogonal_initializer(gain=sqrt(2))
+        elif weight_inits == 'glorot':
+            kernel_initializer = None
         x = tf.layers.conv2d(
             inputs=x,
             filters=64,
             kernel_size=4,
             strides=2,
             activation=tf.nn.relu,
-            kernel_initializer=tf.orthogonal_initializer(gain=sqrt(2)))
+            kernel_initializer=kernel_initializer)
 
+        if weight_inits == 'ortho':
+            kernel_initializer = tf.orthogonal_initializer(gain=sqrt(2))
+        elif weight_inits == 'glorot':
+            kernel_initializer = None
         x = tf.layers.conv2d(
             inputs=x,
             filters=64,
             kernel_size=3,
             strides=1,
             activation=tf.nn.relu,
-            kernel_initializer=tf.orthogonal_initializer(gain=sqrt(2)))
+            kernel_initializer=kernel_initializer)
 
         w, h, f = x.get_shape()[1:]
         x = tf.reshape(x, [-1, int(w * h * f)])
 
+        if weight_inits == 'ortho':
+            kernel_initializer = tf.orthogonal_initializer(gain=sqrt(2))
+        elif weight_inits == 'glorot':
+            kernel_initializer = None
         x = tf.layers.dense(
             inputs=x,
             units=512,
             activation=tf.nn.relu,
-            kernel_initializer=tf.orthogonal_initializer(gain=sqrt(2)))
+            kernel_initializer=kernel_initializer)
 
+        if weight_inits == 'ortho':
+            kernel_initializer = tf.orthogonal_initializer(gain=sqrt(0.01))
+        elif weight_inits == 'glorot':
+            kernel_initializer = None
         a_logits = tf.layers.dense(
             inputs=x,
             units=n_actions,
             activation=None,
-            kernel_initializer=tf.orthogonal_initializer(gain=sqrt(0.01)))
+            kernel_initializer=kernel_initializer)
 
         a_softmax = tf.nn.softmax(a_logits)
 
@@ -89,11 +109,15 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
                                   message='\ndebug actions:',
                                   summarize=2147483647)
 
+        if weight_inits == 'ortho':
+            kernel_initializer = tf.orthogonal_initializer()
+        elif weight_inits == 'glorot':
+            kernel_initializer = None
         graph_v = tf.layers.dense(
             inputs=x,
             units=1,
             activation=None,
-            kernel_initializer=tf.orthogonal_initializer())
+            kernel_initializer=kernel_initializer)
         # Shape is currently (?, 1)
         # Convert to just (?)
         graph_v = graph_v[:, 0]
