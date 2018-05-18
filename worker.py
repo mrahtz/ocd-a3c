@@ -11,14 +11,16 @@ from params import DISCOUNT_FACTOR
 
 class Worker:
 
-    def __init__(self, sess, env, worker_n, log_dir, debug, optimizer):
+    def __init__(self, sess, env, worker_n, log_dir, debug, optimizer,
+                 value_loss_coef):
         self.sess = sess
         self.env = env
         self.worker_n = worker_n
 
         worker_name = "worker_{}".format(worker_n)
         self.network = create_network(scope=worker_name, debug=debug,
-                                      n_actions=env.action_space.n)
+                                      n_actions=env.action_space.n,
+                                      value_loss_coef=value_loss_coef)
 
         self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
         self.logger = easy_tf_log.Logger()

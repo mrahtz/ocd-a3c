@@ -10,7 +10,8 @@ Network = namedtuple('Network',
                      'policy_entropy advantage')
 
 
-def create_network(scope, n_actions, debug=False, entropy_bonus=0.01):
+def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
+                   value_loss_coef=0.25):
     with tf.variable_scope(scope):
         graph_s = tf.placeholder(tf.float32, [None, 84, 84, 4])
         graph_action = tf.placeholder(tf.int64, [None])
@@ -126,7 +127,7 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01):
             value_loss = advantage ** 2
             value_loss = tf.reduce_mean(value_loss)
 
-            loss = policy_loss + 0.25 * value_loss
+            loss = policy_loss + value_loss_coef * value_loss
 
         network = Network(
             s=graph_s,
