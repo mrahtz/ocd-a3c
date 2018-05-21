@@ -168,7 +168,10 @@ def main():
     easy_tf_log.set_dir(log_dir)
 
     utils.set_random_seeds(args.seed)
-    sess = tf.Session()
+    config = tf.ConfigProto()
+    config.intra_op_parallelism_threads = args.n_workers
+    config.inter_op_parallelism_threads = args.n_workers
+    sess = tf.Session(config=config)
     envs = make_envs(args.env_id, preprocess_wrapper, args.max_n_noops,
                      args.n_workers, args.seed, args.debug, log_dir)
     step_counter = utils.GraphCounter(sess)
