@@ -140,7 +140,7 @@ def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug,
               log_dir):
     def make_make_env_fn(env_n):
         def thunk():
-            cores = os.sched_getaffinity(0)
+            cores = list(os.sched_getaffinity(0))
             print(cores)
             os.sched_setaffinity(0, {cores[env_n]})
 
