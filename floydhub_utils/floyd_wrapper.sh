@@ -11,5 +11,6 @@ find . | xargs touch
 pip install pipenv
 # --site-packages so that we pick up the system TensorFlow
 pipenv --site-packages install
+pipenv run pip install --user git+https://github.com/mrahtz/gym-moving-dot
 
 pipenv run $*
