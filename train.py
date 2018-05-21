@@ -28,10 +28,7 @@ def run_worker(worker, n_steps_to_run, steps_per_update, step_counter,
 
 
 def make_workers(sess, envs, n_workers, lr, debug, log_dir, value_loss_coef,
-                 max_grad_norm, weight_inits):
-    create_network('global', n_actions=envs[0].action_space.n,
-                   weight_inits=weight_inits)
-
+                 max_grad_norm):
     optimizer = optimizer_plz(lr)
 
     # ALE /seems/ to be basically thread-safe, as long as environments aren't
@@ -174,12 +171,13 @@ def main():
     sess = tf.Session(config=config)
     envs = make_envs(args.env_id, preprocess_wrapper, args.max_n_noops,
                      args.n_workers, args.seed, args.debug, log_dir)
+    create_network('global', n_actions=envs[0].action_space.n,
+                   weight_inits=args.weight_inits)
     step_counter = utils.GraphCounter(sess)
     update_counter = utils.GraphCounter(sess)
     lr = make_lr(lr_args, step_counter.value)
     workers = make_workers(sess, envs, args.n_workers, lr, args.debug,
-                           log_dir, args.value_loss_coef, args.max_grad_norm,
-                           args.weight_inits)
+                           log_dir, args.value_loss_coef, args.max_grad_norm)
 
     # Why save_relative_paths=True?
     # So that the plain-text 'checkpoint' file written uses relative paths,
