@@ -165,10 +165,7 @@ def main():
     easy_tf_log.set_dir(log_dir)
 
     utils.set_random_seeds(args.seed)
-    config = tf.ConfigProto()
-    config.intra_op_parallelism_threads = args.n_workers
-    config.inter_op_parallelism_threads = args.n_workers
-    sess = tf.Session(config=config)
+    sess = tf.Session()
     envs = make_envs(args.env_id, preprocess_wrapper, args.max_n_noops,
                      args.n_workers, args.seed, args.debug, log_dir)
     create_network('global', n_actions=envs[0].action_space.n,
