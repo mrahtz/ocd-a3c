@@ -11,7 +11,7 @@ from utils import get_git_rev, Timer
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("env_id")
-    parser.add_argument("--n_steps", type=int, default=10000000)
+    parser.add_argument("--n_steps", type=float, default=10e6)
     parser.add_argument("--n_workers", type=int, default=1)
     parser.add_argument("--ckpt_interval_seconds", type=int, default=300)
     parser.add_argument("--load_ckpt")
@@ -76,6 +76,8 @@ def parse_args():
     elif args.preprocessing == 'pong':
         preprocess_wrapper = preprocessing.pong_preprocess
     ckpt_timer = Timer(duration_seconds=args.ckpt_interval_seconds)
+
+    args.n_steps = int(args.n_steps)
 
     return args, lr_args, log_dir, preprocess_wrapper, ckpt_timer
 
