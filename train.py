@@ -211,12 +211,13 @@ def main():
         prev_t = cur_t
         prev_steps = cur_steps
 
-        if ckpt_timer.done():
+        alive = [t.is_alive() for t in worker_threads]
+
+        if ckpt_timer.done() or not any(alive):
             saver.save(sess, checkpoint_file, int(step_counter))
             print("Checkpoint saved to '{}'".format(checkpoint_file))
             ckpt_timer.reset()
 
-        alive = [t.is_alive() for t in worker_threads]
         if not any(alive):
             break
 
