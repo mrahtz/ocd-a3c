@@ -199,7 +199,7 @@ def main():
     prev_t = time.time()
     prev_steps = int(step_counter)
     while True:
-        time.sleep(60.0)
+        time.sleep(args.wake_interval_seconds)
 
         cur_t = time.time()
         cur_steps = int(step_counter)

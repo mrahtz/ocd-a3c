@@ -32,6 +32,7 @@ def parse_args():
     parser.add_argument("--preprocessing",
                         choices=['generic', 'pong'],
                         default='pong')
+    parser.add_argument("--wake_interval_seconds", type=int, default=60)
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--log_dir')
