@@ -180,7 +180,8 @@ def main():
     # So that the plain-text 'checkpoint' file written uses relative paths,
     # which seems to be needed in order to avoid confusing saver.restore()
     # when restoring from FloydHub runs.
-    saver = tf.train.Saver(max_to_keep=1, save_relative_paths=True)
+    global_vars = tf.trainable_variables('global')
+    saver = tf.train.Saver(global_vars, max_to_keep=1, save_relative_paths=True)
     checkpoint_dir = osp.join(log_dir, 'checkpoints')
     os.makedirs(checkpoint_dir)
     checkpoint_file = osp.join(checkpoint_dir, 'network.ckpt')
