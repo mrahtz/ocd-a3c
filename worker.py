@@ -53,15 +53,16 @@ class Worker:
 
     @staticmethod
     def make_grad_summaries(vars, grads, name):
-        name_summary_tups = []
+        summaries = []
         for v, g in zip(vars, grads):
             if g is None:
                 continue
             v_name = '/'.join(v.name.split('/')[1:])
             summary_name = "grads/{}/{}".format(name, v_name)
-            val = tf.norm(g)
-            name_summary_tups.append((summary_name, val))
-        return name_summary_tups
+            scalar = tf.summary.scalar(summary_name, tf.norm(g))
+            histogram = tf.summary.histogram(summary_name, g)
+            summaries.extend([scalar, histogram])
+        return summaries
 
     @staticmethod
     def make_summaries_op(network, grads_norm, optimizer, worker_name):
@@ -70,7 +71,8 @@ class Worker:
         grads_value = tf.gradients(network.value_loss, vars)
         grads_norm_policy = tf.global_norm(grads_policy)
         grads_norm_value = tf.global_norm(grads_value)
-        summary_pairs = [
+
+        scalar_summary_pairs = [
             ('rl/value_loss', network.value_loss),
             ('rl/policy_loss', network.policy_loss),
             ('rl/combined_loss', network.loss),
@@ -81,20 +83,18 @@ class Worker:
             ('grads/norm_value', grads_norm_value),
         ]
 
-        tups = Worker.make_grad_summaries(vars, grads_policy, 'policy')
-        summary_pairs.extend(tups)
-        tups = Worker.make_grad_summaries(vars, grads_value, 'value')
-        summary_pairs.extend(tups)
-
         summaries = []
-        for name, val in summary_pairs:
+        for name, val in scalar_summary_pairs:
             full_name = "{}/{}".format(worker_name, name)
             summary = tf.summary.scalar(full_name, val)
             summaries.append(summary)
 
-        rmsprop_summaries = utils.make_rmsprop_monitoring_ops(optimizer,
-                                                              worker_name)
-        summaries.extend(rmsprop_summaries)
+        s = Worker.make_grad_summaries(vars, grads_policy, 'policy')
+        summaries.extend(s)
+        s = Worker.make_grad_summaries(vars, grads_value, 'value')
+        summaries.extend(s)
+        s = utils.make_rmsprop_monitoring_ops(optimizer, worker_name)
+        summaries.extend(s)
 
         return tf.summary.merge(summaries)
 
