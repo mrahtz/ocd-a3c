@@ -148,10 +148,11 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
             # minimising negative entropy
             policy_loss -= entropy_bonus * policy_entropy
 
-            value_loss = advantage ** 2
+            value_loss = 0.5 * advantage ** 2
             value_loss = tf.reduce_mean(value_loss)
+            value_loss *= value_loss_coef
 
-            loss = policy_loss + value_loss_coef * value_loss
+            loss = policy_loss + value_loss
 
         network = Network(
             s=graph_s,

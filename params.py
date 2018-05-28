@@ -20,7 +20,7 @@ def parse_args():
     parser.add_argument("--max_n_noops", type=int, default=30)
     parser.add_argument("--debug", action='store_true')
     parser.add_argument("--steps_per_update", type=int, default=5)
-    parser.add_argument("--value_loss_coef", type=float, default=0.25)
+    parser.add_argument("--value_loss_coef", type=float, default=0.5)
     parser.add_argument("--max_grad_norm", type=float, default=0.5)
     parser.add_argument("--weight_inits", choices=['ortho', 'glorot'],
                         default='ortho')
