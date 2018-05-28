@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os.path as osp
 import subprocess
 import tempfile
