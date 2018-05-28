@@ -22,6 +22,7 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
         elif weight_inits == 'glorot':
             kernel_initializer = None
         x = tf.layers.conv2d(
+            name='conv1',
             inputs=graph_s,
             filters=32,
             kernel_size=8,
@@ -42,6 +43,7 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
         elif weight_inits == 'glorot':
             kernel_initializer = None
         x = tf.layers.conv2d(
+            name='conv2',
             inputs=x,
             filters=64,
             kernel_size=4,
@@ -54,6 +56,7 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
         elif weight_inits == 'glorot':
             kernel_initializer = None
         x = tf.layers.conv2d(
+            name='conv3',
             inputs=x,
             filters=64,
             kernel_size=3,
@@ -69,6 +72,7 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
         elif weight_inits == 'glorot':
             kernel_initializer = None
         x = tf.layers.dense(
+            name='features',
             inputs=x,
             units=512,
             activation=tf.nn.relu,
@@ -79,6 +83,7 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
         elif weight_inits == 'glorot':
             kernel_initializer = None
         a_logits = tf.layers.dense(
+            name='action_logits',
             inputs=x,
             units=n_actions,
             activation=None,
@@ -114,6 +119,7 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
         elif weight_inits == 'glorot':
             kernel_initializer = None
         graph_v = tf.layers.dense(
+            name='value',
             inputs=x,
             units=1,
             activation=None,
