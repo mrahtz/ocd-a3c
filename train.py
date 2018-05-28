@@ -42,7 +42,10 @@ def make_workers(sess, envs, n_workers, lr, debug, log_dir, value_loss_coef,
     print("Starting {} workers".format(n_workers))
     workers = []
     for worker_n in range(n_workers):
-        worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
+        if worker_n == 0:
+            worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
+        else:
+            worker_log_dir = None
         w = Worker(sess=sess,
                    env=envs[worker_n],
                    worker_n=worker_n,
@@ -137,9 +140,6 @@ def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug,
               log_dir):
     def make_make_env_fn(env_n):
         def thunk():
-            env_log_dir = osp.join(log_dir, "worker_{}".format(env_n), "env")
-            easy_tf_log.set_dir(env_log_dir)
-
             env = gym.make(env_id)
             # We calculate the env seed like this so that changing the
             # global seed completely changes the whole set of env seeds.
@@ -148,7 +148,12 @@ def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug,
             if debug:
                 env = NumberFrames(env)
             env = preprocess_wrapper(env, max_n_noops)
-            env = MonitorEnv(env, "worker_{}".format(env_n))
+
+            if env_n == 0:
+                env_log_dir = osp.join(log_dir, "worker_{}".format(env_n), "env")
+                easy_tf_log.set_dir(env_log_dir)
+                env = MonitorEnv(env, "worker_{}".format(env_n))
+
             return env
 
         return thunk

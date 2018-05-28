@@ -22,9 +22,13 @@ class Worker:
                                       n_actions=env.action_space.n,
                                       value_loss_coef=value_loss_coef)
 
-        self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
-        self.logger = easy_tf_log.Logger()
-        self.logger.set_writer(self.summary_writer.event_writer)
+        if log_dir is not None:
+            self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
+            self.logger = easy_tf_log.Logger()
+            self.logger.set_writer(self.summary_writer.event_writer)
+            self.log = True
+        else:
+            self.log = False
 
         self.train_op, grads_norm = create_train_op(
             self.network.loss,
@@ -118,6 +122,8 @@ class Worker:
         self.fig.canvas.flush_events()
 
     def logkv(self, key, value):
+        if not self.log:
+            return
         self.logger.logkv("worker_{}/".format(self.worker_n) + key, value)
 
     def run_update(self, n_steps):
@@ -183,7 +189,8 @@ class Worker:
                      self.network.a: actions,
                      self.network.r: returns}
         self.sess.run(self.train_op, feed_dict)
-        if self.updates != 0 and self.updates % 100 == 0:
+
+        if self.log and self.updates != 0 and self.updates % 100 == 0:
             summaries = self.sess.run(self.summaries_op, feed_dict)
             self.summary_writer.add_summary(summaries, self.updates)
 
