@@ -27,18 +27,15 @@ def run_worker(worker, n_steps_to_run, steps_per_update, step_counter,
         update_counter.increment(1)
 
 
-def make_workers(sess, envs, n_workers, lr, debug, log_dir, value_loss_coef,
-                 max_grad_norm):
-    optimizer = optimizer_plz(lr)
-
+def make_workers(sess, envs, n_workers, optimizer, debug, log_dir,
+                 value_loss_coef, max_grad_norm):
     # ALE /seems/ to be basically thread-safe, as long as environments aren't
     # created at the same time. See
     # https://github.com/mgbellemare/Arcade-Learning-Environment/issues/86.
-
+    #
     # Also, https://www.tensorflow.org/api_docs/python/tf/Graph notes that
     # graph construction isn't thread-safe. So we all do all graph
     # construction sequentially before starting the worker threads.
-
     print("Starting {} workers".format(n_workers))
     workers = []
     for worker_n in range(n_workers):
@@ -175,11 +172,11 @@ def main():
                      args.n_workers, args.seed, args.debug, log_dir)
     create_network('global', n_actions=envs[0].action_space.n,
                    weight_inits=args.weight_inits)
+
     step_counter = utils.GraphCounter(sess)
     update_counter = utils.GraphCounter(sess)
     lr = make_lr(lr_args, step_counter.value)
-    workers = make_workers(sess, envs, args.n_workers, lr, args.debug,
-                           log_dir, args.value_loss_coef, args.max_grad_norm)
+    optimizer = optimizer_plz(lr)
 
     # Why save_relative_paths=True?
     # So that the plain-text 'checkpoint' file written uses relative paths,
@@ -191,6 +188,10 @@ def main():
     os.makedirs(checkpoint_dir)
     checkpoint_file = osp.join(checkpoint_dir, 'network.ckpt')
 
+    # We specifically do this before creating the workers and their networks to
+    # make sure that the workers really are copying weights from the global
+    # network before doing anything else. (If they aren't, we'll get
+    # uninitialized variable errors.)
     if args.load_ckpt:
         print("Restoring from checkpoint '%s'..." % args.load_ckpt,
               end='', flush=True)
@@ -199,6 +200,12 @@ def main():
     else:
         sess.run(tf.global_variables_initializer())
 
+    workers = make_workers(sess, envs, args.n_workers, optimizer, args.debug,
+                           log_dir, args.value_loss_coef, args.max_grad_norm)
+    # It's only when the workers actually create their training ops that
+    # optimizer statistic variables get created, so we have to do another
+    # initialization for these variables.
+    sess.run(tf.variables_initializer(optimizer.variables()))
     worker_threads = start_workers(args, step_counter, update_counter, workers)
 
     ckpt_timer.reset()
