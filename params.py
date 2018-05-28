@@ -31,7 +31,7 @@ def parse_args():
     parser.add_argument("--lr_decay_to_zero_by_n_steps", type=int)
     parser.add_argument("--preprocessing",
                         choices=['generic', 'pong'],
-                        default='pong')
+                        default='generic')
     parser.add_argument("--wake_interval_seconds", type=int, default=60)
 
     group = parser.add_mutually_exclusive_group()
