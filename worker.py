@@ -48,21 +48,40 @@ class Worker:
         self.episode_values = []
 
     @staticmethod
+    def make_grad_summaries(vars, grads, name):
+        name_summary_tups = []
+        for v, g in zip(vars, grads):
+            if g is None:
+                continue
+            v_name = '/'.join(v.name.split('/')[1:])
+            summary_name = "grads/{}/{}".format(name, v_name)
+            val = tf.norm(g)
+            name_summary_tups.append((summary_name, val))
+        return name_summary_tups
+
+    @staticmethod
     def make_summaries_op(network, grads_norm, optimizer, worker_name):
-        grads_norm_policy = tf.global_norm(
-            tf.gradients(network.policy_loss, tf.trainable_variables()))
-        grads_norm_value = tf.global_norm(
-            tf.gradients(network.value_loss, tf.trainable_variables()))
+        vars = tf.trainable_variables()
+        grads_policy = tf.gradients(network.policy_loss, vars)
+        grads_value = tf.gradients(network.value_loss, vars)
+        grads_norm_policy = tf.global_norm(grads_policy)
+        grads_norm_value = tf.global_norm(grads_value)
         summary_pairs = [
             ('rl/value_loss', network.value_loss),
             ('rl/policy_loss', network.policy_loss),
             ('rl/combined_loss', network.loss),
             ('rl/policy_entropy', network.policy_entropy),
             ('rl/advantage_mean', tf.reduce_mean(network.advantage)),
-            ('gradients/norm', grads_norm),
-            ('gradients/norm_policy', grads_norm_policy),
-            ('gradients/norm_value', grads_norm_value),
+            ('grads/norm', grads_norm),
+            ('grads/norm_policy', grads_norm_policy),
+            ('grads/norm_value', grads_norm_value),
         ]
+
+        tups = Worker.make_grad_summaries(vars, grads_policy, 'policy')
+        summary_pairs.extend(tups)
+        tups = Worker.make_grad_summaries(vars, grads_value, 'value')
+        summary_pairs.extend(tups)
+
         summaries = []
         for name, val in summary_pairs:
             full_name = "{}/{}".format(worker_name, name)
