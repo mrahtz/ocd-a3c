@@ -1,114 +1,79 @@
 from collections import deque
 
+import easy_tf_log
 import numpy as np
-from easy_tf_log import tflog
 
 import utils
-from network import create_network
-from debug_wrappers import NumberFrames, MonitorEnv
 from multi_scope_train_op import *
-
-G = 0.99
+from network import create_network
+from params import DISCOUNT_FACTOR
 
 
 class Worker:
 
-    def __init__(self, sess, env, worker_n, log_dir, max_n_noops, debug,
-                 learning_rate):
+    def __init__(self, sess, env, worker_n, log_dir, debug, optimizer,
+                 value_loss_coef, max_grad_norm):
         self.sess = sess
         self.env = env
-
-        worker_scope = "worker_%d" % worker_n
         self.worker_n = worker_n
-        self.network = create_network(scope=worker_scope, debug=debug,
-                                      n_actions=env.action_space.n)
+
+        worker_name = "worker_{}".format(worker_n)
+        self.network = create_network(scope=worker_name, debug=debug,
+                                      n_actions=env.action_space.n,
+                                      value_loss_coef=value_loss_coef)
+
         self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
-        self.scope = worker_scope
+        self.logger = easy_tf_log.Logger()
+        self.logger.set_writer(self.summary_writer.event_writer)
 
-        # From the paper, Section 4, Asynchronous RL Framework,
-        # subsection Optimization:
-        # "We investigated three different optimization algorithms in our
-        #  asynchronous framework – SGD with momentum, RMSProp without shared
-        #  statistics, and RMSProp with shared statistics.
-        #  We used the standard non-centered RMSProp update..."
-        # "A comparison on a subset of Atari 2600 games showed that a variant
-        #  of RMSProp where statistics g are shared across threads is
-        #  considerably more robust than the other two methods."
-        #
-        # TensorFlow's RMSPropOptimizer defaults to centered=False,
-        # so we're good there. For shared statistics - RMSPropOptimizer's
-        # gradient statistics variables are associated with the variables
-        # supplied to apply_gradients(), which happen to be in the global scope
-        # (see multi_scope_train_op.py). So we get shared statistics without any
-        # specialeffort.
-        #
-        # In terms of hyperparameters:
-        #
-        # Learning rate: the paper actually runs a bunch of
-        # different learning rates and presents results averaged over the
-        # three best learning rates for each game. From the scatter plot of
-        # performance for different learning rates, Figure 2, it looks like
-        # 7e-4 is a safe bet which works across a variety of games.
-        # TODO: 7e-4
-        #
-        # RMSprop hyperparameters: Section 8, Experimental Setup, says:
-        # "All experiments used...RMSProp decay factor of α = 0.99."
-        # There's no mention of the epsilon used. I see that OpenAI's
-        # baselines implementation of A2C uses 1e-5 (https://git.io/vpCQt),
-        # instead of TensorFlow's default of 1e-10. Remember, RMSprop divides
-        # gradients by a factor based on recent gradient history. Epsilon is
-        # added to that factor to prevent a division by zero. If epsilon is
-        # too small, we'll get a very large update when the gradient history is
-        # close to zero. So my speculation about why baselines uses a much
-        # larger epsilon is: sometimes in RL the gradients can end up being
-        # very small, and we want to limit the size of the update.
-        policy_optimizer = tf.train.RMSPropOptimizer(
-            learning_rate=learning_rate,
-            decay=0.99, epsilon=1e-5)
-        value_optimizer = tf.train.RMSPropOptimizer(
-            learning_rate=learning_rate,
-            decay=0.99, epsilon=1e-5)
+        self.train_op, grads_norm = create_train_op(
+            self.network.loss,
+            optimizer,
+            compute_scope=worker_name,
+            apply_scope='global',
+            max_grad_norm=max_grad_norm)
 
-        self.policy_train_op, grads_policy_norm = create_train_op(
-            self.network.policy_loss,
-            policy_optimizer,
-            compute_scope=worker_scope,
-            apply_scope='global')
-
-        self.value_train_op, grads_value_norm = create_train_op(
-            self.network.value_loss,
-            value_optimizer,
-            compute_scope=worker_scope,
-            apply_scope='global')
-
-        utils.add_rmsprop_monitoring_ops(policy_optimizer, 'policy')
-        utils.add_rmsprop_monitoring_ops(value_optimizer, 'value')
-
-        tf.summary.scalar('rl/value_loss', self.network.value_loss)
-        tf.summary.scalar('rl/policy_entropy',
-                          tf.reduce_mean(self.network.policy_entropy))
-        tf.summary.scalar('rl/advantage',
-                          tf.reduce_mean(self.network.advantage))
-        tf.summary.scalar('gradients/norm_policy', grads_policy_norm)
-        tf.summary.scalar('gradients/norm_value', grads_value_norm)
-        self.summary_ops = tf.summary.merge_all()
+        self.summaries_op = self.make_summaries_op(self.network, grads_norm,
+                                                   optimizer, worker_name)
 
         self.copy_ops = utils.create_copy_ops(from_scope='global',
-                                              to_scope=self.scope)
+                                              to_scope=worker_name)
 
-        self.steps = 0
         self.render = False
-        self.max_n_noops = max_n_noops
-
         self.value_log = deque(maxlen=100)
         self.fig = None
 
+        self.updates = 0
         self.last_o = self.env.reset()
-
         self.episode_values = []
 
-    def sync_scopes(self):
-        self.sess.run(self.copy_ops)
+    @staticmethod
+    def make_summaries_op(network, grads_norm, optimizer, worker_name):
+        grads_norm_policy = tf.global_norm(
+            tf.gradients(network.policy_loss, tf.trainable_variables()))
+        grads_norm_value = tf.global_norm(
+            tf.gradients(network.value_loss, tf.trainable_variables()))
+        summary_pairs = [
+            ('rl/value_loss', network.value_loss),
+            ('rl/policy_loss', network.policy_loss),
+            ('rl/combined_loss', network.loss),
+            ('rl/policy_entropy', network.policy_entropy),
+            ('rl/advantage_mean', tf.reduce_mean(network.advantage)),
+            ('gradients/norm', grads_norm),
+            ('gradients/norm_policy', grads_norm_policy),
+            ('gradients/norm_value', grads_norm_value),
+        ]
+        summaries = []
+        for name, val in summary_pairs:
+            full_name = "{}/{}".format(worker_name, name)
+            summary = tf.summary.scalar(full_name, val)
+            summaries.append(summary)
+
+        rmsprop_summaries = utils.make_rmsprop_monitoring_ops(optimizer,
+                                                              worker_name)
+        summaries.extend(rmsprop_summaries)
+
+        return tf.summary.merge(summaries)
 
     def value_graph(self):
         import matplotlib.pyplot as plt
@@ -133,12 +98,15 @@ class Worker:
         self.fig.canvas.update()
         self.fig.canvas.flush_events()
 
+    def logkv(self, key, value):
+        self.logger.logkv("worker_{}/".format(self.worker_n) + key, value)
+
     def run_update(self, n_steps):
         states = []
         actions = []
         rewards = []
 
-        self.sync_scopes()
+        self.sess.run(self.copy_ops)
 
         for _ in range(n_steps):
             s = np.moveaxis(self.last_o, source=0, destination=-1)
@@ -165,12 +133,19 @@ class Worker:
             if done:
                 break
 
+        # TODO gut more thoroughly
+        #self.logkv('rl/batch_reward_sum', sum(rewards))
+
         last_state = np.copy(self.last_o)
 
         if done:
-            returns = utils.rewards_to_discounted_returns(rewards, G)
+            returns = utils.rewards_to_discounted_returns(rewards,
+                                                          DISCOUNT_FACTOR)
             self.last_o = self.env.reset()
-            tflog('rl/episode_value_sum', sum(self.episode_values))
+            episode_value_sum = sum(self.episode_values)
+            episode_value_mean = episode_value_sum / len(self.episode_values)
+            self.logkv('rl/episode_value_sum', episode_value_sum)
+            self.logkv('rl/episode_value_mean', episode_value_mean)
             self.episode_values = []
         else:
             # If we're ending in a non-terminal state, in order to calculate
@@ -181,18 +156,18 @@ class Worker:
             last_value = self.sess.run(self.network.graph_v,
                                        feed_dict=feed_dict)[0]
             rewards += [last_value]
-            returns = utils.rewards_to_discounted_returns(rewards, G)
+            returns = utils.rewards_to_discounted_returns(rewards,
+                                                          DISCOUNT_FACTOR)
             returns = returns[:-1]  # Chop off last_value
 
         feed_dict = {self.network.s: states,
                      self.network.a: actions,
                      self.network.r: returns}
-        summaries, _, _ = self.sess.run([self.summary_ops,
-                                         self.policy_train_op,
-                                         self.value_train_op],
-                                        feed_dict)
-        self.summary_writer.add_summary(summaries, self.steps)
+        self.sess.run(self.train_op, feed_dict)
+        if self.updates != 0 and self.updates % 100 == 0:
+            summaries = self.sess.run(self.summaries_op, feed_dict)
+            self.summary_writer.add_summary(summaries, self.updates)
 
-        self.steps += 1
+        self.updates += 1
 
         return len(states)

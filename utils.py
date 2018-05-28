@@ -1,10 +1,11 @@
+import multiprocessing
 import os.path as osp
 import queue
 import random
 import socket
 import subprocess
 import time
-from multiprocessing import Queue
+from multiprocessing import Queue, Pipe, Process
 from threading import Thread
 
 import numpy as np
@@ -101,6 +102,8 @@ def logit_entropy(logits):
     nlogp = -logp
     probs = tf.nn.softmax(logits, axis=-1)
     nplogp = probs * nlogp
+    # This reduce_sum is just the final part of the entropy calculation.
+    # Don't worry - we return the entropy for each individual item in the batch.
     return tf.reduce_sum(nplogp, axis=-1, keepdims=True)
 
 
@@ -203,7 +206,7 @@ class Timer:
             return False
 
 
-def add_rmsprop_monitoring_ops(rmsprop_optimizer, label):
+def make_rmsprop_monitoring_ops(rmsprop_optimizer, prefix):
     rms_vars = [rmsprop_optimizer.get_slot(var, 'rms')
                 for var in tf.trainable_variables()]
     rms_vars = [v for v in rms_vars if v is not None]
@@ -211,7 +214,81 @@ def add_rmsprop_monitoring_ops(rmsprop_optimizer, label):
     rms_min = tf.reduce_min([tf.reduce_min(v) for v in rms_vars])
     rms_avg = tf.reduce_mean([tf.reduce_mean(v) for v in rms_vars])
     rms_norm = tf.global_norm(rms_vars)
-    tf.summary.scalar('rmsprop/rms_max_{}'.format(label), rms_max)
-    tf.summary.scalar('rmsprop/rms_min_{}'.format(label), rms_min)
-    tf.summary.scalar('rmsprop/rms_avg_{}'.format(label), rms_avg)
-    tf.summary.scalar('rmsprop/rms_norm_{}'.format(label), rms_norm)
+    summary_pairs = [
+        ('rmsprop/rms_max', rms_max),
+        ('rmsprop/rms_min', rms_min),
+        ('rmsprop/rms_avg', rms_avg),
+        ('rmsprop/rms_norm', rms_norm),
+    ]
+    summaries = []
+    for name, val in summary_pairs:
+        full_name = "{}/{}".format(prefix, name)
+        summary = tf.summary.scalar(full_name, val)
+        summaries.append(summary)
+    return summaries
+
+
+class ProcessSafeCounter:
+
+    def __init__(self):
+        self.value = multiprocessing.Value('i', 0)
+
+    def increment(self, n=1):
+        with self.value.get_lock():
+            self.value.value += n
+
+    def __int__(self):
+        return self.value.value
+
+    def __repr__(self):
+        return str(self.value.value)
+
+
+class GraphCounter:
+
+    def __init__(self, sess):
+        self.sess = sess
+        self.value = tf.Variable(0, trainable=False)
+        self.increment_by = tf.placeholder(tf.int32)
+        self.increment_op = self.value.assign_add(self.increment_by)
+
+    def __int__(self):
+        return int(self.sess.run(self.value))
+
+    def increment(self, n=1):
+        self.sess.run(self.increment_op,
+                      feed_dict={self.increment_by: n})
+
+
+class SubProcessEnv():
+    @staticmethod
+    def env_process(pipe, make_env_fn):
+        env = make_env_fn()
+        pipe.send((env.observation_space, env.action_space))
+        while True:
+            cmd, data = pipe.recv()
+            if cmd == 'step':
+                action = data
+                obs, reward, done, info = env.step(action)
+                pipe.send((obs, reward, done, info))
+            elif cmd == 'reset':
+                obs = env.reset()
+                pipe.send(obs)
+
+    def __init__(self, make_env_fn):
+        p1, p2 = Pipe()
+        self.pipe = p1
+        self.proc = Process(target=self.env_process, args=[p2, make_env_fn])
+        self.proc.start()
+        self.observation_space, self.action_space = self.pipe.recv()
+
+    def reset(self):
+        self.pipe.send(('reset', None))
+        return self.pipe.recv()
+
+    def step(self, action):
+        self.pipe.send(('step', action))
+        return self.pipe.recv()
+
+    def close(self):
+        self.proc.terminate()

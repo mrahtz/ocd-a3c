@@ -51,16 +51,17 @@ class EarlyReset(Wrapper):
             done = True
         return obs, reward, done, info
 
-class MonitorEnv(Wrapper):
 
+class MonitorEnv(Wrapper):
     """
     Log per-episode rewards and episode lengths.
     """
 
-    def __init__(self, env, log_prefix=""):
+    def __init__(self, env, prefix=""):
         Wrapper.__init__(self, env)
-        if log_prefix:
-            self.log_prefix = log_prefix + ": "
+        if prefix:
+            self.key_prefix = prefix + "/"
+            self.log_prefix = prefix + ": "
         else:
             self.log_prefix = ""
         self.episode_n = -1
@@ -84,8 +85,10 @@ class MonitorEnv(Wrapper):
             reward_sum = sum(self.episode_rewards)
             print("{}Episode {} finished; reward sum {}".format(
                 self.log_prefix, self.episode_n, reward_sum))
-            tflog('rl/episode_reward', reward_sum)
-            tflog('rl/episode_length_steps', self.episode_length_steps)
+            tflog('{}rl/episode_reward_sum'.format(self.key_prefix),
+                  reward_sum)
+            tflog('{}rl/episode_length_steps'.format(self.key_prefix),
+                  self.episode_length_steps)
             self.episode_done = True
 
         return obs, reward, done, info

@@ -1,193 +1,230 @@
 #!/usr/bin/env python3
 
-import argparse
 import os
 import os.path as osp
 import time
-from multiprocessing import Process
+from threading import Thread
 
 import easy_tf_log
 import gym
 import tensorflow as tf
 
-import preprocessing
 import utils
 from debug_wrappers import NumberFrames, MonitorEnv
 from network import create_network
-from utils import get_port_range, MemoryProfiler, get_git_rev, Timer
+from params import parse_args
+from utils import SubProcessEnv
 from worker import Worker
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
-def run_worker(env_id, preprocess_wrapper, seed, worker_n, n_steps_to_run,
-               ckpt_timer, load_ckpt_file, render, log_dir, max_n_noops,
-               debug, steps_per_update, learning_rate):
-    utils.set_random_seeds(seed)
+def run_worker(worker, n_steps_to_run, steps_per_update, step_counter,
+               update_counter):
+    while int(step_counter) < n_steps_to_run:
+        steps_ran = worker.run_update(steps_per_update)
+        step_counter.increment(steps_ran)
+        update_counter.increment(1)
 
-    env = gym.make(env_id)
-    env.seed(seed)
-    if debug:
-        env = NumberFrames(env)
-    env = preprocess_wrapper(env, max_n_noops)
-    env = MonitorEnv(env, "Worker {}".format(worker_n))
 
-    mem_log = osp.join(log_dir, "worker_{}_memory.log".format(worker_n))
-    memory_profiler = MemoryProfiler(pid=-1, log_path=mem_log)
-    memory_profiler.start()
+def make_workers(sess, envs, n_workers, lr, debug, log_dir, value_loss_coef,
+                 max_grad_norm):
+    optimizer = optimizer_plz(lr)
 
-    worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
-    os.makedirs(worker_log_dir)
+    # ALE /seems/ to be basically thread-safe, as long as environments aren't
+    # created at the same time. See
+    # https://github.com/mgbellemare/Arcade-Learning-Environment/issues/86.
 
-    server = tf.train.Server(cluster, job_name="worker", task_index=worker_n)
-    sess = tf.Session(server.target)
+    # Also, https://www.tensorflow.org/api_docs/python/tf/Graph notes that
+    # graph construction isn't thread-safe. So we all do all graph
+    # construction sequentially before starting the worker threads.
 
-    with tf.device("/job:parameter_server/task:0"):
-        create_network('global', n_actions=env.action_space.n)
-    with tf.device("/job:worker/task:%d" % worker_n):
+    print("Starting {} workers".format(n_workers))
+    workers = []
+    for worker_n in range(n_workers):
+        worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
         w = Worker(sess=sess,
-                   env=env,
+                   env=envs[worker_n],
                    worker_n=worker_n,
                    log_dir=worker_log_dir,
-                   max_n_noops=max_n_noops,
                    debug=debug,
-                   learning_rate=learning_rate)
-        init_op = tf.global_variables_initializer()
-        if render:
-            w.render = True
+                   optimizer=optimizer,
+                   value_loss_coef=value_loss_coef,
+                   max_grad_norm=max_grad_norm)
+        workers.append(w)
 
-    easy_tf_log.set_writer(w.summary_writer.event_writer)
+    return workers
 
-    # Worker 0 initialises the global network as well as the per-worker networks
-    # Other workers only initialise their own per-worker networks
-    sess.run(init_op)
 
-    if worker_n == 0:
-        # Why save_relative_paths=True?
-        # So that the plain-text 'checkpoint' file written uses relative paths,
-        # which seems to be needed in order to avoid confusing saver.restore()
-        # when restoring from FloydHub runs.
-        saver = tf.train.Saver(max_to_keep=1, save_relative_paths=True)
-        checkpoint_dir = osp.join(log_dir, 'checkpoints')
-        os.makedirs(checkpoint_dir)
-        checkpoint_file = osp.join(checkpoint_dir, 'network.ckpt')
+def make_lr(lr_args, step_counter):
+    initial_lr = tf.constant(lr_args['initial'])
+    if lr_args['schedule'] == 'constant':
+        lr = initial_lr
+    elif lr_args['schedule'] == 'linear':
+        steps = tf.cast(step_counter, tf.float32)
+        zero_by_steps = tf.cast(lr_args['zero_by_steps'], tf.float32)
+        lr = initial_lr * (1 - steps / zero_by_steps)
+        lr = tf.clip_by_value(lr,
+                              clip_value_min=0.0,
+                              clip_value_max=float('inf'))
+    return lr
 
-    if load_ckpt_file is not None:
-        print("Restoring from checkpoint '%s'..." % load_ckpt_file,
+
+def start_workers(args, step_counter, update_counter, workers):
+    worker_threads = []
+    for worker_n, worker in enumerate(workers):
+        p_args = (worker,
+                  args.n_steps,
+                  args.steps_per_update,
+                  step_counter,
+                  update_counter)
+        p = Thread(target=run_worker, args=p_args)
+        p.start()
+        worker_threads.append(p)
+    return worker_threads
+
+
+def optimizer_plz(learning_rate):
+    # From the paper, Section 4, Asynchronous RL Framework,
+    # subsection Optimization:
+    # "We investigated three different optimization algorithms in our
+    #  asynchronous framework – SGD with momentum, RMSProp without shared
+    #  statistics, and RMSProp with shared statistics.
+    #  We used the standard non-centered RMSProp update..."
+    # "A comparison on a subset of Atari 2600 games showed that a variant
+    #  of RMSProp where statistics g are shared across threads is
+    #  considerably more robust than the other two methods."
+    #
+    # TensorFlow's RMSPropOptimizer defaults to centered=False,
+    # so we're good there.
+    #
+    # For shared statistics, we supply the same optimizer instance to all
+    # workers. Couldn't they still end up using
+    # different statistics somehow?
+    # a) From the source, RMSPropOptimizer's gradient statistics variables
+    #    are associated with the variables supplied to apply_gradients(),
+    #    which happen to be the global set of variables shared between all
+    #    threads variables (see multi_scope_train_op.py).
+    # b) Empirically, no. See shared_statistics_test.py.
+    #
+    # In terms of hyperparameters:
+
+    # Learning rate: the paper actually runs a bunch of
+    # different learning rates and presents results averaged over the
+    # three best learning rates for each game. From the scatter plot of
+    # performance for different learning rates, Figure 2, it looks like
+    # 7e-4 is a safe bet which works across a variety of games.
+    # TODO: 7e-4
+    #
+    # RMSprop hyperparameters: Section 8, Experimental Setup, says:
+    # "All experiments used...RMSProp decay factor of α = 0.99."
+    # There's no mention of the epsilon used. I see that OpenAI's
+    # baselines implementation of A2C uses 1e-5 (https://git.io/vpCQt),
+    # instead of TensorFlow's default of 1e-10. Remember, RMSprop divides
+    # gradients by a factor based on recent gradient history. Epsilon is
+    # added to that factor to prevent a division by zero. If epsilon is
+    # too small, we'll get a very large update when the gradient history is
+    # close to zero. So my speculation about why baselines uses a much
+    # larger epsilon is: sometimes in RL the gradients can end up being
+    # very small, and we want to limit the size of the update.
+
+    optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate,
+                                          decay=0.99, epsilon=1e-5)
+    return optimizer
+
+
+def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug,
+              log_dir):
+    def make_make_env_fn(env_n):
+        def thunk():
+            env_log_dir = osp.join(log_dir, "worker_{}".format(env_n), "env")
+            easy_tf_log.set_dir(env_log_dir)
+
+            env = gym.make(env_id)
+            # We calculate the env seed like this so that changing the
+            # global seed completely changes the whole set of env seeds.
+            env_seed = seed * n_envs + env_n
+            env.seed(env_seed)
+            if debug:
+                env = NumberFrames(env)
+            env = preprocess_wrapper(env, max_n_noops)
+            env = MonitorEnv(env, "worker_{}".format(env_n))
+            return env
+
+        return thunk
+
+    envs = []
+    for env_n in range(n_envs):
+        env = SubProcessEnv(make_make_env_fn(env_n))
+        envs.append(env)
+    return envs
+
+
+def main():
+    args, lr_args, log_dir, preprocess_wrapper, ckpt_timer = parse_args()
+    easy_tf_log.set_dir(log_dir)
+
+    utils.set_random_seeds(args.seed)
+    sess = tf.Session()
+    envs = make_envs(args.env_id, preprocess_wrapper, args.max_n_noops,
+                     args.n_workers, args.seed, args.debug, log_dir)
+    create_network('global', n_actions=envs[0].action_space.n,
+                   weight_inits=args.weight_inits)
+    step_counter = utils.GraphCounter(sess)
+    update_counter = utils.GraphCounter(sess)
+    lr = make_lr(lr_args, step_counter.value)
+    workers = make_workers(sess, envs, args.n_workers, lr, args.debug,
+                           log_dir, args.value_loss_coef, args.max_grad_norm)
+
+    # Why save_relative_paths=True?
+    # So that the plain-text 'checkpoint' file written uses relative paths,
+    # which seems to be needed in order to avoid confusing saver.restore()
+    # when restoring from FloydHub runs.
+    global_vars = tf.trainable_variables('global')
+    saver = tf.train.Saver(global_vars, max_to_keep=1, save_relative_paths=True)
+    checkpoint_dir = osp.join(log_dir, 'checkpoints')
+    os.makedirs(checkpoint_dir)
+    checkpoint_file = osp.join(checkpoint_dir, 'network.ckpt')
+
+    if args.load_ckpt:
+        print("Restoring from checkpoint '%s'..." % args.load_ckpt,
               end='', flush=True)
-        saver.restore(sess, load_ckpt_file)
+        saver.restore(sess, args.load_ckpt)
         print("done!")
+    else:
+        sess.run(tf.global_variables_initializer())
 
-    updates = 0
-    steps = 0
+    worker_threads = start_workers(args, step_counter, update_counter, workers)
+
     ckpt_timer.reset()
-    while steps < n_steps_to_run:
-        start_time = time.time()
+    prev_t = time.time()
+    prev_steps = int(step_counter)
+    while True:
+        time.sleep(args.wake_interval_seconds)
 
-        steps_ran = w.run_update(steps_per_update)
-        steps += steps_ran
-        updates += 1
-
-        end_time = time.time()
-        steps_per_second = steps_ran / (end_time - start_time)
-
+        cur_t = time.time()
+        cur_steps = int(step_counter)
+        steps_per_second = (cur_steps - prev_steps) / (cur_t - prev_t)
         easy_tf_log.tflog('misc/steps_per_second', steps_per_second)
-        easy_tf_log.tflog('misc/steps', steps)
-        easy_tf_log.tflog('misc/updates', updates)
+        easy_tf_log.tflog('misc/steps', int(step_counter))
+        easy_tf_log.tflog('misc/updates', int(update_counter))
+        easy_tf_log.tflog('misc/lr', sess.run(lr))
+        prev_t = cur_t
+        prev_steps = cur_steps
 
-        if worker_n == 0 and ckpt_timer.done():
-            saver.save(sess, checkpoint_file, steps)
+        alive = [t.is_alive() for t in worker_threads]
+
+        if ckpt_timer.done() or not any(alive):
+            saver.save(sess, checkpoint_file, int(step_counter))
             print("Checkpoint saved to '{}'".format(checkpoint_file))
             ckpt_timer.reset()
 
-    memory_profiler.stop()
+        if not any(alive):
+            break
+
+    for env in envs:
+        env.close()
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("env_id")
-parser.add_argument("--n_steps", type=int, default=10000000)
-parser.add_argument("--n_workers", type=int, default=1)
-parser.add_argument("--ckpt_interval_seconds", type=int, default=60)
-parser.add_argument("--load_ckpt")
-parser.add_argument("--seed", type=int, default=0)
-parser.add_argument("--render", action='store_true')
-parser.add_argument("--max_n_noops", type=int, default=30)
-parser.add_argument("--debug", action='store_true')
-parser.add_argument("--steps_per_update", type=int, default=100000)
-parser.add_argument("--learning_rate", type=float, default=5e-4)
-parser.add_argument("--preprocessing",
-                    choices=['generic', 'pong'],
-                    default='pong')
-group = parser.add_mutually_exclusive_group()
-group.add_argument('--log_dir')
-seconds_since_epoch = str(int(time.time()))
-group.add_argument('--run_name',
-                   default='test-run_{}'.format(seconds_since_epoch))
-args = parser.parse_args()
-
-if args.log_dir:
-    log_dir = args.log_dir
-else:
-    git_rev = get_git_rev()
-    run_name = args.run_name + '_' + git_rev
-    log_dir = osp.join('runs', run_name)
-    if osp.exists(log_dir):
-        raise Exception("Log directory '%s' already exists" % log_dir)
-os.makedirs(log_dir, exist_ok=True)
-
-if "MovingDot" in args.env_id:
-    import gym_moving_dot
-
-    gym_moving_dot  # TODO prevent PyCharm from removing the import
-
-if args.preprocessing == 'generic':
-    preprocess_wrapper = preprocessing.generic_preprocess
-elif args.preprocessing == 'pong':
-    preprocess_wrapper = preprocessing.pong_preprocess
-
-ckpt_timer = Timer(duration_seconds=args.ckpt_interval_seconds)
-
-cluster_dict = {}
-ports = get_port_range(start_port=2200,
-                       n_ports=(args.n_workers + 1),
-                       random_stagger=True)
-cluster_dict["parameter_server"] = ["localhost:{}".format(ports[0])]
-cluster_dict["worker"] = ["localhost:{}".format(port)
-                          for port in ports[1:]]
-cluster = tf.train.ClusterSpec(cluster_dict)
-
-def start_parameter_server():
-    server = tf.train.Server(cluster, job_name="parameter_server")
-    server.join()
-
-
-def start_worker_process(worker_n, seed):
-    run_worker(env_id=args.env_id,
-               preprocess_wrapper=preprocess_wrapper,
-               seed=seed,
-               worker_n=worker_n,
-               n_steps_to_run=args.n_steps,
-               ckpt_timer=ckpt_timer,
-               load_ckpt_file=args.load_ckpt,
-               render=args.render,
-               log_dir=log_dir,
-               max_n_noops=args.max_n_noops,
-               debug=args.debug,
-               steps_per_update=args.steps_per_update,
-               learning_rate=args.learning_rate)
-
-parameter_server_process = Process(target=start_parameter_server, daemon=True)
-parameter_server_process.start()
-
-worker_processes = []
-memory_profiler_processes = []
-print("Starting {} workers".format(args.n_workers))
-for worker_n in range(args.n_workers):
-    seed = args.seed * args.n_workers + worker_n
-    p = Process(target=start_worker_process, args=(worker_n, seed), daemon=True)
-    p.start()
-    worker_processes.append(p)
-
-for p in worker_processes:
-    p.join()
-parameter_server_process.terminate()
+if __name__ == '__main__':
+    main()
