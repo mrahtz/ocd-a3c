@@ -7,7 +7,7 @@ from utils import logit_entropy
 
 Network = namedtuple('Network',
                      's a r a_softmax graph_v policy_loss value_loss loss '
-                     'policy_entropy advantage')
+                     'policy_entropy advantage layers')
 
 
 def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
@@ -21,7 +21,7 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
             kernel_initializer = tf.orthogonal_initializer(gain=sqrt(2))
         elif weight_inits == 'glorot':
             kernel_initializer = None
-        x = tf.layers.conv2d(
+        conv1 = tf.layers.conv2d(
             name='conv1',
             inputs=graph_s,
             filters=32,
@@ -33,7 +33,7 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
         if debug:
             # Dump observations as fed into the network to stderr,
             # for viewing with show_observations.py.
-            x = tf.Print(x, [graph_s],
+            conv1 = tf.Print(conv1, [graph_s],
                          message='\ndebug observations:',
                          # max no. of values to display; max int32
                          summarize=2147483647)
@@ -42,9 +42,9 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
             kernel_initializer = tf.orthogonal_initializer(gain=sqrt(2))
         elif weight_inits == 'glorot':
             kernel_initializer = None
-        x = tf.layers.conv2d(
+        conv2 = tf.layers.conv2d(
             name='conv2',
-            inputs=x,
+            inputs=conv1,
             filters=64,
             kernel_size=4,
             strides=2,
@@ -55,25 +55,25 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
             kernel_initializer = tf.orthogonal_initializer(gain=sqrt(2))
         elif weight_inits == 'glorot':
             kernel_initializer = None
-        x = tf.layers.conv2d(
+        conv3 = tf.layers.conv2d(
             name='conv3',
-            inputs=x,
+            inputs=conv2,
             filters=64,
             kernel_size=3,
             strides=1,
             activation=tf.nn.relu,
             kernel_initializer=kernel_initializer)
 
-        w, h, f = x.get_shape()[1:]
-        x = tf.reshape(x, [-1, int(w * h * f)])
+        w, h, f = conv3.get_shape()[1:]
+        conv3_unwrapped = tf.reshape(conv3, [-1, int(w * h * f)])
 
         if weight_inits == 'ortho':
             kernel_initializer = tf.orthogonal_initializer(gain=sqrt(2))
         elif weight_inits == 'glorot':
             kernel_initializer = None
-        x = tf.layers.dense(
+        features = tf.layers.dense(
             name='features',
-            inputs=x,
+            inputs=conv3_unwrapped,
             units=512,
             activation=tf.nn.relu,
             kernel_initializer=kernel_initializer)
@@ -84,7 +84,7 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
             kernel_initializer = None
         a_logits = tf.layers.dense(
             name='action_logits',
-            inputs=x,
+            inputs=features,
             units=n_actions,
             activation=None,
             kernel_initializer=kernel_initializer)
@@ -120,7 +120,7 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
             kernel_initializer = None
         graph_v = tf.layers.dense(
             name='value',
-            inputs=x,
+            inputs=features,
             units=1,
             activation=None,
             kernel_initializer=kernel_initializer)
@@ -160,6 +160,8 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
 
             loss = policy_loss + value_loss
 
+        layers = [conv1, conv2, conv3, features]
+
         network = Network(
             s=graph_s,
             a=graph_action,
@@ -170,6 +172,7 @@ def create_network(scope, n_actions, debug=False, entropy_bonus=0.01,
             value_loss=value_loss,
             policy_entropy=policy_entropy,
             advantage=advantage,
-            loss=loss)
+            loss=loss,
+            layers=layers)
 
         return network
