@@ -65,6 +65,26 @@ class Worker:
         return summaries
 
     @staticmethod
+    def make_weight_summaries(vars):
+        summaries = []
+        for v in vars:
+            v_name = '/'.join(v.name.split('/')[1:])
+            summary_name = "weights/{}".format(v_name)
+            histogram = tf.summary.histogram(summary_name, v)
+            summaries.append(histogram)
+        return summaries
+
+    @staticmethod
+    def make_activation_summaries(layers):
+        summaries = []
+        for layer in layers:
+            layer_name = layer.name.split('/')[1]
+            summary_name = "activations/{}".format(layer_name)
+            histogram = tf.summary.histogram(summary_name, layer)
+            summaries.append(histogram)
+        return summaries
+
+    @staticmethod
     def make_summaries_op(network, grads_norm, optimizer, worker_name):
         vars = tf.trainable_variables()
         grads_policy = tf.gradients(network.policy_loss, vars)
@@ -94,6 +114,13 @@ class Worker:
         s = Worker.make_grad_summaries(vars, grads_value, 'value')
         summaries.extend(s)
         s = utils.make_rmsprop_monitoring_ops(optimizer, worker_name)
+        summaries.extend(s)
+
+        vars = tf.trainable_variables('global')
+        s = Worker.make_weight_summaries(vars)
+        summaries.extend(s)
+
+        s = Worker.make_activation_summaries(network.layers)
         summaries.extend(s)
 
         return tf.summary.merge(summaries)
