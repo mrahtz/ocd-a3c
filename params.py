@@ -22,13 +22,16 @@ def parse_args():
     parser.add_argument("--steps_per_update", type=int, default=5)
     parser.add_argument("--value_loss_coef", type=float, default=0.5)
     parser.add_argument("--max_grad_norm", type=float, default=0.5)
-    parser.add_argument("--weight_inits", choices=['ortho', 'glorot'],
+    parser.add_argument("--weight_inits",
+                        choices=['ortho', 'glorot'],
                         default='ortho')
     parser.add_argument("--initial_lr", type=float, default=5e-4)
     parser.add_argument("--lr_schedule",
                         choices=['constant', 'linear'],
                         default='constant')
-    parser.add_argument("--lr_decay_to_zero_by_n_steps", type=int)
+    parser.add_argument("--lr_decay_to_zero_by_n_steps",
+                        type=float,
+                        default=50e6)
     parser.add_argument("--preprocessing",
                         choices=['generic', 'pong'],
                         default='generic')
@@ -79,6 +82,8 @@ def parse_args():
     ckpt_timer = Timer(duration_seconds=args.ckpt_interval_seconds)
 
     args.n_steps = int(args.n_steps)
+    args.lr_decay_to_zero_by_n_steps = \
+        int(args.lr_decay_to_zero_by_n_steps)
 
     return args, lr_args, log_dir, preprocess_wrapper, ckpt_timer
 
