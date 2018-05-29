@@ -58,7 +58,7 @@ right order should be:
                        max. over frames 8 and 9
                        max. over frames 12 and 13
 
-        frame stack 2: max. over frames 4 and 5
+        frame stack 1: max. over frames 4 and 5
                        max. over frames 8 and 9
                        max. over frames 12 and 13
                        max. over frames 16 and 17
