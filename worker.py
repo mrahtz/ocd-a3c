@@ -40,7 +40,7 @@ class Worker:
             max_grad_norm=max_grad_norm)
 
         self.summaries_op = self.make_summaries_op(self.network, optimizer,
-                                                   worker_name)
+                                                   grads_norm, worker_name)
 
         self.copy_ops = utils.create_copy_ops(from_scope='global',
                                               to_scope=worker_name)
@@ -54,7 +54,7 @@ class Worker:
         self.episode_values = []
 
     @staticmethod
-    def make_summaries_op(network, optimizer, worker_name):
+    def make_summaries_op(network, optimizer, grads_norm, worker_name):
         vars = tf.trainable_variables()
         grads_policy = tf.gradients(network.policy_loss, vars)
         grads_value = tf.gradients(network.value_loss, vars)
@@ -69,6 +69,7 @@ class Worker:
             ('grads/loss_policy', network.policy_loss),
             ('grads/loss_combined', network.loss),
             ('grads/norm_combined', grads_norm_combined),
+            ('grads/norm_actual', grads_norm),
             ('grads/norm_policy', grads_norm_policy),
             ('grads/norm_value', grads_norm_value),
         ]
