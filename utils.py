@@ -206,28 +206,6 @@ class Timer:
             return False
 
 
-def make_rmsprop_monitoring_ops(rmsprop_optimizer, prefix):
-    rms_vars = [rmsprop_optimizer.get_slot(var, 'rms')
-                for var in tf.trainable_variables()]
-    rms_vars = [v for v in rms_vars if v is not None]
-    rms_max = tf.reduce_max([tf.reduce_max(v) for v in rms_vars])
-    rms_min = tf.reduce_min([tf.reduce_min(v) for v in rms_vars])
-    rms_avg = tf.reduce_mean([tf.reduce_mean(v) for v in rms_vars])
-    rms_norm = tf.global_norm(rms_vars)
-    summary_pairs = [
-        ('rmsprop/rms_max', rms_max),
-        ('rmsprop/rms_min', rms_min),
-        ('rmsprop/rms_avg', rms_avg),
-        ('rmsprop/rms_norm', rms_norm),
-    ]
-    summaries = []
-    for name, val in summary_pairs:
-        full_name = "{}/{}".format(prefix, name)
-        summary = tf.summary.scalar(full_name, val)
-        summaries.append(summary)
-    return summaries
-
-
 class ProcessSafeCounter:
 
     def __init__(self):
@@ -292,3 +270,43 @@ class SubProcessEnv():
 
     def close(self):
         self.proc.terminate()
+
+
+def make_grad_summaries(vars, grads):
+    summaries = []
+    for v, g in zip(vars, grads):
+        if g is None:
+            continue
+        # strip "worker_0/"
+        v_name = '/'.join(v.name.split('/')[1:])
+        summary_name = "grads/{}".format(v_name)
+        histogram = tf.summary.histogram(summary_name, g)
+        summaries.append(histogram)
+    return summaries
+
+
+def make_histograms(tensors, name):
+    summaries = []
+    for tensor in tensors:
+        # strip "worker_0/"; extract a nice name
+        tensor_name = tensor.name.split('/')
+        if name == 'activations':
+            tensor_name = [tensor_name[1]]
+        elif name == 'rms':
+            tensor_name = tensor_name[1:3]
+        else:
+            tensor_name = tensor_name[1:]
+        tensor_name = '/'.join(tensor_name)
+
+        summary_name = "{}/{}".format(name, tensor_name)
+        histogram = tf.summary.histogram(summary_name, tensor)
+        summaries.append(histogram)
+    return summaries
+
+
+def make_rmsprop_summaries(rmsprop_optimizer):
+    rms_vars = [rmsprop_optimizer.get_slot(var, 'rms')
+                for var in tf.trainable_variables()]
+    rms_vars = [v for v in rms_vars if v is not None]
+    summaries = make_histograms(rms_vars, 'rms')
+    return summaries

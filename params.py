@@ -29,9 +29,7 @@ def parse_args():
     parser.add_argument("--lr_schedule",
                         choices=['constant', 'linear'],
                         default='constant')
-    parser.add_argument("--lr_decay_to_zero_by_n_steps",
-                        type=float,
-                        default=50e6)
+    parser.add_argument("--lr_decay_to_zero_by_n_steps", type=float)
     parser.add_argument("--preprocessing",
                         choices=['generic', 'pong'],
                         default='generic')
@@ -82,8 +80,9 @@ def parse_args():
     ckpt_timer = Timer(duration_seconds=args.ckpt_interval_seconds)
 
     args.n_steps = int(args.n_steps)
-    args.lr_decay_to_zero_by_n_steps = \
-        int(args.lr_decay_to_zero_by_n_steps)
+    if args.lr_decay_to_zero_by_n_steps is not None:
+        args.lr_decay_to_zero_by_n_steps = \
+            int(args.lr_decay_to_zero_by_n_steps)
 
     return args, lr_args, log_dir, preprocess_wrapper, ckpt_timer
 

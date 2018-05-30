@@ -4,6 +4,8 @@ import easy_tf_log
 import numpy as np
 
 import utils
+from utils import make_rmsprop_summaries, make_histograms, \
+    make_grad_summaries
 from multi_scope_train_op import *
 from network import create_network
 from params import DISCOUNT_FACTOR
@@ -37,8 +39,8 @@ class Worker:
             apply_scope='global',
             max_grad_norm=max_grad_norm)
 
-        self.summaries_op = self.make_summaries_op(self.network, grads_norm,
-                                                   optimizer, worker_name)
+        self.summaries_op = self.make_summaries_op(self.network, optimizer,
+                                                   worker_name)
 
         self.copy_ops = utils.create_copy_ops(from_scope='global',
                                               to_scope=worker_name)
@@ -52,76 +54,35 @@ class Worker:
         self.episode_values = []
 
     @staticmethod
-    def make_grad_summaries(vars, grads, name):
-        summaries = []
-        for v, g in zip(vars, grads):
-            if g is None:
-                continue
-            v_name = '/'.join(v.name.split('/')[1:])
-            summary_name = "grads/{}/{}".format(name, v_name)
-            scalar = tf.summary.scalar(summary_name, tf.norm(g))
-            histogram = tf.summary.histogram(summary_name, g)
-            summaries.extend([scalar, histogram])
-        return summaries
-
-    @staticmethod
-    def make_weight_summaries(vars):
-        summaries = []
-        for v in vars:
-            v_name = '/'.join(v.name.split('/')[1:])
-            summary_name = "weights/{}".format(v_name)
-            histogram = tf.summary.histogram(summary_name, v)
-            summaries.append(histogram)
-        return summaries
-
-    @staticmethod
-    def make_activation_summaries(layers):
-        summaries = []
-        for layer in layers:
-            layer_name = layer.name.split('/')[1]
-            summary_name = "activations/{}".format(layer_name)
-            histogram = tf.summary.histogram(summary_name, layer)
-            summaries.append(histogram)
-        return summaries
-
-    @staticmethod
-    def make_summaries_op(network, grads_norm, optimizer, worker_name):
+    def make_summaries_op(network, optimizer, worker_name):
         vars = tf.trainable_variables()
         grads_policy = tf.gradients(network.policy_loss, vars)
         grads_value = tf.gradients(network.value_loss, vars)
+        grads_combined = tf.gradients(network.loss, vars)
         grads_norm_policy = tf.global_norm(grads_policy)
         grads_norm_value = tf.global_norm(grads_value)
-
+        grads_norm_combined = tf.global_norm(grads_combined)
         scalar_summary_pairs = [
-            ('rl/value_loss', network.value_loss),
-            ('rl/policy_loss', network.policy_loss),
-            ('rl/combined_loss', network.loss),
             ('rl/policy_entropy', network.policy_entropy),
             ('rl/advantage_mean', tf.reduce_mean(network.advantage)),
-            ('grads/norm', grads_norm),
+            ('grads/loss_value', network.value_loss),
+            ('grads/loss_policy', network.policy_loss),
+            ('grads/loss_combined', network.loss),
+            ('grads/norm_combined', grads_norm_combined),
             ('grads/norm_policy', grads_norm_policy),
             ('grads/norm_value', grads_norm_value),
         ]
-
         summaries = []
         for name, val in scalar_summary_pairs:
             full_name = "{}/{}".format(worker_name, name)
             summary = tf.summary.scalar(full_name, val)
             summaries.append(summary)
 
-        s = Worker.make_grad_summaries(vars, grads_policy, 'policy')
-        summaries.extend(s)
-        s = Worker.make_grad_summaries(vars, grads_value, 'value')
-        summaries.extend(s)
-        s = utils.make_rmsprop_monitoring_ops(optimizer, worker_name)
-        summaries.extend(s)
-
-        vars = tf.trainable_variables('global')
-        s = Worker.make_weight_summaries(vars)
-        summaries.extend(s)
-
-        s = Worker.make_activation_summaries(network.layers)
-        summaries.extend(s)
+        summaries.extend(make_grad_summaries(vars, grads_combined))
+        summaries.extend(make_rmsprop_summaries(optimizer))
+        summaries.extend(make_histograms(network.layers, 'activations'))
+        vars = [v for v in vars if 'global' in v.name]
+        summaries.extend(make_histograms(vars, 'weights'))
 
         return tf.summary.merge(summaries)
 
@@ -186,7 +147,7 @@ class Worker:
                 break
 
         # TODO gut more thoroughly
-        #self.logkv('rl/batch_reward_sum', sum(rewards))
+        # self.logkv('rl/batch_reward_sum', sum(rewards))
 
         last_state = np.copy(self.last_o)
 
