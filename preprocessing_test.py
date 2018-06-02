@@ -6,18 +6,22 @@ import gym
 import numpy as np
 from numpy.testing import assert_array_equal
 
+from debug_wrappers import NumberFrames, ConcatFrameStack
 from preprocessing import MaxWrapper, FrameStackWrapper, FrameSkipWrapper, \
     ExtractLuminanceAndScaleWrapper, generic_preprocess, pong_preprocess
-from debug_wrappers import NumberFrames, ConcatFrameStack
+
+"""
+Tests for preprocessing and environment tweak wrappers.
+"""
 
 
 class DummyEnv(gym.Env):
     """
-    A super-simple environment which just paints a white dot starting at (10, 10)
-    and moving 10 pixels right on every step.
+    A super-simple environment which just paints a white dot starting at
+    (10, 10) and moving 10 pixels right on every step.
 
-    Rewards returned corresponds to the current step number. ("Just after
-    reset" corresponds to step 1, so the reward from the first step taken is 2.)
+    Rewards returned corresponds to the current step number. Reset counts as
+    step 1, so the reward from the first step taken is 2.)
 
     If draw_n_dots is true, also indicate the current step number by the
     number of dots in each column.
@@ -31,7 +35,8 @@ class DummyEnv(gym.Env):
         self.dot_width = dot_width
         self.dot_height = dot_height
 
-    def get_action_meanings(self):
+    @staticmethod
+    def get_action_meanings():
         return ['NOOP']
 
     def reset(self):
@@ -201,8 +206,8 @@ class TestPreprocessing(unittest.TestCase):
         # Then 23 + 24 + 25 + 27.
         self.assertEqual(r3, 98)
 
-
-    def check_full_preprocessing(self):
+    @staticmethod
+    def check_full_preprocessing():
         """
         Manual check of the full set of preprocessing steps.
         Not run as part of normal unit tests; run me with
@@ -235,10 +240,11 @@ class TestPreprocessing(unittest.TestCase):
     def play_pong_special_wrap(self):
         self.play_pong(pong_preprocess)
 
-    def play_pong(self, wrap_fn):
+    @staticmethod
+    def play_pong(wrap_fn):
         """
         Manual check of full set of preprocessing steps for Pong.
-        Not run as port of normal unit tests; run me with
+        Not run as poat of normal unit tests; run me with
           ./preprocessing_test.py TestPreprocessing.play_pong_generic_wrap
           ./preprocessing_test.py TestPreprocessing.play_pong_special_wrap
         """
