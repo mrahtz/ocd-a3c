@@ -141,10 +141,12 @@ def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug,
             env = preprocess_wrapper(env, max_n_noops)
 
             if env_n == 0:
-                env_log_dir = osp.join(log_dir, "worker_{}".format(env_n),
-                                       "env")
-                easy_tf_log.set_dir(env_log_dir)
-                env = MonitorEnv(env, "worker_{}".format(env_n))
+                env_log_dir = osp.join(log_dir,
+                                       "env_{}".format(env_n))
+            else:
+                env_log_dir = None
+            env = MonitorEnv(env, "Env {}".format(env_n),
+                             log_dir=env_log_dir)
 
             return env
 

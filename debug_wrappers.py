@@ -1,4 +1,5 @@
 import cv2
+import easy_tf_log
 import numpy as np
 from easy_tf_log import tflog
 from gym import spaces
@@ -83,19 +84,22 @@ class MonitorEnv(Wrapper):
     Log per-episode rewards and episode lengths.
     """
 
-    def __init__(self, env, prefix=""):
+    def __init__(self, env, prefix="", log_dir=None):
         Wrapper.__init__(self, env)
 
         if prefix:
-            self.tensorboard_prefix = prefix + "/"
             self.log_prefix = prefix + ": "
         else:
             self.log_prefix = ""
+
+        if log_dir is not None:
+            easy_tf_log.set_dir(log_dir)
 
         self.episode_rewards = None
         self.episode_length_steps = None
         self.episode_n = -1
         self.episode_done = None
+        self.log_dir = log_dir
 
     def reset(self):
         self.episode_rewards = []
@@ -116,10 +120,9 @@ class MonitorEnv(Wrapper):
             reward_sum = sum(self.episode_rewards)
             print("{}Episode {} finished; reward sum {}".format(
                 self.log_prefix, self.episode_n, reward_sum))
-            tflog('{}rl/episode_reward_sum'.format(self.tensorboard_prefix),
-                  reward_sum)
-            tflog('{}rl/episode_length_steps'.format(self.tensorboard_prefix),
-                  self.episode_length_steps)
+            if self.log_dir is not None:
+                tflog('rl/episode_reward_sum', reward_sum)
+                tflog('rl/episode_length_steps', self.episode_length_steps)
             self.episode_done = True
 
         return obs, reward, done, info
