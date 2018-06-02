@@ -2,6 +2,12 @@ import re
 
 import tensorflow as tf
 
+"""
+Create a training operator which calculates gradients in one scope (the 
+per-worker copy of parameters) and applies them in another (the shared set of
+parameters).
+"""
+
 
 def strip_var_name(name):
     """
