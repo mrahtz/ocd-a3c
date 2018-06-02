@@ -23,36 +23,9 @@ class Worker:
             self.summary_writer = None
             self.logger = None
 
-        self.render = False
-        self.value_log = deque(maxlen=100)
-        self.fig = None
-
         self.updates = 0
         self.last_o = self.env.reset()
         self.episode_values = []
-
-    def value_graph(self):
-        import matplotlib.pyplot as plt
-        if self.fig is None:
-            self.fig, self.ax = plt.subplots()
-            self.fig.set_size_inches(2, 2)
-            self.ax.set_xlim([0, 100])
-            self.ax.set_ylim([0, 2.0])
-            self.line, = self.ax.plot([], [])
-
-            self.fig.show()
-            self.fig.canvas.draw()
-            self.bg = self.fig.canvas.copy_from_bbox(self.ax.bbox)
-
-        self.fig.canvas.restore_region(self.bg)
-
-        ydata = list(self.value_log)
-        xdata = list(range(len(self.value_log)))
-        self.line.set_data(xdata, ydata)
-
-        self.ax.draw_artist(self.line)
-        self.fig.canvas.update()
-        self.fig.canvas.flush_events()
 
     def run_update(self, n_steps):
         states = []
@@ -72,16 +45,11 @@ class Worker:
 
             self.last_o, r, done, _ = self.env.step(a)
 
-            # The state used to choose the action.
+            # The state used to choose the last action.
             # Not the current state. The previous state.
             states.append(np.copy(s))
             actions.append(a)
             rewards.append(r)
-
-            if self.render:
-                self.env.render()
-                self.value_log.append(v)
-                self.value_graph()
 
             if done:
                 break
