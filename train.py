@@ -54,10 +54,7 @@ def make_workers(sess, envs, networks, n_workers, log_dir):
     for worker_n in range(n_workers):
         worker_name = "worker_{}".format(worker_n)
         worker_log_dir = osp.join(log_dir, worker_name)
-        w = Worker(sess=sess,
-                   env=envs[worker_n],
-                   network=networks[worker_n],
-                   worker_name=worker_name,
+        w = Worker(sess=sess, env=envs[worker_n], network=networks[worker_n],
                    log_dir=worker_log_dir)
         workers.append(w)
 

@@ -10,11 +10,10 @@ from params import DISCOUNT_FACTOR
 
 class Worker:
 
-    def __init__(self, sess, env, network, worker_name, log_dir):
+    def __init__(self, sess, env, network, log_dir):
         self.sess = sess
         self.env = env
         self.network = network
-        self.worker_name = worker_name
 
         if network.summaries_op is not None:
             self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)

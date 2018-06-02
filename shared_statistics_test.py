@@ -42,8 +42,7 @@ class TestSharedStatistics(unittest.TestCase):
                            optimizer=optimizer,
                            create_summary_ops=False,
                            debug=False)
-        Worker(sess=sess, env=env, network=network1, worker_name="worker_1",
-               log_dir='/tmp')
+        Worker(sess=sess, env=env, network=network1, log_dir='/tmp')
 
         vars1 = optimizer.variables()
 
@@ -56,8 +55,7 @@ class TestSharedStatistics(unittest.TestCase):
                            optimizer=optimizer,
                            create_summary_ops=False,
                            debug=False)
-        Worker(sess=sess, env=env, network=network2, worker_name="worker_2",
-               log_dir='/tmp')
+        Worker(sess=sess, env=env, network=network2, log_dir='/tmp')
 
         vars2 = optimizer.variables()
 
@@ -140,8 +138,7 @@ def run_weight_test(reset_rmsprop):
                        optimizer=optimizer,
                        create_summary_ops=False,
                        debug=False)
-    w1 = Worker(sess=sess, env=env, network=network1, worker_name="worker_1",
-                log_dir='/tmp')
+    w1 = Worker(sess=sess, env=env, network=network1, log_dir='/tmp')
 
     network2 = Network(scope="worker_2",
                        n_actions=env.action_space.n,
@@ -152,8 +149,7 @@ def run_weight_test(reset_rmsprop):
                        optimizer=optimizer,
                        create_summary_ops=False,
                        debug=False)
-    w2 = Worker(sess=sess, env=env, network=network2, worker_name="worker_2",
-                log_dir='/tmp')
+    w2 = Worker(sess=sess, env=env, network=network2, log_dir='/tmp')
 
     rmsprop_init_ops = [v.initializer for v in optimizer.variables()]
 
