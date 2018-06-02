@@ -64,7 +64,7 @@ def logit_entropy(logits):
     return tf.reduce_sum(nplogp, axis=-1, keepdims=True)
 
 
-def create_copy_ops(from_scope, to_scope):
+def make_copy_ops(from_scope, to_scope):
     """
     Create operations to mirror the values from all trainable variables
     in from_scope to to_scope.

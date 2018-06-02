@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
-from multi_scope_train_op import create_train_op
+from multi_scope_train_op import make_train_op
 
 
 class TestMultiScopeTrainOp(unittest.TestCase):
@@ -21,10 +21,10 @@ class TestMultiScopeTrainOp(unittest.TestCase):
         with tf.variable_scope('apply_scope'):
             v_apply = tf.Variable(1.0)
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=1)
-        train_op, grads_tensor = create_train_op(loss, optimizer,
+        train_op, grads_tensor = make_train_op(loss, optimizer,
                                                  'compute_scope',
                                                  'apply_scope',
-                                                 max_grad_norm=1e3)
+                                               max_grad_norm=1e3)
 
         self.sess.run(tf.global_variables_initializer())
         # Without clipping, the gradient would be 1e6
@@ -56,7 +56,7 @@ class TestMultiScopeTrainOp(unittest.TestCase):
             d['w2'] = w2
 
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=1)
-        train_op, _ = create_train_op(loss, optimizer,
+        train_op, _ = make_train_op(loss, optimizer,
                                       'compute_scope', 'apply_scope')
 
         self.sess.run(tf.global_variables_initializer())
@@ -85,7 +85,7 @@ class TestMultiScopeTrainOp(unittest.TestCase):
 
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=1)
 
-        train_op, _ = create_train_op(ops['compute_scope']['loss'], optimizer,
+        train_op, _ = make_train_op(ops['compute_scope']['loss'], optimizer,
                                       'compute_scope', 'apply_scope')
 
         self.sess.run(tf.global_variables_initializer())
@@ -131,7 +131,7 @@ class TestMultiScopeTrainOp(unittest.TestCase):
         # We have two variables, two scopes, for a total of 4 trainable
         # variables
         assert len(tf.trainable_variables()) == 4
-        train_op, _ = create_train_op(losses['compute_scope'], optimizer,
+        train_op, _ = make_train_op(losses['compute_scope'], optimizer,
                                       'compute_scope', 'apply_scope')
         assert len(tf.trainable_variables()) == 4
 

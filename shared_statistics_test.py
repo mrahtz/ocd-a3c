@@ -40,7 +40,7 @@ class TestSharedStatistics(unittest.TestCase):
                            weight_inits='glorot',
                            max_grad_norm=0.5,
                            optimizer=optimizer,
-                           create_summary_ops=False,
+                           summaries=False,
                            debug=False)
         Worker(sess=sess, env=env, network=network1, log_dir='/tmp')
 
@@ -53,7 +53,7 @@ class TestSharedStatistics(unittest.TestCase):
                            weight_inits='glorot',
                            max_grad_norm=0.5,
                            optimizer=optimizer,
-                           create_summary_ops=False,
+                           summaries=False,
                            debug=False)
         Worker(sess=sess, env=env, network=network2, log_dir='/tmp')
 
@@ -136,7 +136,7 @@ def run_weight_test(reset_rmsprop):
                        weight_inits='glorot',
                        max_grad_norm=0.5,
                        optimizer=optimizer,
-                       create_summary_ops=False,
+                       summaries=False,
                        debug=False)
     w1 = Worker(sess=sess, env=env, network=network1, log_dir='/tmp')
 
@@ -147,7 +147,7 @@ def run_weight_test(reset_rmsprop):
                        weight_inits='glorot',
                        max_grad_norm=0.5,
                        optimizer=optimizer,
-                       create_summary_ops=False,
+                       summaries=False,
                        debug=False)
     w2 = Worker(sess=sess, env=env, network=network2, log_dir='/tmp')
 

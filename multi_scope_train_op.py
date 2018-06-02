@@ -16,8 +16,8 @@ def strip_var_name(name):
     return re.match('\w*/([^:]*):\w*', name).group(1)
 
 
-def create_train_op(compute_scope_loss, optimizer, compute_scope,
-                    apply_scope, max_grad_norm=None):
+def make_train_op(compute_scope_loss, optimizer, compute_scope,
+                  apply_scope, max_grad_norm=None):
     """
     compute_scope: the scope in which to calculate gradients
     apply_scope: the scope in which to apply the gradients

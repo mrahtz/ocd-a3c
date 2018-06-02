@@ -26,7 +26,7 @@ class TestNetwork(unittest.TestCase):
                           entropy_bonus=0.0,
                           weight_inits='glorot',
                           optimizer=optimizer,
-                          create_summary_ops=False,
+                          summaries=False,
                           )
         sess = tf.Session()
         sess.run(tf.global_variables_initializer())

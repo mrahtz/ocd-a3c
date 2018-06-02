@@ -42,7 +42,7 @@ def make_networks(n_workers, n_actions,
                           weight_inits=weight_inits,
                           max_grad_norm=max_grad_norm,
                           optimizer=optimizer,
-                          create_summary_ops=create_summary_ops,
+                          summaries=create_summary_ops,
                           debug=debug)
         worker_networks.append(network)
     return worker_networks

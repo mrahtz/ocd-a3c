@@ -7,7 +7,7 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
-from utils import create_copy_ops, logit_entropy, rewards_to_discounted_returns, \
+from utils import make_copy_ops, logit_entropy, rewards_to_discounted_returns, \
     set_random_seeds, Timer
 
 
@@ -202,7 +202,7 @@ class TestCopyNetwork(unittest.TestCase):
                 w1 = tf.Variable(inits[scope]['w1'], name='w1')
                 w2 = tf.Variable(inits[scope]['w2'], name='w2')
                 variables[scope] = {'w1': w1, 'w2': w2}
-        copy_ops = create_copy_ops(from_scope='from_scope', to_scope='to_scope')
+        copy_ops = make_copy_ops(from_scope='from_scope', to_scope='to_scope')
 
         sess.run(tf.global_variables_initializer())
 

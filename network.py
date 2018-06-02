@@ -3,7 +3,7 @@ from math import sqrt
 import tensorflow as tf
 
 import utils
-from multi_scope_train_op import create_train_op
+from multi_scope_train_op import make_train_op
 from utils import logit_entropy, make_grad_histograms, make_rmsprop_histograms, \
     make_histograms
 
@@ -167,7 +167,7 @@ class Network:
 
     def __init__(self, scope, n_actions,
                  entropy_bonus, value_loss_coef, weight_inits, max_grad_norm,
-                 optimizer, create_summary_ops, debug=False):
+                 optimizer, summaries, debug=False):
         with tf.variable_scope(scope):
             observations, \
             a_logits, a_softmax, graph_v, \
@@ -178,10 +178,10 @@ class Network:
                 a_logits, graph_v,
                 entropy_bonus, value_loss_coef, debug)
 
-        sync_with_global_ops = utils.create_copy_ops(from_scope='global',
-                                                     to_scope=scope)
+        sync_with_global_ops = utils.make_copy_ops(from_scope='global',
+                                                   to_scope=scope)
 
-        train_op, grads_norm = create_train_op(
+        train_op, grads_norm = make_train_op(
             loss,
             optimizer,
             compute_scope=scope,
@@ -206,12 +206,12 @@ class Network:
         self.train_op = train_op
         self.grads_norm = grads_norm
 
-        if create_summary_ops:
-            self.summaries_op = self.create_summary_ops(scope)
+        if summaries:
+            self.summaries_op = self.make_summary_ops(scope)
         else:
             self.summaries_op = None
 
-    def create_summary_ops(self, scope):
+    def make_summary_ops(self, scope):
         variables = tf.trainable_variables(scope)
         grads_policy = tf.gradients(self.policy_loss, variables)
         grads_value = tf.gradients(self.value_loss, variables)
