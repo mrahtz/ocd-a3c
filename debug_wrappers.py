@@ -1,7 +1,12 @@
 import cv2
 import numpy as np
 from easy_tf_log import tflog
-from gym import ObservationWrapper, Wrapper, spaces
+from gym import spaces
+from gym.core import ObservationWrapper, Wrapper
+
+"""
+Wrappers for gym environments to help with debugging.
+"""
 
 
 class NumberFrames(ObservationWrapper):
@@ -26,7 +31,7 @@ class NumberFrames(ObservationWrapper):
             x = 70
         cv2.putText(obs,
                     str(self.frames_since_reset),
-                    org=(x, 70),  # x, y position of bottom-left corner of text
+                    org=(x, 70),
                     fontFace=cv2.FONT_HERSHEY_PLAIN,
                     fontScale=2.0,
                     color=(255, 255, 255),
@@ -40,6 +45,10 @@ class EarlyReset(Wrapper):
     Reset the environment after 100 steps.
     """
 
+    def __init__(self, env):
+        Wrapper.__init__(self, env)
+        self.n_steps = None
+
     def reset(self):
         self.n_steps = 0
         return self.env.reset()
@@ -52,6 +61,23 @@ class EarlyReset(Wrapper):
         return obs, reward, done, info
 
 
+class ConcatFrameStack(ObservationWrapper):
+    """
+    Concatenate a stack horizontally into one long frame.
+    """
+
+    def __init__(self, env):
+        ObservationWrapper.__init__(self, env)
+        # Important so that gym's play.py picks up the right resolution
+        self.observation_space = spaces.Box(low=0, high=255,
+                                            shape=(84, 4 * 84),
+                                            dtype=np.uint8)
+
+    def observation(self, obs):
+        assert obs.shape[0] == 4
+        return np.hstack(obs)
+
+
 class MonitorEnv(Wrapper):
     """
     Log per-episode rewards and episode lengths.
@@ -59,12 +85,17 @@ class MonitorEnv(Wrapper):
 
     def __init__(self, env, prefix=""):
         Wrapper.__init__(self, env)
+
         if prefix:
-            self.key_prefix = prefix + "/"
+            self.tensorboard_prefix = prefix + "/"
             self.log_prefix = prefix + ": "
         else:
             self.log_prefix = ""
+
+        self.episode_rewards = None
+        self.episode_length_steps = None
         self.episode_n = -1
+        self.episode_done = None
 
     def reset(self):
         self.episode_rewards = []
@@ -85,27 +116,10 @@ class MonitorEnv(Wrapper):
             reward_sum = sum(self.episode_rewards)
             print("{}Episode {} finished; reward sum {}".format(
                 self.log_prefix, self.episode_n, reward_sum))
-            tflog('{}rl/episode_reward_sum'.format(self.key_prefix),
+            tflog('{}rl/episode_reward_sum'.format(self.tensorboard_prefix),
                   reward_sum)
-            tflog('{}rl/episode_length_steps'.format(self.key_prefix),
+            tflog('{}rl/episode_length_steps'.format(self.tensorboard_prefix),
                   self.episode_length_steps)
             self.episode_done = True
 
         return obs, reward, done, info
-
-
-class ConcatFrameStack(ObservationWrapper):
-    """
-    Concatenate a stack horizontally into one long frame.
-    """
-
-    def __init__(self, env):
-        ObservationWrapper.__init__(self, env)
-        # Important so that gym's play.py picks up the right resolution
-        self.observation_space = spaces.Box(low=0, high=255,
-                                            shape=(84, 4 * 84),
-                                            dtype=np.uint8)
-
-    def observation(self, obs):
-        assert obs.shape[0] == 4
-        return np.hstack(obs)
