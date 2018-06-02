@@ -96,7 +96,7 @@ def make_optimizer(learning_rate):
     # b) Empirically, no. See shared_statistics_test.py.
     #
     # In terms of hyperparameters:
-
+    #
     # Learning rate: the paper actually runs a bunch of
     # different learning rates and presents results averaged over the
     # three best learning rates for each game. From the scatter plot of
