@@ -123,45 +123,46 @@ def make_loss_ops(a_logits, graph_v, entropy_bonus, value_loss_coef, debug):
     # So here, by taking the cross-entropy of the distribution of
     # action 'labels' wrt the produced action probabilities, we can get
     # exactly what we want :)
-    neglogprob = tf.nn.sparse_softmax_cross_entropy_with_logits(
+    _neglogprob = tf.nn.sparse_softmax_cross_entropy_with_logits(
         logits=a_logits, labels=actions)
+    with tf.control_dependencies([tf.assert_rank(_neglogprob, 1)]):
+        neglogprob = _neglogprob
 
     if debug:
         neglogprob = tf.Print(neglogprob, [actions],
                               message='\ndebug actions:',
                               summarize=2147483647)
 
-    advantage = returns - graph_v
+    _advantage = returns - graph_v
+    with tf.control_dependencies([tf.assert_rank(_advantage, 1)]):
+        advantage = _advantage
 
     if debug:
         advantage = tf.Print(advantage, [returns],
                              message='\ndebug returns:',
                              summarize=2147483647)
 
-    check_nlp = tf.assert_rank(neglogprob, 1)
-    check_advantage = tf.assert_rank(advantage, 1)
-    with tf.control_dependencies([check_nlp, check_advantage]):
-        # Note that the advantage is treated as a constant for the
-        # policy network update step.
-        # Note also that we're calculating advantages on-the-fly using
-        # the value approximator. This might make us worry: what if we're
-        # using the loss for training, and the advantages are calculated
-        # /after/ training has changed the network? But for A3C, we don't
-        # need to worry, because we compute the gradients seperately from
-        # applying them.
-        policy_loss = neglogprob * tf.stop_gradient(advantage)
-        policy_loss = tf.reduce_mean(policy_loss)
+    # Note that the advantage is treated as a constant for the
+    # policy network update step.
+    # Note also that we're calculating advantages on-the-fly using
+    # the value approximator. This might make us worry: what if we're
+    # using the loss for training, and the advantages are calculated
+    # /after/ training has changed the network? But for A3C, we don't
+    # need to worry, because we compute the gradients seperately from
+    # applying them.
+    policy_loss = neglogprob * tf.stop_gradient(advantage)
+    policy_loss = tf.reduce_mean(policy_loss)
 
-        policy_entropy = tf.reduce_mean(logit_entropy(a_logits))
-        # We want to maximise entropy, which is the same as
-        # minimising negative entropy
-        policy_loss -= entropy_bonus * policy_entropy
+    policy_entropy = tf.reduce_mean(logit_entropy(a_logits))
+    # We want to maximise entropy, which is the same as
+    # minimising negative entropy
+    policy_loss -= entropy_bonus * policy_entropy
 
-        value_loss = 0.5 * advantage ** 2
-        value_loss = tf.reduce_mean(value_loss)
-        value_loss *= value_loss_coef
+    value_loss = 0.5 * advantage ** 2
+    value_loss = tf.reduce_mean(value_loss)
+    value_loss *= value_loss_coef
 
-        loss = policy_loss + value_loss
+    loss = policy_loss + value_loss
 
     return actions, returns, advantage, policy_entropy, \
            policy_loss, value_loss, loss
