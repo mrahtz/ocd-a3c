@@ -61,7 +61,7 @@ def logit_entropy(logits):
     probs = tf.nn.softmax(logits, axis=-1)
     nplogp = probs * nlogp
     # This reduce_sum is just the final part of the entropy calculation.
-    # Don't worry - we return the entropy for each individual item in the batch.
+    # Don't worry - we do return the entropy for each item in the batch.
     return tf.reduce_sum(nplogp, axis=-1, keepdims=True)
 
 
