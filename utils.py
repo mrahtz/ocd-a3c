@@ -181,6 +181,10 @@ class GraphCounter:
 
 
 class SubProcessEnv():
+    """
+    Run a gym environment in a subprocess so that we can avoid GIL and
+    run multiple environments asynchronously from a single thread
+    """
     @staticmethod
     def env_process(pipe, make_env_fn):
         env = make_env_fn()
