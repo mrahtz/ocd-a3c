@@ -54,9 +54,6 @@ class Worker:
             if done:
                 break
 
-        # TODO gut more thoroughly
-        # self.logkv('rl/batch_reward_sum', sum(rewards))
-
         last_state = np.copy(self.last_o)
 
         if done:
