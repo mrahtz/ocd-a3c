@@ -142,6 +142,8 @@ def make_loss_ops(a_logits, graph_v, entropy_bonus, value_loss_coef, debug):
                              message='\ndebug returns:',
                              summarize=2147483647)
 
+    policy_entropy = tf.reduce_mean(logit_entropy(a_logits))
+
     # Note that the advantage is treated as a constant for the
     # policy network update step.
     # Note also that we're calculating advantages on-the-fly using
@@ -150,18 +152,11 @@ def make_loss_ops(a_logits, graph_v, entropy_bonus, value_loss_coef, debug):
     # /after/ training has changed the network? But for A3C, we don't
     # need to worry, because we compute the gradients seperately from
     # applying them.
-    policy_loss = neglogprob * tf.stop_gradient(advantage)
-    policy_loss = tf.reduce_mean(policy_loss)
-
-    policy_entropy = tf.reduce_mean(logit_entropy(a_logits))
     # We want to maximise entropy, which is the same as
-    # minimising negative entropy
-    policy_loss -= entropy_bonus * policy_entropy
-
-    value_loss = 0.5 * advantage ** 2
-    value_loss = tf.reduce_mean(value_loss)
-    value_loss *= value_loss_coef
-
+    # minimising negative entropy.
+    policy_loss = neglogprob * tf.stop_gradient(advantage)
+    policy_loss = tf.reduce_mean(policy_loss) - entropy_bonus * policy_entropy
+    value_loss = value_loss_coef * tf.reduce_mean(0.5 * advantage ** 2)
     loss = policy_loss + value_loss
 
     return actions, returns, advantage, policy_entropy, \
