@@ -1,9 +1,11 @@
+#!/usr/bin/env python3
+
 import unittest
 
 import numpy as np
 import tensorflow as tf
 
-from network import Network
+from network import Network, make_inference_network
 
 
 class TestNetwork(unittest.TestCase):
@@ -13,7 +15,19 @@ class TestNetwork(unittest.TestCase):
         Does calculating policy loss based on the cross-entropy really give
         the right result?
         """
-        network = Network('foo_scope', n_actions=6, entropy_bonus=0)
+        optimizer = tf.train.RMSPropOptimizer(learning_rate=1e-3)
+        with tf.variable_scope('global'):
+            make_inference_network(n_actions=6,
+                                   weight_inits='glorot')
+        network = Network('foo_scope',
+                          n_actions=6,
+                          value_loss_coef=0.5,
+                          max_grad_norm=0.5,
+                          entropy_bonus=0.0,
+                          weight_inits='glorot',
+                          optimizer=optimizer,
+                          create_summary_ops=False,
+                          )
         sess = tf.Session()
         sess.run(tf.global_variables_initializer())
 
