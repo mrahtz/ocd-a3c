@@ -164,22 +164,6 @@ class Timer:
             return False
 
 
-class ProcessSafeCounter:
-
-    def __init__(self):
-        self.value = multiprocessing.Value('i', 0)
-
-    def increment(self, n=1):
-        with self.value.get_lock():
-            self.value.value += n
-
-    def __int__(self):
-        return self.value.value
-
-    def __repr__(self):
-        return str(self.value.value)
-
-
 class GraphCounter:
 
     def __init__(self, sess):
