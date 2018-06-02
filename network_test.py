@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
-from network import create_network
+from network import Network
 
 
 class TestNetwork(unittest.TestCase):
@@ -13,7 +13,7 @@ class TestNetwork(unittest.TestCase):
         Does calculating policy loss based on the cross-entropy really give
         the right result?
         """
-        network = create_network('foo_scope', n_actions=6, entropy_bonus=0)
+        network = Network('foo_scope', n_actions=6, entropy_bonus=0)
         sess = tf.Session()
         sess.run(tf.global_variables_initializer())
 

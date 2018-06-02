@@ -4,11 +4,11 @@ import easy_tf_log
 import numpy as np
 
 import utils
+from multi_scope_train_op import *
+from network import Network
+from params import DISCOUNT_FACTOR
 from utils import make_rmsprop_summaries, make_histograms, \
     make_grad_summaries
-from multi_scope_train_op import *
-from network import create_network
-from params import DISCOUNT_FACTOR
 
 
 class Worker:
@@ -20,7 +20,7 @@ class Worker:
         self.worker_n = worker_n
 
         worker_name = "worker_{}".format(worker_n)
-        self.network = create_network(scope=worker_name, debug=debug,
+        self.network = Network(scope=worker_name, debug=debug,
                                       n_actions=env.action_space.n,
                                       value_loss_coef=value_loss_coef)
 

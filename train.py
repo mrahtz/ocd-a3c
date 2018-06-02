@@ -11,7 +11,7 @@ import tensorflow as tf
 
 import utils
 from debug_wrappers import NumberFrames, MonitorEnv
-from network import create_network
+from network import Network
 from params import parse_args
 from utils import SubProcessEnv
 from worker import Worker
@@ -170,7 +170,7 @@ def main():
     sess = tf.Session()
     envs = make_envs(args.env_id, preprocess_wrapper, args.max_n_noops,
                      args.n_workers, args.seed, args.debug, log_dir)
-    create_network('global', n_actions=envs[0].action_space.n,
+    Network('global', n_actions=envs[0].action_space.n,
                    weight_inits=args.weight_inits)
 
     step_counter = utils.GraphCounter(sess)
