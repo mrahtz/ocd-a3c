@@ -5,7 +5,6 @@ import numpy as np
 
 import utils
 from multi_scope_train_op import *
-from network import Network
 from params import DISCOUNT_FACTOR
 from utils import make_rmsprop_summaries, make_histograms, \
     make_grad_summaries
@@ -13,15 +12,12 @@ from utils import make_rmsprop_summaries, make_histograms, \
 
 class Worker:
 
-    def __init__(self, sess, env, worker_n, log_dir, debug, optimizer,
-                 value_loss_coef, max_grad_norm):
+    def __init__(self, sess, env, network, worker_name, log_dir, optimizer,
+                 max_grad_norm):
         self.sess = sess
         self.env = env
-        self.worker_n = worker_n
-
-        worker_name = "worker_{}".format(worker_n)
-        self.network = Network(scope=worker_name, n_actions=env.action_space.n,
-                               value_loss_coef=value_loss_coef, debug=debug)
+        self.network = network
+        self.worker_name = worker_name
 
         if log_dir is not None:
             self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)
@@ -32,7 +28,7 @@ class Worker:
             self.log = False
 
         self.train_op, grads_norm = create_train_op(
-            self.network.loss,
+            network.loss,
             optimizer,
             compute_scope=worker_name,
             apply_scope='global',
@@ -112,7 +108,7 @@ class Worker:
     def logkv(self, key, value):
         if not self.log:
             return
-        self.logger.logkv("worker_{}/".format(self.worker_n) + key, value)
+        self.logger.logkv("{}/".format(self.worker_name) + key, value)
 
     def run_update(self, n_steps):
         states = []
