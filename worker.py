@@ -20,9 +20,8 @@ class Worker:
         self.worker_n = worker_n
 
         worker_name = "worker_{}".format(worker_n)
-        self.network = Network(scope=worker_name, debug=debug,
-                                      n_actions=env.action_space.n,
-                                      value_loss_coef=value_loss_coef)
+        self.network = Network(scope=worker_name, n_actions=env.action_space.n,
+                               value_loss_coef=value_loss_coef, debug=debug)
 
         if log_dir is not None:
             self.summary_writer = tf.summary.FileWriter(log_dir, flush_secs=1)

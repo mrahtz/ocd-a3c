@@ -5,7 +5,7 @@ import tensorflow as tf
 from utils import logit_entropy
 
 
-def create_inference_ops(scope, n_actions, weight_inits, debug):
+def create_inference_ops(scope, n_actions, weight_inits, debug=False):
     with tf.variable_scope(scope):
         observations = tf.placeholder(tf.float32, [None, 84, 84, 4])
 
@@ -70,6 +70,8 @@ def create_inference_ops(scope, n_actions, weight_inits, debug):
             activation=tf.nn.relu,
             kernel_initializer=kernel_initializer)
 
+        layers = [conv1, conv2, conv3, features]
+
         if weight_inits == 'ortho':
             kernel_initializer = tf.orthogonal_initializer(gain=sqrt(0.01))
         elif weight_inits == 'glorot':
@@ -97,7 +99,6 @@ def create_inference_ops(scope, n_actions, weight_inits, debug):
         # Convert to just (?)
         graph_v = graph_v[:, 0]
 
-    layers = [conv1, conv2, conv3, features]
     return observations, a_logits, a_softmax, graph_v, layers
 
 
@@ -168,8 +169,8 @@ def create_train_ops(scope, a_logits, graph_v, entropy_bonus, value_loss_coef,
 
 class Network:
 
-    def __init__(self, scope, n_actions, debug=False, entropy_bonus=0.01,
-                 value_loss_coef=0.25, weight_inits='ortho'):
+    def __init__(self, scope, n_actions, entropy_bonus=0.01,
+                 value_loss_coef=0.25, weight_inits='ortho', debug=False):
         observations, a_logits, a_softmax, graph_v, layers = create_inference_ops(
             scope, n_actions, weight_inits, debug)
 

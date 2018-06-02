@@ -42,7 +42,7 @@ def run_agent(env, sess, network):
 
 def get_network(ckpt_dir, n_actions):
     sess = tf.Session()
-    network = Network(n_actions=n_actions, scope='global')
+    network = Network(scope='global', n_actions=n_actions)
     ckpt_file = tf.train.latest_checkpoint(ckpt_dir)
     if not ckpt_file:
         raise Exception("Couldn't find checkpoint in '{}'".format(ckpt_dir))

@@ -11,7 +11,7 @@ import tensorflow as tf
 
 import utils
 from debug_wrappers import NumberFrames, MonitorEnv
-from network import Network
+from network import Network, create_inference_ops
 from params import parse_args
 from utils import SubProcessEnv
 from worker import Worker
@@ -170,8 +170,8 @@ def main():
     sess = tf.Session()
     envs = make_envs(args.env_id, preprocess_wrapper, args.max_n_noops,
                      args.n_workers, args.seed, args.debug, log_dir)
-    Network('global', n_actions=envs[0].action_space.n,
-                   weight_inits=args.weight_inits)
+    create_inference_ops('global', n_actions=envs[0].action_space.n,
+                         weight_inits=args.weight_inits)
 
     step_counter = utils.GraphCounter(sess)
     update_counter = utils.GraphCounter(sess)
