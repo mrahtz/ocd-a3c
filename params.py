@@ -44,21 +44,26 @@ def parse_args():
 
     args = parser.parse_args()
 
-    if args.log_dir:
-        log_dir = args.log_dir
-    else:
-        git_rev = get_git_rev()
-        run_name = args.run_name + '_' + git_rev
-        log_dir = osp.join('runs', run_name)
-        if osp.exists(log_dir):
-            raise Exception("Log directory '%s' already exists" % log_dir)
-    os.makedirs(log_dir, exist_ok=True)
+    lr_args = check_lr_args(args, parser)
+    log_dir = get_log_dir(args)
+    save_args(args, log_dir)
 
-    with open(osp.join(log_dir, 'args.txt'), 'w') as args_file:
-        args_file.write(' '.join(sys.argv))
-        args_file.write('\n')
-        args_file.write(str(args))
+    if args.preprocessing == 'generic':
+        preprocess_wrapper = preprocessing.generic_preprocess
+    elif args.preprocessing == 'pong':
+        preprocess_wrapper = preprocessing.pong_preprocess
 
+    ckpt_timer = Timer(duration_seconds=args.ckpt_interval_seconds)
+
+    args.n_steps = int(args.n_steps)
+    if args.lr_decay_to_zero_by_n_steps is not None:
+        args.lr_decay_to_zero_by_n_steps = \
+            int(args.lr_decay_to_zero_by_n_steps)
+
+    return args, lr_args, log_dir, preprocess_wrapper, ckpt_timer
+
+
+def check_lr_args(args, parser):
     if (args.lr_schedule == 'linear' and
             args.lr_decay_to_zero_by_n_steps is None):
         parser.error("For --lr_schedule linear, please supply "
@@ -73,19 +78,27 @@ def parse_args():
     lr_args = {'initial': args.initial_lr,
                'schedule': args.lr_schedule,
                'zero_by_steps': args.lr_decay_to_zero_by_n_steps}
+    return lr_args
 
-    if args.preprocessing == 'generic':
-        preprocess_wrapper = preprocessing.generic_preprocess
-    elif args.preprocessing == 'pong':
-        preprocess_wrapper = preprocessing.pong_preprocess
-    ckpt_timer = Timer(duration_seconds=args.ckpt_interval_seconds)
 
-    args.n_steps = int(args.n_steps)
-    if args.lr_decay_to_zero_by_n_steps is not None:
-        args.lr_decay_to_zero_by_n_steps = \
-            int(args.lr_decay_to_zero_by_n_steps)
+def get_log_dir(args):
+    if args.log_dir:
+        log_dir = args.log_dir
+    else:
+        git_rev = get_git_rev()
+        run_name = args.run_name + '_' + git_rev
+        log_dir = osp.join('runs', run_name)
+        if osp.exists(log_dir):
+            raise Exception("Log directory '%s' already exists" % log_dir)
+    os.makedirs(log_dir, exist_ok=True)
+    return log_dir
 
-    return args, lr_args, log_dir, preprocess_wrapper, ckpt_timer
+
+def save_args(args, log_dir):
+    with open(osp.join(log_dir, 'args.txt'), 'w') as args_file:
+        args_file.write(' '.join(sys.argv))
+        args_file.write('\n')
+        args_file.write(str(args))
 
 
 DISCOUNT_FACTOR = 0.99
