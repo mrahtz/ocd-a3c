@@ -2,6 +2,9 @@
 
 """
 Show data (e.g. observations) dumped from the network in debug mode.
+
+To get that data, run with --debug and pipe stderr to a log file, e.g.:
+  python3 train.py PongNoFrameskip-v4 --debug 2> log
 """
 
 import argparse
@@ -10,13 +13,33 @@ import re
 
 from pylab import *
 
-parser = argparse.ArgumentParser()
-parser.add_argument('log_file', type=argparse.FileType('r'))
-args = parser.parse_args()
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('log_file', type=argparse.FileType('r'))
+    args = parser.parse_args()
+
+    for line in args.log_file:
+        # We're looking for something like
+        #   debug observations:[data]
+
+        if not line.startswith('debug'):
+            continue
+
+        tag, data_str = line.split(':')
+        data = parse_array(data_str)
+        data_type = tag.split(' ')[1]
+
+        if data_type == 'observations':
+            show_observations(data)
+        elif data_type == 'returns':
+            plot_data(data, 'Returns')
+        elif data_type == 'actions':
+            plot_data(data, 'Actions')
 
 
 def parse_array(line):
-    # Massage into a form that we can eval()
+    # Massage tf.Print output into a form that we can eval()
     line = re.sub('([0-9]) ', '\\1, ', line)
     line = re.sub('\]', '], ', line)
 
@@ -57,17 +80,5 @@ def plot_data(data, data_type):
     show()
 
 
-for line in args.log_file:
-    if not line.startswith('debug'):
-        continue
-
-    tag, data_str = line.split(':')
-    data = parse_array(data_str)
-    data_type = tag.split(' ')[1]
-
-    if data_type == 'observations':
-        show_observations(data)
-    elif data_type == 'returns':
-        plot_data(data, 'Returns')
-    elif data_type == 'actions':
-        plot_data(data, 'Actions')
+if __name__ == '__main__':
+    main()
