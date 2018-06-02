@@ -2,10 +2,11 @@ from collections import deque
 
 import cv2
 import numpy as np
-from gym import Wrapper, ObservationWrapper, spaces
+from gym import spaces
+from gym.core import Wrapper, ObservationWrapper
 
 """
-Environment preprocessing.
+Observation preprocessing and environment tweaks.
 
 Section 8 ("Experimental Setup") of the paper says:
 "The Atari experiments used the same input preprocessing as
@@ -82,15 +83,16 @@ agent much less temporal scope than frame stack then frame skip. In the
 former, the agent has access to 12 frames' worth of observations, whereas in
 the latter, only 4 frames' worth.
 
-Empirically, also, frame skip then frame stack seems to do better.
-
 Finally, 'Human-level control through deep reinforcement learning' says:
 
   The trained agents were evaluated by playing each game 30 times for up to
   5 min each time with different initial random conditions ('no-op'; see
   Extended Data Table 1).
   
-Extended Data Table 1 lists "no-op max" as 30 (set as an argument to train.py).
+Extended Data Table 1 lists "no-op max" as 30 (set in params.py).
+
+We implement the steps using a modular set of wrappers, heavily inspired by 
+baselines' atari_wrappers.py (https://git.io/vhWWG).
 """
 
 
@@ -100,7 +102,7 @@ def get_noop_action_index(env):
         noop_action_index = action_meanings.index('NOOP')
         return noop_action_index
     except ValueError:
-        raise Exception("Unsure about environment's NOOP action")
+        raise Exception("Unsure about environment's no-op action")
 
 
 class MaxWrapper(Wrapper):
@@ -124,6 +126,7 @@ class MaxWrapper(Wrapper):
             raise Exception("Environment signalled done during initial frame "
                             "maxing")
         self.frame_pairs.append(obs)
+
         return np.max(self.frame_pairs, axis=0)
 
     def step(self, action):
@@ -231,14 +234,18 @@ class NormalizeWrapper(ObservationWrapper):
 
     def __init__(self, env):
         ObservationWrapper.__init__(self, env)
-        self.observation_space = spaces.Box(
-            low=0.0, high=1.0, shape=(84, 84), dtype=np.float32)
+        self.observation_space = spaces.Box(low=0.0, high=1.0,
+                                            shape=(84, 84),
+                                            dtype=np.float32)
 
     def observation(self, obs):
         return obs / 255.0
 
 
 def generic_preprocess(env, max_n_noops):
+    """
+    Apply the full sequence of preprocessing steps as specified in the paper.
+    """
     env = RandomStartWrapper(env, max_n_noops)
     env = MaxWrapper(env)
     env = ExtractLuminanceAndScaleWrapper(env)
@@ -247,10 +254,12 @@ def generic_preprocess(env, max_n_noops):
     env = FrameStackWrapper(env)
     return env
 
+
 """
 We also have a wrapper to extract hand-crafted features from Pong for early 
 debug testing.
 """
+
 
 class PongFeaturesWrapper(ObservationWrapper):
     """
@@ -264,6 +273,10 @@ class PongFeaturesWrapper(ObservationWrapper):
             low=0.0, high=1.0, shape=(84, 84), dtype=np.float32)
 
     def observation(self, obs):
+        """
+        Based on Andrej Karpathy's code for Pong with policy gradients:
+        https://gist.github.com/karpathy/a4166c7fe253700972fcbc77e4ea32c5
+        """
         obs = np.mean(obs, axis=2) / 255.0  # Convert to [0, 1] grayscale
         obs = obs[34:194]  # Extract game area
         obs = obs[::2, ::2]  # Downsample by a factor of 2
