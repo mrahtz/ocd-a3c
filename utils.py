@@ -11,13 +11,6 @@ import numpy as np
 import tensorflow as tf
 
 
-def with_prob(p):
-    if np.random.random() < p:
-        return True
-    else:
-        return False
-
-
 def rewards_to_discounted_returns(rewards, discount_factor):
     returns = np.zeros_like(rewards, dtype=np.float32)
     returns[-1] = rewards[-1]
