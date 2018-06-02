@@ -81,7 +81,7 @@ class TestTrain(unittest.TestCase):
         Test that randomness is set up exactly the same as it was for
         previous runs.
         """
-        last_seen_var_hash = 78.91736
+        last_seen_var_hash = 20.141718
         self.assertAlmostEqual(TestTrain.hash_100_steps_1,
                                last_seen_var_hash,
                                places=5)
