@@ -30,7 +30,7 @@ def make_networks(n_workers, n_actions,
     with tf.variable_scope('global'):
         make_inference_network(n_actions=n_actions, weight_inits=weight_inits)
 
-    # Create per-worker parameters
+    # Create per-worker copies of shared parameters
     worker_networks = []
     for worker_n in range(n_workers):
         create_summary_ops = (worker_n == 0)
@@ -138,20 +138,19 @@ def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug,
             env = preprocess_wrapper(env, max_n_noops)
 
             if env_n == 0:
-                env_log_dir = osp.join(log_dir,
-                                       "env_{}".format(env_n))
+                env_log_dir = osp.join(log_dir, "env_{}".format(env_n))
             else:
                 env_log_dir = None
-            env = MonitorEnv(env, "Env {}".format(env_n),
-                             log_dir=env_log_dir)
+            env = MonitorEnv(env, "Env {}".format(env_n), log_dir=env_log_dir)
 
             return env
 
         return thunk
 
     # ALE /seems/ to be basically thread-safe, as long as environments aren't
-    # created at the same time. See
-    # https://github.com/mgbellemare/Arcade-Learning-Environment/issues/86.
+    # created at the same time (see
+    # https://github.com/mgbellemare/Arcade-Learning-Environment/issues/86).
+    # So we create them serially.
     envs = []
     for env_n in range(n_envs):
         env = SubProcessEnv(make_make_env_fn(env_n))
@@ -167,17 +166,19 @@ def run_worker(worker, n_steps_to_run, steps_per_update, step_counter,
         update_counter.increment(1)
 
 
-def start_workers(args, step_counter, update_counter, workers):
+def start_workers(n_steps, steps_per_update, step_counter, update_counter,
+                  workers):
     worker_threads = []
-    for worker_n, worker in enumerate(workers):
-        p_args = (worker,
-                  args.n_steps,
-                  args.steps_per_update,
-                  step_counter,
-                  update_counter)
-        p = Thread(target=run_worker, args=p_args)
-        p.start()
-        worker_threads.append(p)
+    for worker in workers:
+        thread = Thread(target=lambda:
+        run_worker(worker=worker,
+                   n_steps_to_run=n_steps,
+                   steps_per_update=steps_per_update,
+                   step_counter=step_counter,
+                   update_counter=update_counter)
+                        )
+        thread.start()
+        worker_threads.append(thread)
     return worker_threads
 
 
@@ -228,12 +229,12 @@ def main():
                            networks=networks,
                            n_workers=args.n_workers,
                            log_dir=log_dir)
-    # It's only when the workers actually create their training ops that
-    # optimizer statistic variables get created, so we have to do another
-    # initialization for these variables.
-    sess.run(tf.variables_initializer(optimizer.variables()))
 
-    worker_threads = start_workers(args, step_counter, update_counter, workers)
+    worker_threads = start_workers(n_steps=args.n_steps,
+                                   steps_per_update=args.steps_per_update,
+                                   step_counter=step_counter,
+                                   update_counter=update_counter,
+                                   workers=workers)
     ckpt_timer.reset()
     prev_t = time.time()
     prev_steps = int(step_counter)
