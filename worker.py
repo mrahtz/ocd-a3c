@@ -1,5 +1,3 @@
-from collections import deque
-
 import easy_tf_log
 import numpy as np
 
@@ -24,60 +22,23 @@ class Worker:
             self.logger = None
 
         self.updates = 0
-        self.last_o = self.env.reset()
+        self.last_obs = self.env.reset()
         self.episode_values = []
 
     def run_update(self, n_steps):
-        states = []
-        actions = []
-        rewards = []
-
         self.sess.run(self.network.sync_with_global_ops)
 
-        for _ in range(n_steps):
-            s = np.moveaxis(self.last_o, source=0, destination=-1)
-            feed_dict = {self.network.s: [s]}
-            [a_p], [v] = self.sess.run([self.network.a_softmax,
-                                        self.network.graph_v],
-                                       feed_dict=feed_dict)
-            a = np.random.choice(self.env.action_space.n, p=a_p)
-            self.episode_values.append(v)
-
-            self.last_o, r, done, _ = self.env.step(a)
-
-            # The state used to choose the last action.
-            # Not the current state. The previous state.
-            states.append(np.copy(s))
-            actions.append(a)
-            rewards.append(r)
-
-            if done:
-                break
-
-        last_state = np.copy(self.last_o)
+        actions, done, rewards, states = self.run_steps(n_steps)
+        returns = self.calculate_returns(done, rewards)
 
         if done:
-            returns = utils.rewards_to_discounted_returns(rewards,
-                                                          DISCOUNT_FACTOR)
-            self.last_o = self.env.reset()
+            self.last_obs = self.env.reset()
             episode_value_sum = sum(self.episode_values)
             episode_value_mean = episode_value_sum / len(self.episode_values)
             if self.logger:
                 self.logger.logkv('rl/episode_value_sum', episode_value_sum)
                 self.logger.logkv('rl/episode_value_mean', episode_value_mean)
             self.episode_values = []
-        else:
-            # If we're ending in a non-terminal state, in order to calculate
-            # returns, we need to know the return of the final state.
-            # We estimate this using the value network.
-            s = np.moveaxis(last_state, source=0, destination=-1)
-            feed_dict = {self.network.s: [s]}
-            last_value = self.sess.run(self.network.graph_v,
-                                       feed_dict=feed_dict)[0]
-            rewards += [last_value]
-            returns = utils.rewards_to_discounted_returns(rewards,
-                                                          DISCOUNT_FACTOR)
-            returns = returns[:-1]  # Chop off last_value
 
         feed_dict = {self.network.s: states,
                      self.network.a: actions,
@@ -92,3 +53,48 @@ class Worker:
         self.updates += 1
 
         return len(states)
+
+    def calculate_returns(self, done, rewards):
+        if done:
+            returns = utils.rewards_to_discounted_returns(rewards,
+                                                          DISCOUNT_FACTOR)
+        else:
+            # If we're ending in a non-terminal state, in order to calculate
+            # returns, we need to know the return of the final state.
+            # We estimate this using the value network.
+            s = np.moveaxis(self.last_obs, source=0, destination=-1)
+            feed_dict = {self.network.s: [s]}
+            last_value = self.sess.run(self.network.graph_v,
+                                       feed_dict=feed_dict)[0]
+            rewards += [last_value]
+            returns = utils.rewards_to_discounted_returns(rewards,
+                                                          DISCOUNT_FACTOR)
+            returns = returns[:-1]  # Chop off last_value
+        return returns
+
+    def run_steps(self, n_steps):
+        states = []
+        actions = []
+        rewards = []
+
+        for _ in range(n_steps):
+            s = np.moveaxis(self.last_obs, source=0, destination=-1)
+            feed_dict = {self.network.s: [s]}
+            [a_p], [v] = self.sess.run([self.network.a_softmax,
+                                        self.network.graph_v],
+                                       feed_dict=feed_dict)
+            a = np.random.choice(self.env.action_space.n, p=a_p)
+            self.episode_values.append(v)
+
+            self.last_obs, r, done, _ = self.env.step(a)
+
+            # The state used to choose the last action.
+            # Not the current state. The previous state.
+            states.append(np.copy(s))
+            actions.append(a)
+            rewards.append(r)
+
+            if done:
+                break
+
+        return actions, done, rewards, states
