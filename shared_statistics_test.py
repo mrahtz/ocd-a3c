@@ -6,7 +6,7 @@ import gym
 import tensorflow as tf
 
 import utils
-from network import create_inference_ops
+from network import make_inference_network
 from preprocessing import generic_preprocess
 from worker import Worker
 
@@ -29,8 +29,8 @@ class TestSharedStatistics(unittest.TestCase):
         optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                               decay=0.99, epsilon=1e-5)
 
-        create_inference_ops('global', n_actions=env.action_space.n,
-                             weight_inits='glorot')
+        make_inference_network('global', n_actions=env.action_space.n,
+                               weight_inits='glorot')
 
         Worker(sess, env, worker_n=1, log_dir='/tmp', debug=False,
                optimizer=optimizer)
@@ -102,8 +102,8 @@ def run_weight_test(reset_rmsprop):
     env = generic_preprocess(gym.make('Pong-v0'), max_n_noops=0)
     env.seed(0)
 
-    create_inference_ops('global', n_actions=env.action_space.n,
-                         weight_inits='glorot')
+    make_inference_network('global', n_actions=env.action_space.n,
+                           weight_inits='glorot')
     shared_variables = tf.global_variables()
 
     optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,

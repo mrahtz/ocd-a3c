@@ -11,7 +11,7 @@ import tensorflow as tf
 
 import utils
 from debug_wrappers import NumberFrames, MonitorEnv
-from network import Network, create_inference_ops
+from network import Network, make_inference_network
 from params import parse_args
 from utils import SubProcessEnv
 from worker import Worker
@@ -20,39 +20,45 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
 def make_networks(n_workers, n_actions,
-                  weight_inits, value_loss_coef, entropy_bonus, debug):
+                  weight_inits, value_loss_coef, entropy_bonus,
+                  max_grad_norm, optimizer, debug):
     # https://www.tensorflow.org/api_docs/python/tf/Graph notes that graph
     # construction isn't thread-safe. So we all do all graph construction
     # serially before starting the worker threads.
-    create_inference_ops('global', n_actions=n_actions,
-                         weight_inits=weight_inits)
+
+    # Create shared parameters
+    with tf.variable_scope('global'):
+        make_inference_network(n_actions=n_actions, weight_inits=weight_inits)
+
+    # Create per-worker parameters
     worker_networks = []
     for worker_n in range(n_workers):
+        create_summary_ops = (worker_n == 0)
         worker_name = "worker_{}".format(worker_n)
-        network = Network(scope=worker_name, n_actions=n_actions,
+        network = Network(scope=worker_name,
+                          n_actions=n_actions,
                           entropy_bonus=entropy_bonus,
-                          value_loss_coef=value_loss_coef, debug=debug)
+                          value_loss_coef=value_loss_coef,
+                          weight_inits=weight_inits,
+                          max_grad_norm=max_grad_norm,
+                          optimizer=optimizer,
+                          create_summary_ops=create_summary_ops,
+                          debug=debug)
         worker_networks.append(network)
     return worker_networks
 
 
-def make_workers(sess, envs, networks, n_workers, optimizer, log_dir,
-                 max_grad_norm):
+def make_workers(sess, envs, networks, n_workers, log_dir):
     print("Starting {} workers".format(n_workers))
     workers = []
     for worker_n in range(n_workers):
         worker_name = "worker_{}".format(worker_n)
-        if worker_n == 0:
-            worker_log_dir = osp.join(log_dir, worker_name)
-        else:
-            worker_log_dir = None
+        worker_log_dir = osp.join(log_dir, worker_name)
         w = Worker(sess=sess,
                    env=envs[worker_n],
                    network=networks[worker_n],
                    worker_name=worker_name,
-                   log_dir=worker_log_dir,
-                   optimizer=optimizer,
-                   max_grad_norm=max_grad_norm)
+                   log_dir=worker_log_dir)
         workers.append(w)
 
     return workers
@@ -182,16 +188,23 @@ def main():
 
     utils.set_random_seeds(args.seed)
     sess = tf.Session()
+
     envs = make_envs(args.env_id, preprocess_wrapper, args.max_n_noops,
                      args.n_workers, args.seed, args.debug, log_dir)
-    networks = make_networks(args.n_workers, envs[0].action_space.n,
-                             args.weight_inits, args.value_loss_coef,
-                             args.entropy_bonus, args.debug)
 
     step_counter = utils.GraphCounter(sess)
     update_counter = utils.GraphCounter(sess)
     lr = make_lr(lr_args, step_counter.value)
     optimizer = make_optimizer(lr)
+
+    networks = make_networks(n_workers=args.n_workers,
+                             n_actions=envs[0].action_space.n,
+                             weight_inits=args.weight_inits,
+                             value_loss_coef=args.value_loss_coef,
+                             entropy_bonus=args.entropy_bonus,
+                             max_grad_norm=args.max_grad_norm,
+                             optimizer=optimizer,
+                             debug=args.debug)
 
     # Why save_relative_paths=True?
     # So that the plain-text 'checkpoint' file written uses relative paths,
@@ -215,9 +228,7 @@ def main():
                            envs=envs,
                            networks=networks,
                            n_workers=args.n_workers,
-                           optimizer=optimizer,
-                           log_dir=log_dir,
-                           max_grad_norm=args.max_grad_norm)
+                           log_dir=log_dir)
     # It's only when the workers actually create their training ops that
     # optimizer statistic variables get created, so we have to do another
     # initialization for these variables.

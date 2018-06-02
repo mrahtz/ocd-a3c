@@ -9,7 +9,7 @@ import gym
 import numpy as np
 import tensorflow as tf
 
-from network import create_inference_ops
+from network import make_inference_network
 
 """
 Reinforcement learning is really sensitive to random initialization.
@@ -30,8 +30,8 @@ def vars_hash_after_training(seed, n_steps):
 
         sess = tf.Session()
         dummy_env = gym.make('PongNoFrameskip-v4')
-        create_inference_ops('global', n_actions=dummy_env.action_space.n,
-                             weight_inits='glorot')
+        make_inference_network('global', n_actions=dummy_env.action_space.n,
+                               weight_inits='glorot')
         saver = tf.train.Saver()
         ckpt_dir = osp.join(temp_dir, 'checkpoints')
         ckpt_file = tf.train.latest_checkpoint(ckpt_dir)

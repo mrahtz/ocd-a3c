@@ -272,7 +272,7 @@ class SubProcessEnv():
         self.proc.terminate()
 
 
-def make_grad_summaries(vars, grads):
+def make_grad_histograms(vars, grads):
     summaries = []
     for v, g in zip(vars, grads):
         if g is None:
@@ -304,7 +304,7 @@ def make_histograms(tensors, name):
     return summaries
 
 
-def make_rmsprop_summaries(rmsprop_optimizer):
+def make_rmsprop_histograms(rmsprop_optimizer):
     rms_vars = [rmsprop_optimizer.get_slot(var, 'rms')
                 for var in tf.trainable_variables()]
     rms_vars = [v for v in rms_vars if v is not None]
