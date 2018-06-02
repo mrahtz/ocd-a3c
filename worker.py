@@ -36,7 +36,6 @@ class Worker:
             episode_value_sum = sum(self.episode_values)
             episode_value_mean = episode_value_sum / len(self.episode_values)
             if self.logger:
-                self.logger.logkv('rl/episode_value_sum', episode_value_sum)
                 self.logger.logkv('rl/episode_value_mean', episode_value_mean)
             self.episode_values = []
 
