@@ -236,20 +236,16 @@ def main():
                                    update_counter=update_counter,
                                    workers=workers)
     ckpt_timer.reset()
-    prev_t = time.time()
-    prev_steps = int(step_counter)
+    step_rate = utils.RateMeasure()
+    step_rate.reset(int(step_counter))
     while True:
         time.sleep(args.wake_interval_seconds)
 
-        cur_t = time.time()
-        cur_steps = int(step_counter)
-        steps_per_second = (cur_steps - prev_steps) / (cur_t - prev_t)
+        steps_per_second = step_rate.measure(int(step_counter))
         easy_tf_log.tflog('misc/steps_per_second', steps_per_second)
         easy_tf_log.tflog('misc/steps', int(step_counter))
         easy_tf_log.tflog('misc/updates', int(update_counter))
         easy_tf_log.tflog('misc/lr', sess.run(lr))
-        prev_t = cur_t
-        prev_steps = cur_steps
 
         alive = [t.is_alive() for t in worker_threads]
 

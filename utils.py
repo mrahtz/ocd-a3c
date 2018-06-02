@@ -180,11 +180,12 @@ class GraphCounter:
                       feed_dict={self.increment_by: n})
 
 
-class SubProcessEnv():
+class SubProcessEnv:
     """
     Run a gym environment in a subprocess so that we can avoid GIL and
     run multiple environments asynchronously from a single thread
     """
+
     @staticmethod
     def env_process(pipe, make_env_fn):
         env = make_env_fn()
@@ -218,9 +219,9 @@ class SubProcessEnv():
         self.proc.terminate()
 
 
-def make_grad_histograms(vars, grads):
+def make_grad_histograms(variables, grads):
     summaries = []
-    for v, g in zip(vars, grads):
+    for v, g in zip(variables, grads):
         if g is None:
             continue
         # strip "worker_0/"
@@ -256,3 +257,23 @@ def make_rmsprop_histograms(rmsprop_optimizer):
     rms_vars = [v for v in rms_vars if v is not None]
     summaries = make_histograms(rms_vars, 'rms')
     return summaries
+
+
+class RateMeasure:
+    def __init__(self):
+        self.prev_t = self.prev_value = None
+
+    def reset(self, val):
+        self.prev_value = val
+        self.prev_t = time.time()
+
+    def measure(self, val):
+        val_change = val - self.prev_value
+        cur_t = time.time()
+        interval = cur_t - self.prev_t
+        rate = val_change / interval
+
+        self.prev_t = cur_t
+        self.prev_value = val
+
+        return rate
