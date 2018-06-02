@@ -22,7 +22,7 @@ class Worker:
             self.logger = None
 
         self.updates = 0
-        self.last_obs = self.env.reset()
+        self.last_state = self.env.reset()
         self.episode_values = []
 
     def run_update(self, n_steps):
@@ -32,7 +32,7 @@ class Worker:
         returns = self.calculate_returns(done, rewards)
 
         if done:
-            self.last_obs = self.env.reset()
+            self.last_state = self.env.reset()
             episode_value_sum = sum(self.episode_values)
             episode_value_mean = episode_value_sum / len(self.episode_values)
             if self.logger:
@@ -62,7 +62,7 @@ class Worker:
             # If we're ending in a non-terminal state, in order to calculate
             # returns, we need to know the return of the final state.
             # We estimate this using the value network.
-            s = np.moveaxis(self.last_obs, source=0, destination=-1)
+            s = np.moveaxis(self.last_state, source=0, destination=-1)
             feed_dict = {self.network.s: [s]}
             last_value = self.sess.run(self.network.graph_v,
                                        feed_dict=feed_dict)[0]
@@ -73,25 +73,24 @@ class Worker:
         return returns
 
     def run_steps(self, n_steps):
+        # States, action taken in each state, and reward from that action
         states = []
         actions = []
         rewards = []
 
         for _ in range(n_steps):
-            s = np.moveaxis(self.last_obs, source=0, destination=-1)
+            s = np.moveaxis(self.last_state, source=0, destination=-1)
+            states.append(s)
             feed_dict = {self.network.s: [s]}
-            [a_p], [v] = self.sess.run([self.network.a_softmax,
-                                        self.network.graph_v],
-                                       feed_dict=feed_dict)
-            a = np.random.choice(self.env.action_space.n, p=a_p)
-            self.episode_values.append(v)
+            [action_probs], [value_estimate] = \
+                self.sess.run([self.network.a_softmax, self.network.graph_v],
+                              feed_dict=feed_dict)
 
-            self.last_obs, r, done, _ = self.env.step(a)
-
-            # The state used to choose the last action.
-            # Not the current state. The previous state.
-            states.append(np.copy(s))
+            a = np.random.choice(self.env.action_space.n, p=action_probs)
             actions.append(a)
+            self.episode_values.append(value_estimate)
+
+            self.last_state, r, done, _ = self.env.step(a)
             rewards.append(r)
 
             if done:
