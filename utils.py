@@ -1,4 +1,3 @@
-import multiprocessing
 import os.path as osp
 import queue
 import random
