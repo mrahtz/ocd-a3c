@@ -30,8 +30,9 @@ def vars_hash_after_training(seed, n_steps):
 
         sess = tf.Session()
         dummy_env = gym.make('PongNoFrameskip-v4')
-        make_inference_network('global', n_actions=dummy_env.action_space.n,
-                               weight_inits='glorot')
+        with tf.variable_scope('global'):
+            make_inference_network(n_actions=dummy_env.action_space.n,
+                                   weight_inits='glorot')
         saver = tf.train.Saver()
         ckpt_dir = osp.join(temp_dir, 'checkpoints')
         ckpt_file = tf.train.latest_checkpoint(ckpt_dir)
