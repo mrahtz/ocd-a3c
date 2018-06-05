@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 
 import random
-import socket
 import time
 import unittest
 
 import numpy as np
 import tensorflow as tf
 
-from utils import create_copy_ops, logit_entropy, rewards_to_discounted_returns, \
-    get_port_range, set_random_seeds, Timer
+from utils import make_copy_ops, logit_entropy, rewards_to_discounted_returns, \
+    set_random_seeds, Timer
 
 
 class TestMiscUtils(unittest.TestCase):
@@ -31,34 +30,6 @@ class TestMiscUtils(unittest.TestCase):
                     3 + 0.99 * 4,
                     4]
         np.testing.assert_allclose(discounted_r, expected)
-
-    def test_get_port_range(self):
-        # Test 1: if we ask for 3 ports starting from port 60000
-        # (which nothing should be listening on), we should get back
-        # 60000, 60001 and 60002
-        ports = get_port_range(60000, 3)
-        self.assertEqual(ports, [60000, 60001, 60002])
-
-        # Test 2: if we set something listening on port 60000
-        # then ask for the same ports as in test 1,
-        # the function should skip over 60000 and give us the next
-        # three ports
-        s1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s1.bind(("127.0.0.1", 60000))
-        ports = get_port_range(60000, 3)
-        self.assertEqual(ports, [60001, 60002, 60003])
-
-        # Test 3: if we set something listening on port 60002,
-        # the function should realise it can't allocate a continuous
-        # range starting from 60000 and should give us a range starting
-        # from 60003
-        s2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s2.bind(("127.0.0.1", 60002))
-        ports = get_port_range(60000, 3)
-        self.assertEqual(ports, [60003, 60004, 60005])
-
-        s2.close()
-        s1.close()
 
     def test_timer(self):
         timer = Timer(duration_seconds=1)
@@ -231,7 +202,7 @@ class TestCopyNetwork(unittest.TestCase):
                 w1 = tf.Variable(inits[scope]['w1'], name='w1')
                 w2 = tf.Variable(inits[scope]['w2'], name='w2')
                 variables[scope] = {'w1': w1, 'w2': w2}
-        copy_ops = create_copy_ops(from_scope='from_scope', to_scope='to_scope')
+        copy_ops = make_copy_ops(from_scope='from_scope', to_scope='to_scope')
 
         sess.run(tf.global_variables_initializer())
 

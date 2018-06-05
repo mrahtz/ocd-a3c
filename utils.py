@@ -1,8 +1,6 @@
-import multiprocessing
 import os.path as osp
 import queue
 import random
-import socket
 import subprocess
 import time
 from multiprocessing import Queue, Pipe, Process
@@ -10,47 +8,6 @@ from threading import Thread
 
 import numpy as np
 import tensorflow as tf
-
-
-def get_port_range(start_port, n_ports, random_stagger=False):
-    # If multiple runs try and call this function at the same time,
-    # the function could return the same port range.
-    # To guard against this, automatically offset the port range.
-    if random_stagger:
-        start_port += random.randint(0, 20) * n_ports
-
-    free_range_found = False
-    while not free_range_found:
-        ports = []
-        for port_n in range(n_ports):
-            port = start_port + port_n
-            try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.bind(("127.0.0.1", port))
-                ports.append(port)
-            except socket.error as e:
-                if e.errno == 98 or e.errno == 48:
-                    print("Warning: port {} already in use".format(port))
-                    break
-                else:
-                    raise e
-            finally:
-                s.close()
-        if len(ports) < n_ports:
-            # The last port we tried was in use
-            # Try again, starting from the next port
-            start_port = port + 1
-        else:
-            free_range_found = True
-
-    return ports
-
-
-def with_prob(p):
-    if np.random.random() < p:
-        return True
-    else:
-        return False
 
 
 def rewards_to_discounted_returns(rewards, discount_factor):
@@ -103,11 +60,11 @@ def logit_entropy(logits):
     probs = tf.nn.softmax(logits, axis=-1)
     nplogp = probs * nlogp
     # This reduce_sum is just the final part of the entropy calculation.
-    # Don't worry - we return the entropy for each individual item in the batch.
+    # Don't worry - we do return the entropy for each item in the batch.
     return tf.reduce_sum(nplogp, axis=-1, keepdims=True)
 
 
-def create_copy_ops(from_scope, to_scope):
+def make_copy_ops(from_scope, to_scope):
     """
     Create operations to mirror the values from all trainable variables
     in from_scope to to_scope.
@@ -206,22 +163,6 @@ class Timer:
             return False
 
 
-class ProcessSafeCounter:
-
-    def __init__(self):
-        self.value = multiprocessing.Value('i', 0)
-
-    def increment(self, n=1):
-        with self.value.get_lock():
-            self.value.value += n
-
-    def __int__(self):
-        return self.value.value
-
-    def __repr__(self):
-        return str(self.value.value)
-
-
 class GraphCounter:
 
     def __init__(self, sess):
@@ -238,7 +179,12 @@ class GraphCounter:
                       feed_dict={self.increment_by: n})
 
 
-class SubProcessEnv():
+class SubProcessEnv:
+    """
+    Run a gym environment in a subprocess so that we can avoid GIL and
+    run multiple environments asynchronously from a single thread
+    """
+
     @staticmethod
     def env_process(pipe, make_env_fn):
         env = make_env_fn()
@@ -272,9 +218,9 @@ class SubProcessEnv():
         self.proc.terminate()
 
 
-def make_grad_summaries(vars, grads):
+def make_grad_histograms(variables, grads):
     summaries = []
-    for v, g in zip(vars, grads):
+    for v, g in zip(variables, grads):
         if g is None:
             continue
         # strip "worker_0/"
@@ -304,9 +250,29 @@ def make_histograms(tensors, name):
     return summaries
 
 
-def make_rmsprop_summaries(rmsprop_optimizer):
+def make_rmsprop_histograms(rmsprop_optimizer):
     rms_vars = [rmsprop_optimizer.get_slot(var, 'rms')
                 for var in tf.trainable_variables()]
     rms_vars = [v for v in rms_vars if v is not None]
     summaries = make_histograms(rms_vars, 'rms')
     return summaries
+
+
+class RateMeasure:
+    def __init__(self):
+        self.prev_t = self.prev_value = None
+
+    def reset(self, val):
+        self.prev_value = val
+        self.prev_t = time.time()
+
+    def measure(self, val):
+        val_change = val - self.prev_value
+        cur_t = time.time()
+        interval = cur_t - self.prev_t
+        rate = val_change / interval
+
+        self.prev_t = cur_t
+        self.prev_value = val
+
+        return rate

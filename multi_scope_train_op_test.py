@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
-import tensorflow as tf
 import unittest
+
 import numpy as np
-from multi_scope_train_op import create_train_op
+import tensorflow as tf
+
+from multi_scope_train_op import make_train_op
 
 
 class TestMultiScopeTrainOp(unittest.TestCase):
@@ -15,14 +17,14 @@ class TestMultiScopeTrainOp(unittest.TestCase):
     def test_gradient_clipping(self):
         with tf.variable_scope('compute_scope'):
             v_compute = tf.Variable(1.0)
-            loss = 1e6 * v_compute
+            loss = tf.constant(1e6) * v_compute
         with tf.variable_scope('apply_scope'):
             v_apply = tf.Variable(1.0)
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=1)
-        train_op, grads_tensor = create_train_op(loss, optimizer,
+        train_op, grads_tensor = make_train_op(loss, optimizer,
                                                  'compute_scope',
                                                  'apply_scope',
-                                                 max_grad_norm=1e3)
+                                               max_grad_norm=1e3)
 
         self.sess.run(tf.global_variables_initializer())
         # Without clipping, the gradient would be 1e6
@@ -54,7 +56,7 @@ class TestMultiScopeTrainOp(unittest.TestCase):
             d['w2'] = w2
 
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=1)
-        train_op, _ = create_train_op(loss, optimizer,
+        train_op, _ = make_train_op(loss, optimizer,
                                       'compute_scope', 'apply_scope')
 
         self.sess.run(tf.global_variables_initializer())
@@ -83,7 +85,7 @@ class TestMultiScopeTrainOp(unittest.TestCase):
 
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=1)
 
-        train_op, _ = create_train_op(ops['compute_scope']['loss'], optimizer,
+        train_op, _ = make_train_op(ops['compute_scope']['loss'], optimizer,
                                       'compute_scope', 'apply_scope')
 
         self.sess.run(tf.global_variables_initializer())
@@ -105,14 +107,12 @@ class TestMultiScopeTrainOp(unittest.TestCase):
         np.testing.assert_equal(w2, 10.0)
 
     def test_full_run(self):
-        inits = {}
-        inits['w1'] = np.array([10.0, 20.0]).astype(np.float32)
-        inits['w2'] = np.array([5.0, 10.0]).astype(np.float32)
-
+        inits = {'w1': np.array([10.0, 20.0]).astype(np.float32),
+                 'w2': np.array([5.0, 10.0]).astype(np.float32)}
         scopes = ['compute_scope', 'apply_scope']
 
         w2_mult = tf.placeholder(tf.float32, [None, 2])
-        vars = {}
+        variables = {}
         losses = {}
         # Create two variables in two scopes
         # Each variable is a vector with two elements
@@ -124,14 +124,14 @@ class TestMultiScopeTrainOp(unittest.TestCase):
                 # accumulated for multiple examples in a batch are the same as
                 # if the examples were presented in individual batches
                 losses[scope] = tf.reduce_sum(w1 + w2_mult * w2, axis=-1)
-                vars[scope] = {'w1': w1, 'w2': w2}
+                variables[scope] = {'w1': w1, 'w2': w2}
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=1)
 
         # Check that no extra trainable variables are introduced
         # We have two variables, two scopes, for a total of 4 trainable
         # variables
         assert len(tf.trainable_variables()) == 4
-        train_op, _ = create_train_op(losses['compute_scope'], optimizer,
+        train_op, _ = make_train_op(losses['compute_scope'], optimizer,
                                       'compute_scope', 'apply_scope')
         assert len(tf.trainable_variables()) == 4
 
@@ -149,22 +149,22 @@ class TestMultiScopeTrainOp(unittest.TestCase):
 
         # Confirm that no changes have been made to the variables in
         # compute_scope
-        actual = self.sess.run(vars['compute_scope']['w1'])
+        actual = self.sess.run(variables['compute_scope']['w1'])
         expected = inits['w1']
         np.testing.assert_equal(actual, expected)
-        actual = self.sess.run(vars['compute_scope']['w2'])
+        actual = self.sess.run(variables['compute_scope']['w2'])
         expected = inits['w2']
         np.testing.assert_equal(actual, expected)
 
         # Confirm that changes _have_ been made to the variables in apply_scope.
-        actual = self.sess.run(vars['apply_scope']['w1'])
+        actual = self.sess.run(variables['apply_scope']['w1'])
         # w1 started off as [10, 20];
         # gradient wrt w1 was 1 on each step,
         # and we went for 4 steps with step size of 1
         expected = [10 - 1. - 1. - 1. - 1.,
                     20 - 1. - 1. - 1. - 1.]
         np.testing.assert_equal(actual, expected)
-        actual = self.sess.run(vars['apply_scope']['w2'])
+        actual = self.sess.run(variables['apply_scope']['w2'])
         # w2 started off as [5, 10]
         # gradients were [1, 1], [2, 2], [3, 4], and [5, 6]
         expected = [5. - 1. - 2. - 3. - 5.,

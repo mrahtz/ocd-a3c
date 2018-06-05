@@ -9,14 +9,14 @@ name = "pypi"
 
 gym = {extras = ["atari"]}
 opencv-python = "*"
-memory-profiler = "*"
 easy-tf-log = "*"
 
 
 [dev-packages]
 
-pygame = "*"
 nose = "*"
+pygame = "*"
+memory-profiler = "*"
 
 
 [requires]

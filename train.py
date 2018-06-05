@@ -11,7 +11,7 @@ import tensorflow as tf
 
 import utils
 from debug_wrappers import NumberFrames, MonitorEnv
-from network import create_network
+from network import Network, make_inference_network
 from params import parse_args
 from utils import SubProcessEnv
 from worker import Worker
@@ -19,38 +19,43 @@ from worker import Worker
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
-def run_worker(worker, n_steps_to_run, steps_per_update, step_counter,
-               update_counter):
-    while int(step_counter) < n_steps_to_run:
-        steps_ran = worker.run_update(steps_per_update)
-        step_counter.increment(steps_ran)
-        update_counter.increment(1)
+def make_networks(n_workers, n_actions,
+                  weight_inits, value_loss_coef, entropy_bonus,
+                  max_grad_norm, optimizer, debug):
+    # https://www.tensorflow.org/api_docs/python/tf/Graph notes that graph
+    # construction isn't thread-safe. So we all do all graph construction
+    # serially before starting the worker threads.
+
+    # Create shared parameters
+    with tf.variable_scope('global'):
+        make_inference_network(n_actions=n_actions, weight_inits=weight_inits)
+
+    # Create per-worker copies of shared parameters
+    worker_networks = []
+    for worker_n in range(n_workers):
+        create_summary_ops = (worker_n == 0)
+        worker_name = "worker_{}".format(worker_n)
+        network = Network(scope=worker_name,
+                          n_actions=n_actions,
+                          entropy_bonus=entropy_bonus,
+                          value_loss_coef=value_loss_coef,
+                          weight_inits=weight_inits,
+                          max_grad_norm=max_grad_norm,
+                          optimizer=optimizer,
+                          summaries=create_summary_ops,
+                          debug=debug)
+        worker_networks.append(network)
+    return worker_networks
 
 
-def make_workers(sess, envs, n_workers, optimizer, debug, log_dir,
-                 value_loss_coef, max_grad_norm):
-    # ALE /seems/ to be basically thread-safe, as long as environments aren't
-    # created at the same time. See
-    # https://github.com/mgbellemare/Arcade-Learning-Environment/issues/86.
-    #
-    # Also, https://www.tensorflow.org/api_docs/python/tf/Graph notes that
-    # graph construction isn't thread-safe. So we all do all graph
-    # construction sequentially before starting the worker threads.
+def make_workers(sess, envs, networks, n_workers, log_dir):
     print("Starting {} workers".format(n_workers))
     workers = []
     for worker_n in range(n_workers):
-        if worker_n == 0:
-            worker_log_dir = osp.join(log_dir, "worker_{}".format(worker_n))
-        else:
-            worker_log_dir = None
-        w = Worker(sess=sess,
-                   env=envs[worker_n],
-                   worker_n=worker_n,
-                   log_dir=worker_log_dir,
-                   debug=debug,
-                   optimizer=optimizer,
-                   value_loss_coef=value_loss_coef,
-                   max_grad_norm=max_grad_norm)
+        worker_name = "worker_{}".format(worker_n)
+        worker_log_dir = osp.join(log_dir, worker_name)
+        w = Worker(sess=sess, env=envs[worker_n], network=networks[worker_n],
+                   log_dir=worker_log_dir)
         workers.append(w)
 
     return workers
@@ -70,21 +75,7 @@ def make_lr(lr_args, step_counter):
     return lr
 
 
-def start_workers(args, step_counter, update_counter, workers):
-    worker_threads = []
-    for worker_n, worker in enumerate(workers):
-        p_args = (worker,
-                  args.n_steps,
-                  args.steps_per_update,
-                  step_counter,
-                  update_counter)
-        p = Thread(target=run_worker, args=p_args)
-        p.start()
-        worker_threads.append(p)
-    return worker_threads
-
-
-def optimizer_plz(learning_rate):
+def make_optimizer(learning_rate):
     # From the paper, Section 4, Asynchronous RL Framework,
     # subsection Optimization:
     # "We investigated three different optimization algorithms in our
@@ -108,7 +99,7 @@ def optimizer_plz(learning_rate):
     # b) Empirically, no. See shared_statistics_test.py.
     #
     # In terms of hyperparameters:
-
+    #
     # Learning rate: the paper actually runs a bunch of
     # different learning rates and presents results averaged over the
     # three best learning rates for each game. From the scatter plot of
@@ -147,19 +138,48 @@ def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug,
             env = preprocess_wrapper(env, max_n_noops)
 
             if env_n == 0:
-                env_log_dir = osp.join(log_dir, "worker_{}".format(env_n), "env")
-                easy_tf_log.set_dir(env_log_dir)
-                env = MonitorEnv(env, "worker_{}".format(env_n))
+                env_log_dir = osp.join(log_dir, "env_{}".format(env_n))
+            else:
+                env_log_dir = None
+            env = MonitorEnv(env, "Env {}".format(env_n), log_dir=env_log_dir)
 
             return env
 
         return thunk
 
+    # ALE /seems/ to be basically thread-safe, as long as environments aren't
+    # created at the same time (see
+    # https://github.com/mgbellemare/Arcade-Learning-Environment/issues/86).
+    # So we create them serially.
     envs = []
     for env_n in range(n_envs):
         env = SubProcessEnv(make_make_env_fn(env_n))
         envs.append(env)
     return envs
+
+
+def run_worker(worker, n_steps_to_run, steps_per_update, step_counter,
+               update_counter):
+    while int(step_counter) < n_steps_to_run:
+        steps_ran = worker.run_update(steps_per_update)
+        step_counter.increment(steps_ran)
+        update_counter.increment(1)
+
+
+def start_workers(n_steps, steps_per_update, step_counter, update_counter,
+                  workers):
+    worker_threads = []
+    for worker in workers:
+        thread = Thread(target=lambda:
+        run_worker(worker=worker,
+                   n_steps_to_run=n_steps,
+                   steps_per_update=steps_per_update,
+                   step_counter=step_counter,
+                   update_counter=update_counter)
+                        )
+        thread.start()
+        worker_threads.append(thread)
+    return worker_threads
 
 
 def main():
@@ -168,15 +188,23 @@ def main():
 
     utils.set_random_seeds(args.seed)
     sess = tf.Session()
+
     envs = make_envs(args.env_id, preprocess_wrapper, args.max_n_noops,
                      args.n_workers, args.seed, args.debug, log_dir)
-    create_network('global', n_actions=envs[0].action_space.n,
-                   weight_inits=args.weight_inits)
 
     step_counter = utils.GraphCounter(sess)
     update_counter = utils.GraphCounter(sess)
     lr = make_lr(lr_args, step_counter.value)
-    optimizer = optimizer_plz(lr)
+    optimizer = make_optimizer(lr)
+
+    networks = make_networks(n_workers=args.n_workers,
+                             n_actions=envs[0].action_space.n,
+                             weight_inits=args.weight_inits,
+                             value_loss_coef=args.value_loss_coef,
+                             entropy_bonus=args.entropy_bonus,
+                             max_grad_norm=args.max_grad_norm,
+                             optimizer=optimizer,
+                             debug=args.debug)
 
     # Why save_relative_paths=True?
     # So that the plain-text 'checkpoint' file written uses relative paths,
@@ -188,10 +216,6 @@ def main():
     os.makedirs(checkpoint_dir)
     checkpoint_file = osp.join(checkpoint_dir, 'network.ckpt')
 
-    # We specifically do this before creating the workers and their networks to
-    # make sure that the workers really are copying weights from the global
-    # network before doing anything else. (If they aren't, we'll get
-    # uninitialized variable errors.)
     if args.load_ckpt:
         print("Restoring from checkpoint '%s'..." % args.load_ckpt,
               end='', flush=True)
@@ -200,29 +224,28 @@ def main():
     else:
         sess.run(tf.global_variables_initializer())
 
-    workers = make_workers(sess, envs, args.n_workers, optimizer, args.debug,
-                           log_dir, args.value_loss_coef, args.max_grad_norm)
-    # It's only when the workers actually create their training ops that
-    # optimizer statistic variables get created, so we have to do another
-    # initialization for these variables.
-    sess.run(tf.variables_initializer(optimizer.variables()))
-    worker_threads = start_workers(args, step_counter, update_counter, workers)
+    workers = make_workers(sess=sess,
+                           envs=envs,
+                           networks=networks,
+                           n_workers=args.n_workers,
+                           log_dir=log_dir)
 
+    worker_threads = start_workers(n_steps=args.n_steps,
+                                   steps_per_update=args.steps_per_update,
+                                   step_counter=step_counter,
+                                   update_counter=update_counter,
+                                   workers=workers)
     ckpt_timer.reset()
-    prev_t = time.time()
-    prev_steps = int(step_counter)
+    step_rate = utils.RateMeasure()
+    step_rate.reset(int(step_counter))
     while True:
         time.sleep(args.wake_interval_seconds)
 
-        cur_t = time.time()
-        cur_steps = int(step_counter)
-        steps_per_second = (cur_steps - prev_steps) / (cur_t - prev_t)
+        steps_per_second = step_rate.measure(int(step_counter))
         easy_tf_log.tflog('misc/steps_per_second', steps_per_second)
         easy_tf_log.tflog('misc/steps', int(step_counter))
         easy_tf_log.tflog('misc/updates', int(update_counter))
         easy_tf_log.tflog('misc/lr', sess.run(lr))
-        prev_t = cur_t
-        prev_steps = cur_steps
 
         alive = [t.is_alive() for t in worker_threads]
 

@@ -6,7 +6,7 @@ import gym
 import tensorflow as tf
 
 import utils
-from network import create_network
+from network import make_inference_network, Network
 from preprocessing import generic_preprocess
 from worker import Worker
 
@@ -29,17 +29,37 @@ class TestSharedStatistics(unittest.TestCase):
         optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                               decay=0.99, epsilon=1e-5)
 
-        create_network('global', n_actions=env.action_space.n)
+        with tf.variable_scope('global'):
+            make_inference_network(n_actions=env.action_space.n,
+                                   weight_inits='glorot')
 
-        Worker(sess, env, worker_n=1, log_dir='/tmp', debug=False,
-               optimizer=optimizer)
+        network1 = Network(scope="worker_1",
+                           n_actions=env.action_space.n,
+                           entropy_bonus=0.01,
+                           value_loss_coef=0.5,
+                           weight_inits='glorot',
+                           max_grad_norm=0.5,
+                           optimizer=optimizer,
+                           summaries=False,
+                           debug=False)
+        Worker(sess=sess, env=env, network=network1, log_dir='/tmp')
 
         vars1 = optimizer.variables()
 
-        Worker(sess, env, worker_n=2, log_dir='/tmp', debug=False,
-               optimizer=optimizer)
+        network2 = Network(scope="worker_2",
+                           n_actions=env.action_space.n,
+                           entropy_bonus=0.01,
+                           value_loss_coef=0.5,
+                           weight_inits='glorot',
+                           max_grad_norm=0.5,
+                           optimizer=optimizer,
+                           summaries=False,
+                           debug=False)
+        Worker(sess=sess, env=env, network=network2, log_dir='/tmp')
 
         vars2 = optimizer.variables()
+
+        self.assertNotEqual(id(vars1), id(vars2))
 
         # First, were any extra variables added when we created the second
         # optimizer, that might be indicative of a second set of statistics?
@@ -101,16 +121,35 @@ def run_weight_test(reset_rmsprop):
     env = generic_preprocess(gym.make('Pong-v0'), max_n_noops=0)
     env.seed(0)
 
-    create_network('global', n_actions=env.action_space.n)
+    with tf.variable_scope('global'):
+        make_inference_network(n_actions=env.action_space.n,
+                               weight_inits='glorot')
     shared_variables = tf.global_variables()
 
     optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                           decay=0.99, epsilon=1e-5)
 
-    w1 = Worker(sess, env, worker_n=1, log_dir='/tmp', debug=False,
-                optimizer=optimizer)
-    w2 = Worker(sess, env, worker_n=2, log_dir='/tmp', debug=False,
-                optimizer=optimizer)
+    network1 = Network(scope="worker_1",
+                       n_actions=env.action_space.n,
+                       entropy_bonus=0.01,
+                       value_loss_coef=0.5,
+                       weight_inits='glorot',
+                       max_grad_norm=0.5,
+                       optimizer=optimizer,
+                       summaries=False,
+                       debug=False)
+    w1 = Worker(sess=sess, env=env, network=network1, log_dir='/tmp')
+
+    network2 = Network(scope="worker_2",
+                       n_actions=env.action_space.n,
+                       entropy_bonus=0.01,
+                       value_loss_coef=0.5,
+                       weight_inits='glorot',
+                       max_grad_norm=0.5,
+                       optimizer=optimizer,
+                       summaries=False,
+                       debug=False)
+    w2 = Worker(sess=sess, env=env, network=network2, log_dir='/tmp')
 
     rmsprop_init_ops = [v.initializer for v in optimizer.variables()]
 

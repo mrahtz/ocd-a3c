@@ -9,7 +9,7 @@ import gym
 import numpy as np
 import tensorflow as tf
 
-from network import create_network
+from network import make_inference_network
 
 """
 Reinforcement learning is really sensitive to random initialization.
@@ -30,7 +30,9 @@ def vars_hash_after_training(seed, n_steps):
 
         sess = tf.Session()
         dummy_env = gym.make('PongNoFrameskip-v4')
-        create_network('global', n_actions=dummy_env.action_space.n)
+        with tf.variable_scope('global'):
+            make_inference_network(n_actions=dummy_env.action_space.n,
+                                   weight_inits='glorot')
         saver = tf.train.Saver()
         ckpt_dir = osp.join(temp_dir, 'checkpoints')
         ckpt_file = tf.train.latest_checkpoint(ckpt_dir)
@@ -79,7 +81,7 @@ class TestTrain(unittest.TestCase):
         Test that randomness is set up exactly the same as it was for
         previous runs.
         """
-        last_seen_var_hash = 78.91736
+        last_seen_var_hash = 20.141718
         self.assertAlmostEqual(TestTrain.hash_100_steps_1,
                                last_seen_var_hash,
                                places=5)
