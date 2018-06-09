@@ -96,9 +96,8 @@ def get_log_dir(args):
 
 def save_args(args, log_dir):
     with open(osp.join(log_dir, 'args.txt'), 'w') as args_file:
-        args_file.write(' '.join(sys.argv))
-        args_file.write('\n')
-        args_file.write(str(args))
+        args_file.write(' '.join(sys.argv) + '\n\n')
+        args_file.write(str(args) + '\n')
 
 
 DISCOUNT_FACTOR = 0.99
