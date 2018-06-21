@@ -5,3 +5,4 @@ __pycache__
 checkpoints
 floydruns
 runs
+.DS_Store
