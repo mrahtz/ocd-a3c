@@ -3,7 +3,7 @@ from collections import deque
 import cv2
 import numpy as np
 from gym import spaces
-from gym.core import Wrapper, ObservationWrapper
+from gym.core import Wrapper, ObservationWrapper, RewardWrapper
 
 """
 Observation preprocessing and environment tweaks.
@@ -13,30 +13,31 @@ Section 8 ("Experimental Setup") of the paper says:
 (Mnih et al., 2015) and an action repeat of 4."
 
 'Mnih et al., 2015' is
-'Human-level control through deep reinforcement learning', which says:
+'Human-level control through deep reinforcement learning'.
+The relevant parts of that paper's Methods section are summarised below.
 
-  - First, to encode a single frame we take the maximum value for each
-    pixel colour value over the frame being encoded and the previous frame.
-    This was necessary to remove flickering that is present in games where
-    some objects appear only in even frames while other objects appear only
-    in odd frames, an artefact caused by the limited number of sprites Atari
-    2600 can display at once.
-  - Second, we then extract the Y channel, also known as luminance,
-    from the RGB frame and rescale it to 84 x 84.
-  - The function phi from algorithm 1 described below applies this
-    preprocessing to the m most recent frames and stacks them to produce the
-    input to the Q-function, in which m = 4, although the algorithm is robust
-    to different values of m (for example, 3 or 5)."
 
-Also:
+# Preprocessing
 
-  Following previous approaches to playing Atari 2600 games, we also use a
-  simple frame-skipping technique. More precisely, the agent sees and selects
-  actions on every kth frame instead of every frame, and its last action is
-  repeated on skipped frames. Because running the emulator forward for one
-  step requires much less computation than having the agent select an action,
-  this technique allows the agent to play roughly k times more games without
-  significantly increasing the runtime. We use k = 4 for all games.
+  - "First, to encode a single frame we take the maximum value for each
+     pixel colour value over the frame being encoded and the previous frame.
+     This was necessary to remove flickering that is present in games where
+     some objects appear only in even frames while other objects appear only
+     in odd frames, an artefact caused by the limited number of sprites Atari
+     2600 can display at once."
+  - "Second, we then extract the Y channel, also known as luminance,
+     from the RGB frame and rescale it to 84 x 84."
+  - "The function phi from algorithm 1 described below applies this
+     preprocessing to the m most recent frames and stacks them to produce the
+     input to the Q-function, in which m = 4, although the algorithm is robust
+     to different values of m (for example, 3 or 5)."
+  - "Following previous approaches to playing Atari 2600 games, we also use a
+     simple frame-skipping technique. More precisely, the agent sees and selects
+     actions on every kth frame instead of every frame, and its last action is
+     repeated on skipped frames. Because running the emulator forward for one
+     step requires much less computation than having the agent select an action,
+     this technique allows the agent to play roughly k times more games without
+     significantly increasing the runtime. We use k = 4 for all games."
 
 There's some ambiguity about what order to apply these steps in. I think the
 right order should be:
@@ -83,16 +84,28 @@ agent much less temporal scope than frame stack then frame skip. In the
 former, the agent has access to 12 frames' worth of observations, whereas in
 the latter, only 4 frames' worth.
 
-Finally, 'Human-level control through deep reinforcement learning' says:
 
-  The trained agents were evaluated by playing each game 30 times for up to
-  5 min each time with different initial random conditions ('no-op'; see
-  Extended Data Table 1).
+## Training details
+
+- "As the scale of scores varies greatly from game to game, we clipped all 
+   positive rewards at 1 and all negative rewards at -1, leaving 0 rewards 
+   unchanged."
+- "For games where there is a life counter, the Atari 2600 emulator also 
+   sends the number of lives left in thegame, which is then used to mark the 
+   end of an episode during training."
+
+
+## Evaluation procedure
+
+  "The trained agents were evaluated by playing each game 30 times for up to
+   5 min each time with different initial random conditions ('no-op'; see
+   Extended Data Table 1)."
   
 Extended Data Table 1 lists "no-op max" as 30 (set in params.py).
+   
 
-We implement the steps using a modular set of wrappers, heavily inspired by 
-baselines' atari_wrappers.py (https://git.io/vhWWG).
+We implement all these steps using a modular set of wrappers, heavily 
+inspired by baselines' atari_wrappers.py (https://git.io/vhWWG).
 """
 
 
@@ -227,7 +240,7 @@ class RandomStartWrapper(Wrapper):
         return obs
 
 
-class NormalizeWrapper(ObservationWrapper):
+class NormalizeObservationsWrapper(ObservationWrapper):
     """
     Normalize observations to range [0, 1].
     """
@@ -242,6 +255,15 @@ class NormalizeWrapper(ObservationWrapper):
         return obs / 255.0
 
 
+class ClipRewardsWrapper(RewardWrapper):
+    """
+    Clip rewards to range [-1, +1].
+    """
+
+    def reward(self, reward):
+        return np.clip(reward, -1, +1)
+
+
 def generic_preprocess(env, max_n_noops):
     """
     Apply the full sequence of preprocessing steps as specified in the paper.
@@ -249,7 +271,7 @@ def generic_preprocess(env, max_n_noops):
     env = RandomStartWrapper(env, max_n_noops)
     env = MaxWrapper(env)
     env = ExtractLuminanceAndScaleWrapper(env)
-    env = NormalizeWrapper(env)
+    env = NormalizeObservationsWrapper(env)
     env = FrameSkipWrapper(env)
     env = FrameStackWrapper(env)
     return env

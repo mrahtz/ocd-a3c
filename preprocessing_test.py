@@ -8,7 +8,8 @@ from numpy.testing import assert_array_equal
 
 from debug_wrappers import NumberFrames, ConcatFrameStack
 from preprocessing import MaxWrapper, FrameStackWrapper, FrameSkipWrapper, \
-    ExtractLuminanceAndScaleWrapper, generic_preprocess, pong_preprocess
+    ExtractLuminanceAndScaleWrapper, generic_preprocess, pong_preprocess, \
+    ClipRewardsWrapper
 
 """
 Tests for preprocessing and environment tweak wrappers.
@@ -77,6 +78,26 @@ class DummyEnv(gym.Env):
         info = None
 
         return obs, reward, done, info
+
+
+class ConstantRewardEnv(gym.Env):
+    """
+    Return a specified reward on every step.
+    """
+
+    def __init__(self, reward_val=0):
+        self.reward_val = reward_val
+
+    def reset(self):
+        return None
+
+    def step(self, action):
+        obs = None
+        reward = self.reward_val
+        info = None
+        done = False
+
+        return obs, reward, info, done
 
 
 class TestPreprocessing(unittest.TestCase):
@@ -184,6 +205,31 @@ class TestPreprocessing(unittest.TestCase):
         expected_obs = np.zeros(DummyEnv.OBS_DIMS, dtype=np.uint8)
         expected_obs[10, 10] = 255
         assert_array_equal(actual_obs, expected_obs)
+
+    def test_rewards_wrapper(self):
+        env = ConstantRewardEnv()
+        env_wrapped = ClipRewardsWrapper(env)
+        env_wrapped.reset()
+
+        env_wrapped.reward_val = 0
+        _, reward, _, _ = env_wrapped.step(action=0)
+        self.assertEqual(reward, 0)
+
+        env.reward_val = 1
+        _, reward, _, _ = env_wrapped.step(action=0)
+        self.assertEqual(reward, 1)
+
+        env.reward_val = 2
+        _, reward, _, _ = env_wrapped.step(action=0)
+        self.assertEqual(reward, 1)
+
+        env.reward_val = -1
+        _, reward, _, _ = env_wrapped.step(action=0)
+        self.assertEqual(reward, -1)
+
+        env.reward_val = -2
+        _, reward, _, _ = env_wrapped.step(action=0)
+        self.assertEqual(reward, -1)
 
     def test_full_preprocessing_rewards(self):
         env = DummyEnv()
