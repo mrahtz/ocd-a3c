@@ -264,7 +264,7 @@ class ClipRewardsWrapper(RewardWrapper):
         return np.clip(reward, -1, +1)
 
 
-def generic_preprocess(env, max_n_noops):
+def generic_preprocess(env, max_n_noops, clip_rewards=True):
     """
     Apply the full sequence of preprocessing steps as specified in the paper.
     """
@@ -274,6 +274,8 @@ def generic_preprocess(env, max_n_noops):
     env = NormalizeObservationsWrapper(env)
     env = FrameSkipWrapper(env)
     env = FrameStackWrapper(env)
+    if clip_rewards:
+        env = ClipRewardsWrapper(env)
     return env
 
 

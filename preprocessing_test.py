@@ -233,7 +233,7 @@ class TestPreprocessing(unittest.TestCase):
 
     def test_full_preprocessing_rewards(self):
         env = DummyEnv()
-        env_wrapped = generic_preprocess(env, max_n_noops=0)
+        env_wrapped = generic_preprocess(env, max_n_noops=0, clip_rewards=False)
         env_wrapped.reset()
         _, r1, _, _ = env_wrapped.step(0)
         _, r2, _, _ = env_wrapped.step(0)
