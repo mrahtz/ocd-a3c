@@ -17,8 +17,9 @@ Section 8 ("Experimental Setup") of the paper says:
 The relevant parts of that paper's Methods section are summarised below.
 
 
-# Preprocessing
+# Observation preprocessing:
 
+'Preprocessing':
   - "First, to encode a single frame we take the maximum value for each
      pixel colour value over the frame being encoded and the previous frame.
      This was necessary to remove flickering that is present in games where
@@ -31,6 +32,7 @@ The relevant parts of that paper's Methods section are summarised below.
      preprocessing to the m most recent frames and stacks them to produce the
      input to the Q-function, in which m = 4, although the algorithm is robust
      to different values of m (for example, 3 or 5)."
+'Training details':
   - "Following previous approaches to playing Atari 2600 games, we also use a
      simple frame-skipping technique. More precisely, the agent sees and selects
      actions on every kth frame instead of every frame, and its last action is
@@ -85,8 +87,9 @@ former, the agent has access to 12 frames' worth of observations, whereas in
 the latter, only 4 frames' worth.
 
 
-## Training details
+## Environment tweaks
 
+'Training details':
 - "As the scale of scores varies greatly from game to game, we clipped all 
    positive rewards at 1 and all negative rewards at -1, leaving 0 rewards 
    unchanged."
@@ -94,10 +97,8 @@ the latter, only 4 frames' worth.
    sends the number of lives left in thegame, which is then used to mark the 
    end of an episode during training."
 
-
-## Evaluation procedure
-
-  "The trained agents were evaluated by playing each game 30 times for up to
+'Evaluation procedure':
+- "The trained agents were evaluated by playing each game 30 times for up to
    5 min each time with different initial random conditions ('no-op'; see
    Extended Data Table 1)."
   
@@ -305,7 +306,7 @@ class EndEpisodeOnLifeLossWrapper(Wrapper):
 
 def generic_preprocess(env, max_n_noops, clip_rewards=True):
     """
-    Apply the full sequence of preprocessing steps as specified in the paper.
+    Apply the full sequence of preprocessing steps.
     """
     env = RandomStartWrapper(env, max_n_noops)
     env = MaxWrapper(env)
