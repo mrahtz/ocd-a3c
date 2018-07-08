@@ -264,6 +264,45 @@ class ClipRewardsWrapper(RewardWrapper):
         return np.clip(reward, -1, +1)
 
 
+class EndEpisodeOnLifeLossWrapper(Wrapper):
+    """
+    Send 'episode done' when life lost. (baselines' atari_wrappers.py claims
+    that this helps with value estimation. I guess it makes it clear that
+    only actions since the last loss of life contributed significantly to any
+    rewards in the present.)
+    """
+
+    def __init__(self, env):
+        Wrapper.__init__(self, env)
+        self.done_because_life_lost = False
+
+    def step(self, action):
+        lives_before = self.env.unwrapped.ale.lives()
+        obs, reward, done, info = self.env.step(action)
+        lives_after = self.env.unwrapped.ale.lives()
+
+        if done:
+            self.done_because_life_lost = False
+        elif lives_after < lives_before:
+            self.done_because_life_lost = True
+            self.reset_obs = obs
+            done = True
+
+        return obs, reward, done, info
+
+    def reset(self):
+        assert self.done_because_life_lost is not None
+        # If we sent the 'episode done' signal after a loss of a life,
+        # then we'll probably get a reset signal next. But we shouldn't
+        # actually reset! We should just keep on playing until the /real/
+        # end-of-episode.
+        if self.done_because_life_lost:
+            self.done_because_life_lost = None
+            return self.reset_obs
+        else:
+            return self.env.reset()
+
+
 def generic_preprocess(env, max_n_noops, clip_rewards=True):
     """
     Apply the full sequence of preprocessing steps as specified in the paper.
@@ -274,6 +313,7 @@ def generic_preprocess(env, max_n_noops, clip_rewards=True):
     env = NormalizeObservationsWrapper(env)
     env = FrameSkipWrapper(env)
     env = FrameStackWrapper(env)
+    env = EndEpisodeOnLifeLossWrapper(env)
     if clip_rewards:
         env = ClipRewardsWrapper(env)
     return env

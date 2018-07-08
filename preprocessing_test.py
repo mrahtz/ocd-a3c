@@ -9,11 +9,19 @@ from numpy.testing import assert_array_equal
 from debug_wrappers import NumberFrames, ConcatFrameStack
 from preprocessing import MaxWrapper, FrameStackWrapper, FrameSkipWrapper, \
     ExtractLuminanceAndScaleWrapper, generic_preprocess, pong_preprocess, \
-    ClipRewardsWrapper
+    ClipRewardsWrapper, EndEpisodeOnLifeLossWrapper
 
 """
 Tests for preprocessing and environment tweak wrappers.
 """
+
+
+class ALE:
+    def __init__(self, n_lives=0):
+        self.n_lives = n_lives
+
+    def lives(self):
+        return self.n_lives
 
 
 class DummyEnv(gym.Env):
@@ -35,6 +43,7 @@ class DummyEnv(gym.Env):
         self.draw_n_dots = draw_n_dots
         self.dot_width = dot_width
         self.dot_height = dot_height
+        self.ale = ALE()
 
     @staticmethod
     def get_action_meanings():
@@ -98,6 +107,39 @@ class ConstantRewardEnv(gym.Env):
         done = False
 
         return obs, reward, info, done
+
+
+class LivesEnv(gym.Env):
+    """
+    Emulates env.ale.lives(). Starts with 2 lives. Loses a life every 5 steps.
+    """
+
+    def __init__(self):
+        self.ale = None
+        self.step_n = None
+
+    def reset(self):
+        self.ale = ALE(n_lives=2)
+        self.step_n = 0
+        obs = self.step_n
+        self.step_n += 1
+        return obs
+
+    def step(self, action):
+        if self.step_n != 0 and self.step_n % 5 == 0:
+            self.ale.n_lives -= 1
+        if self.ale.n_lives == 0:
+            done = True
+        else:
+            done = False
+
+        obs = self.step_n
+        reward = None
+        info = None
+
+        self.step_n += 1
+
+        return obs, reward, done, info
 
 
 class TestPreprocessing(unittest.TestCase):
@@ -230,6 +272,46 @@ class TestPreprocessing(unittest.TestCase):
         env.reward_val = -2
         _, reward, _, _ = env_wrapped.step(action=0)
         self.assertEqual(reward, -1)
+
+    def test_life_loss_episode_end_wrapper(self):
+        env = LivesEnv()
+        env_wrapped = EndEpisodeOnLifeLossWrapper(env)
+
+        env_wrapped.reset()
+
+        # Two lives left
+
+        for n in range(1, 5):
+            obs, _, done, _ = env_wrapped.step(0)
+            self.assertEqual(obs, n)
+            self.assertFalse(done)
+
+        obs, _, done, _ = env_wrapped.step(0)
+        self.assertEqual(obs, 5)
+        self.assertTrue(done)
+
+        obs = env_wrapped.reset()
+        # We should have just received the 'done' signal because of life loss,
+        # so we should continue getting observations from the same actual
+        # episode
+        self.assertEqual(obs, 5)
+
+        # One life left
+
+        for n in range(4):
+            obs, _, done, _ = env_wrapped.step(0)
+            self.assertEqual(obs, 6 + n)
+            self.assertFalse(done)
+
+        obs, _, done, _ = env_wrapped.step(0)
+        self.assertTrue(done)
+        self.assertEqual(obs, 10)
+
+        obs = env_wrapped.reset()
+        # This time, we should have got the 'done' signal because we really
+        # finished the episode - so we should get an observation from a new
+        # episode this time.
+        self.assertEqual(obs, 0)
 
     def test_full_preprocessing_rewards(self):
         env = DummyEnv()
