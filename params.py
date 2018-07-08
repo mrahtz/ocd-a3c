@@ -31,7 +31,7 @@ def parse_args():
     parser.add_argument("--entropy_bonus", type=float, default=0.01)
     parser.add_argument("--weight_inits", choices=['ortho', 'glorot'],
                                           default='ortho')
-    parser.add_argument("--initial_lr", type=float, default=5e-4)
+    parser.add_argument("--initial_lr", type=float, default=1e-4)
     parser.add_argument("--lr_schedule", choices=['constant', 'linear'],
                                          default='constant')
     parser.add_argument("--lr_decay_to_zero_by_n_steps", type=float)
