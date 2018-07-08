@@ -16,7 +16,6 @@ def parse_args():
     parser.add_argument("--ckpt_interval_seconds", type=int, default=300)
     parser.add_argument("--load_ckpt")
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--render", action='store_true')
     parser.add_argument("--max_n_noops", type=int, default=30)
     parser.add_argument("--debug", action='store_true')
     parser.add_argument("--wake_interval_seconds", type=int, default=60)
