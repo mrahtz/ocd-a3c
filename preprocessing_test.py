@@ -362,27 +362,6 @@ class TestPreprocessing(unittest.TestCase):
         tight_layout()
         show()
 
-    def play_pong_generic_wrap(self):
-        self.play_pong(generic_preprocess)
-
-    def play_pong_special_wrap(self):
-        self.play_pong(pong_preprocess)
-
-    @staticmethod
-    def play_pong(wrap_fn):
-        """
-        Manual check of full set of preprocessing steps for Pong.
-        Not run as poat of normal unit tests; run me with
-          ./preprocessing_test.py TestPreprocessing.play_pong_generic_wrap
-          ./preprocessing_test.py TestPreprocessing.play_pong_special_wrap
-        """
-        from gym.utils import play as gym_play
-        env = gym.make('PongNoFrameskip-v4')
-        env = NumberFrames(env)
-        env = wrap_fn(env, max_n_noops=0)
-        env = ConcatFrameStack(env)
-        gym_play.play(env, fps=15, zoom=4)
-
 
 if __name__ == '__main__':
     unittest.main()
