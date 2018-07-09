@@ -249,7 +249,7 @@ class NormalizeObservationsWrapper(ObservationWrapper):
     def __init__(self, env):
         ObservationWrapper.__init__(self, env)
         self.observation_space = spaces.Box(low=0.0, high=1.0,
-                                            shape=(84, 84),
+                                            shape=env.observation_space.shape,
                                             dtype=np.float32)
 
     def observation(self, obs):
