@@ -314,6 +314,10 @@ class TestPreprocessing(unittest.TestCase):
         self.assertEqual(obs, 0)
 
     def test_full_preprocessing_rewards(self):
+        """
+        Check that rewards are summed correctly by Wrappers which operate
+        over multiple timesteps.
+        """
         env = DummyEnv()
         env_wrapped = generic_preprocess(env, max_n_noops=0, clip_rewards=False)
         env_wrapped.reset()
