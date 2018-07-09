@@ -18,8 +18,15 @@ def play(env, wrap_fn):
     env = NumberFrames(env)
     env = wrap_fn(env, max_n_noops=0)
     env = ConcatFrameStack(env)
-    gym_play.play(env, fps=15, zoom=4)
+    gym_play.play(env, fps=15, zoom=4, callback=callback)
 
+
+def callback(prev_obs, obs, action, rew, env_done, info):
+    print("Step {}: reward {}, done {}".format(callback.step_n,
+                                               rew,
+                                               env_done))
+    callback.step_n += 1
+callback.step_n = 0
 
 def main():
     parser = argparse.ArgumentParser()
