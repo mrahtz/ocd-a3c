@@ -37,7 +37,7 @@ def get_network(ckpt_dir, n_actions):
 
     with tf.variable_scope('global'):
         obs_placeholder, _, action_probs_op, _, _ = \
-            make_inference_network(n_actions, weight_inits='glorot', debug=False)
+            make_inference_network(n_actions, debug=False)
 
     ckpt_file = tf.train.latest_checkpoint(ckpt_dir)
     if not ckpt_file:

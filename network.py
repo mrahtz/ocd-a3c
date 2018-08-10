@@ -8,21 +8,16 @@ from utils import logit_entropy, make_grad_histograms, make_rmsprop_histograms, 
     make_histograms
 
 
-def make_inference_network(n_actions, weight_inits, debug=False):
+def make_inference_network(n_actions, debug=False):
     observations = tf.placeholder(tf.float32, [None, 84, 84, 4])
 
-    if weight_inits == 'ortho':
-        kernel_initializer = tf.orthogonal_initializer(gain=sqrt(2))
-    elif weight_inits == 'glorot':
-        kernel_initializer = None
     conv1 = tf.layers.conv2d(
         name='conv1',
         inputs=observations,
         filters=32,
         kernel_size=8,
         strides=4,
-        activation=tf.nn.relu,
-        kernel_initializer=kernel_initializer)
+        activation=tf.nn.relu)
 
     if debug:
         # Dump observations as fed into the network to stderr,
@@ -32,71 +27,46 @@ def make_inference_network(n_actions, weight_inits, debug=False):
                          # max no. of values to display; max int32
                          summarize=2147483647)
 
-    if weight_inits == 'ortho':
-        kernel_initializer = tf.orthogonal_initializer(gain=sqrt(2))
-    elif weight_inits == 'glorot':
-        kernel_initializer = None
     conv2 = tf.layers.conv2d(
         name='conv2',
         inputs=conv1,
         filters=64,
         kernel_size=4,
         strides=2,
-        activation=tf.nn.relu,
-        kernel_initializer=kernel_initializer)
+        activation=tf.nn.relu)
 
-    if weight_inits == 'ortho':
-        kernel_initializer = tf.orthogonal_initializer(gain=sqrt(2))
-    elif weight_inits == 'glorot':
-        kernel_initializer = None
     conv3 = tf.layers.conv2d(
         name='conv3',
         inputs=conv2,
         filters=64,
         kernel_size=3,
         strides=1,
-        activation=tf.nn.relu,
-        kernel_initializer=kernel_initializer)
+        activation=tf.nn.relu)
 
     w, h, f = conv3.get_shape()[1:]
     conv3_unwrapped = tf.reshape(conv3, [-1, int(w * h * f)])
 
-    if weight_inits == 'ortho':
-        kernel_initializer = tf.orthogonal_initializer(gain=sqrt(2))
-    elif weight_inits == 'glorot':
-        kernel_initializer = None
     features = tf.layers.dense(
         name='features',
         inputs=conv3_unwrapped,
         units=512,
-        activation=tf.nn.relu,
-        kernel_initializer=kernel_initializer)
+        activation=tf.nn.relu)
 
     layers = [conv1, conv2, conv3, features]
 
-    if weight_inits == 'ortho':
-        kernel_initializer = tf.orthogonal_initializer(gain=sqrt(0.01))
-    elif weight_inits == 'glorot':
-        kernel_initializer = None
     a_logits = tf.layers.dense(
         name='action_logits',
         inputs=features,
         units=n_actions,
-        activation=None,
-        kernel_initializer=kernel_initializer)
+        activation=None)
 
     a_softmax = tf.nn.softmax(a_logits)
 
-    if weight_inits == 'ortho':
-        kernel_initializer = tf.orthogonal_initializer()
-    elif weight_inits == 'glorot':
-        kernel_initializer = None
     graph_v = tf.layers.dense(
         name='value',
         inputs=features,
         units=1,
-        activation=None,
-        kernel_initializer=kernel_initializer)
+        activation=None)
     # Shape is currently (?, 1)
     # Convert to just (?)
     graph_v = graph_v[:, 0]
@@ -165,13 +135,12 @@ def make_loss_ops(a_logits, graph_v, entropy_bonus, value_loss_coef, debug):
 
 class Network:
 
-    def __init__(self, scope, n_actions,
-                 entropy_bonus, value_loss_coef, weight_inits, max_grad_norm,
-                 optimizer, summaries, debug=False):
+    def __init__(self, scope, n_actions, entropy_bonus, value_loss_coef, max_grad_norm, optimizer, summaries,
+                 debug=False):
         with tf.variable_scope(scope):
             observations, \
             a_logits, a_softmax, graph_v, \
-            layers = make_inference_network(n_actions, weight_inits, debug)
+            layers = make_inference_network(n_actions, debug)
 
             actions, returns, advantage, policy_entropy, \
             policy_loss, value_loss, loss = make_loss_ops(

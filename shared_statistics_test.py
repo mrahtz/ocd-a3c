@@ -30,31 +30,16 @@ class TestSharedStatistics(unittest.TestCase):
                                               decay=0.99, epsilon=1e-5)
 
         with tf.variable_scope('global'):
-            make_inference_network(n_actions=env.action_space.n,
-                                   weight_inits='glorot')
+            make_inference_network(n_actions=env.action_space.n)
 
-        network1 = Network(scope="worker_1",
-                           n_actions=env.action_space.n,
-                           entropy_bonus=0.01,
-                           value_loss_coef=0.5,
-                           weight_inits='glorot',
-                           max_grad_norm=0.5,
-                           optimizer=optimizer,
-                           summaries=False,
-                           debug=False)
+        network1 = Network(scope="worker_1", n_actions=env.action_space.n, entropy_bonus=0.01, value_loss_coef=0.5,
+                           max_grad_norm=0.5, optimizer=optimizer, summaries=False, debug=False)
         Worker(sess=sess, env=env, network=network1, log_dir='/tmp')
 
         vars1 = optimizer.variables()
 
-        network2 = Network(scope="worker_2",
-                           n_actions=env.action_space.n,
-                           entropy_bonus=0.01,
-                           value_loss_coef=0.5,
-                           weight_inits='glorot',
-                           max_grad_norm=0.5,
-                           optimizer=optimizer,
-                           summaries=False,
-                           debug=False)
+        network2 = Network(scope="worker_2", n_actions=env.action_space.n, entropy_bonus=0.01, value_loss_coef=0.5,
+                           max_grad_norm=0.5, optimizer=optimizer, summaries=False, debug=False)
         Worker(sess=sess, env=env, network=network2, log_dir='/tmp')
 
         vars2 = optimizer.variables()
@@ -122,33 +107,18 @@ def run_weight_test(reset_rmsprop):
     env.seed(0)
 
     with tf.variable_scope('global'):
-        make_inference_network(n_actions=env.action_space.n,
-                               weight_inits='glorot')
+        make_inference_network(n_actions=env.action_space.n)
     shared_variables = tf.global_variables()
 
     optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,
                                           decay=0.99, epsilon=1e-5)
 
-    network1 = Network(scope="worker_1",
-                       n_actions=env.action_space.n,
-                       entropy_bonus=0.01,
-                       value_loss_coef=0.5,
-                       weight_inits='glorot',
-                       max_grad_norm=0.5,
-                       optimizer=optimizer,
-                       summaries=False,
-                       debug=False)
+    network1 = Network(scope="worker_1", n_actions=env.action_space.n, entropy_bonus=0.01, value_loss_coef=0.5,
+                       max_grad_norm=0.5, optimizer=optimizer, summaries=False, debug=False)
     w1 = Worker(sess=sess, env=env, network=network1, log_dir='/tmp')
 
-    network2 = Network(scope="worker_2",
-                       n_actions=env.action_space.n,
-                       entropy_bonus=0.01,
-                       value_loss_coef=0.5,
-                       weight_inits='glorot',
-                       max_grad_norm=0.5,
-                       optimizer=optimizer,
-                       summaries=False,
-                       debug=False)
+    network2 = Network(scope="worker_2", n_actions=env.action_space.n, entropy_bonus=0.01, value_loss_coef=0.5,
+                       max_grad_norm=0.5, optimizer=optimizer, summaries=False, debug=False)
     w2 = Worker(sess=sess, env=env, network=network2, log_dir='/tmp')
 
     rmsprop_init_ops = [v.initializer for v in optimizer.variables()]

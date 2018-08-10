@@ -19,31 +19,23 @@ from worker import Worker
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
-def make_networks(n_workers, n_actions,
-                  weight_inits, value_loss_coef, entropy_bonus,
-                  max_grad_norm, optimizer, debug):
+def make_networks(n_workers, n_actions, value_loss_coef, entropy_bonus, max_grad_norm, optimizer, debug):
     # https://www.tensorflow.org/api_docs/python/tf/Graph notes that graph
     # construction isn't thread-safe. So we all do all graph construction
     # serially before starting the worker threads.
 
     # Create shared parameters
     with tf.variable_scope('global'):
-        make_inference_network(n_actions=n_actions, weight_inits=weight_inits)
+        make_inference_network(n_actions=n_actions)
 
     # Create per-worker copies of shared parameters
     worker_networks = []
     for worker_n in range(n_workers):
         create_summary_ops = (worker_n == 0)
         worker_name = "worker_{}".format(worker_n)
-        network = Network(scope=worker_name,
-                          n_actions=n_actions,
-                          entropy_bonus=entropy_bonus,
-                          value_loss_coef=value_loss_coef,
-                          weight_inits=weight_inits,
-                          max_grad_norm=max_grad_norm,
-                          optimizer=optimizer,
-                          summaries=create_summary_ops,
-                          debug=debug)
+        network = Network(scope=worker_name, n_actions=n_actions, entropy_bonus=entropy_bonus,
+                          value_loss_coef=value_loss_coef, max_grad_norm=max_grad_norm, optimizer=optimizer,
+                          summaries=create_summary_ops, debug=debug)
         worker_networks.append(network)
     return worker_networks
 
@@ -198,14 +190,9 @@ def main():
     lr = make_lr(lr_args, step_counter.value)
     optimizer = make_optimizer(lr)
 
-    networks = make_networks(n_workers=args.n_workers,
-                             n_actions=envs[0].action_space.n,
-                             weight_inits=args.weight_inits,
-                             value_loss_coef=args.value_loss_coef,
-                             entropy_bonus=args.entropy_bonus,
-                             max_grad_norm=args.max_grad_norm,
-                             optimizer=optimizer,
-                             debug=args.debug)
+    networks = make_networks(n_workers=args.n_workers, n_actions=envs[0].action_space.n,
+                             value_loss_coef=args.value_loss_coef, entropy_bonus=args.entropy_bonus,
+                             max_grad_norm=args.max_grad_norm, optimizer=optimizer, debug=args.debug)
 
     # Why save_relative_paths=True?
     # So that the plain-text 'checkpoint' file written uses relative paths,
