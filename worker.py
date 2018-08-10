@@ -61,8 +61,7 @@ class Worker:
             # If we're ending in a non-terminal state, in order to calculate
             # returns, we need to know the return of the final state.
             # We estimate this using the value network.
-            s = np.moveaxis(self.last_state, source=0, destination=-1)
-            feed_dict = {self.network.s: [s]}
+            feed_dict = {self.network.s: [self.last_state]}
             last_value = self.sess.run(self.network.graph_v,
                                        feed_dict=feed_dict)[0]
             rewards += [last_value]
@@ -78,9 +77,8 @@ class Worker:
         rewards = []
 
         for _ in range(n_steps):
-            s = np.moveaxis(self.last_state, source=0, destination=-1)
-            states.append(s)
-            feed_dict = {self.network.s: [s]}
+            states.append(self.last_state)
+            feed_dict = {self.network.s: [self.last_state]}
             [action_probs], [value_estimate] = \
                 self.sess.run([self.network.a_softmax, self.network.graph_v],
                               feed_dict=feed_dict)

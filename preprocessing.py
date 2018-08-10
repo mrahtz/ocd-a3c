@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 from gym import spaces
 from gym.core import Wrapper, ObservationWrapper, RewardWrapper
+from gym.spaces import Box
 
 """
 Observation preprocessing and environment tweaks.
@@ -177,6 +178,17 @@ class FrameStackWrapper(Wrapper):
     def __init__(self, env):
         Wrapper.__init__(self, env)
         self.frame_stack = deque(maxlen=4)
+        low = np.tile(env.observation_space.low[..., np.newaxis], 4)
+        high = np.tile(env.observation_space.high[..., np.newaxis], 4)
+        dtype = env.observation_space.dtype
+        self.observation_space = Box(low=low, high=high, dtype=dtype)
+
+    def _get_obs(self):
+        obs = np.array(self.frame_stack)
+        # Switch from e.g. (4, 84, 84) to (84, 84, 4), so that we have the right order for inputting
+        # directly into the convnet with the default channels_last
+        obs = np.moveaxis(obs, 0, -1)
+        return obs
 
     def reset(self):
         obs = self.env.reset()
@@ -191,12 +203,12 @@ class FrameStackWrapper(Wrapper):
                 raise Exception("Environment signalled done during initial "
                                 "frame stack")
             self.frame_stack.append(obs)
-        return np.array(self.frame_stack)
+        return self._get_obs()
 
     def step(self, action):
         obs, reward, done, info = self.env.step(action)
         self.frame_stack.append(obs)
-        return np.array(self.frame_stack), reward, done, info
+        return self._get_obs(), reward, done, info
 
 
 class FrameSkipWrapper(Wrapper):

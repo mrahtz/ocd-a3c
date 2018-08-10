@@ -55,8 +55,7 @@ def run_agent(env, sess, obs_placeholder, action_probs_op):
         episode_reward = 0
         done = False
         while not done:
-            s = np.moveaxis(obs, 0, -1)
-            feed_dict = {obs_placeholder: [s]}
+            feed_dict = {obs_placeholder: [obs]}
             action_probs = sess.run(action_probs_op, feed_dict)[0]
             action = np.random.choice(env.action_space.n, p=action_probs)
             obs, reward, done, _ = env.step(action)
