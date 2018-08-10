@@ -26,7 +26,8 @@ def parse_args():
     # Training hyperparameters
     parser.add_argument("--steps_per_update", type=int, default=5)
     parser.add_argument("--value_loss_coef", type=float, default=0.5)
-    parser.add_argument("--max_grad_norm", type=float, default=0.5)
+    # Determined through coarse line search on the main five Atari games from the paper
+    parser.add_argument("--max_grad_norm", type=float, default=5.0)
     parser.add_argument("--entropy_bonus", type=float, default=0.01)
     parser.add_argument("--initial_lr", type=float, default=1e-4)
     parser.add_argument("--lr_schedule", choices=['constant', 'linear'],
