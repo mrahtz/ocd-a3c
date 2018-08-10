@@ -20,7 +20,7 @@ def main():
     env = gym.make(args.env_id)
     env = generic_preprocess(env, max_n_noops=0)
     sess, obs_placeholder, action_probs_op = \
-        get_network(args.ckpt_dir, env.action_space.n)
+        get_network(args.ckpt_dir, env.observation_space.shape, env.action_space.n)
     run_agent(env, sess, obs_placeholder, action_probs_op)
 
 
@@ -32,12 +32,12 @@ def parse_args():
     return args
 
 
-def get_network(ckpt_dir, n_actions):
+def get_network(ckpt_dir, obs_shape, n_actions):
     sess = tf.Session()
 
     with tf.variable_scope('global'):
         obs_placeholder, _, action_probs_op, _, _ = \
-            make_inference_network(n_actions, debug=False)
+            make_inference_network(obs_shape, n_actions, debug=False)
 
     ckpt_file = tf.train.latest_checkpoint(ckpt_dir)
     if not ckpt_file:

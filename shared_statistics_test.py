@@ -30,7 +30,7 @@ class TestSharedStatistics(unittest.TestCase):
                                               decay=0.99, epsilon=1e-5)
 
         with tf.variable_scope('global'):
-            make_inference_network(n_actions=env.action_space.n)
+            make_inference_network(obs_shape=(84, 84, 4), n_actions=env.action_space.n)
 
         network1 = Network(scope="worker_1", n_actions=env.action_space.n, entropy_bonus=0.01, value_loss_coef=0.5,
                            max_grad_norm=0.5, optimizer=optimizer, summaries=False, debug=False)
@@ -107,7 +107,7 @@ def run_weight_test(reset_rmsprop):
     env.seed(0)
 
     with tf.variable_scope('global'):
-        make_inference_network(n_actions=env.action_space.n)
+        make_inference_network(obs_shape=(84, 84, 4), n_actions=env.action_space.n)
     shared_variables = tf.global_variables()
 
     optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4,

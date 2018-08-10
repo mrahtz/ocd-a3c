@@ -17,7 +17,7 @@ class TestNetwork(unittest.TestCase):
         """
         optimizer = tf.train.RMSPropOptimizer(learning_rate=1e-3)
         with tf.variable_scope('global'):
-            make_inference_network(n_actions=6)
+            make_inference_network(obs_shape=(84, 84, 4), n_actions=6)
         network = Network('foo_scope', n_actions=6, entropy_bonus=0.0, value_loss_coef=0.5, max_grad_norm=0.5,
                           optimizer=optimizer, summaries=False)
         sess = tf.Session()

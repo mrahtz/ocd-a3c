@@ -8,8 +8,8 @@ from utils import logit_entropy, make_grad_histograms, make_rmsprop_histograms, 
     make_histograms
 
 
-def make_inference_network(n_actions, debug=False):
-    observations = tf.placeholder(tf.float32, [None, 84, 84, 4])
+def make_inference_network(obs_shape, n_actions, debug=False):
+    observations = tf.placeholder(tf.float32, [None] + list(obs_shape))
 
     conv1 = tf.layers.conv2d(
         name='conv1',
@@ -140,7 +140,7 @@ class Network:
         with tf.variable_scope(scope):
             observations, \
             a_logits, a_softmax, graph_v, \
-            layers = make_inference_network(n_actions, debug)
+            layers = make_inference_network(obs_shape=(84, 84, 4), n_actions=n_actions, debug=debug)
 
             actions, returns, advantage, policy_entropy, \
             policy_loss, value_loss, loss = make_loss_ops(
