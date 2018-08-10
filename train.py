@@ -19,7 +19,8 @@ from worker import Worker
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
 
 
-def make_networks(n_workers, obs_shape, n_actions, value_loss_coef, entropy_bonus, max_grad_norm, optimizer, debug):
+def make_networks(n_workers, obs_shape, n_actions, value_loss_coef, entropy_bonus, max_grad_norm, optimizer,
+                  detailed_logs, debug):
     # https://www.tensorflow.org/api_docs/python/tf/Graph notes that graph
     # construction isn't thread-safe. So we all do all graph construction
     # serially before starting the worker threads.
@@ -35,7 +36,7 @@ def make_networks(n_workers, obs_shape, n_actions, value_loss_coef, entropy_bonu
         worker_name = "worker_{}".format(worker_n)
         network = Network(scope=worker_name, n_actions=n_actions, entropy_bonus=entropy_bonus,
                           value_loss_coef=value_loss_coef, max_grad_norm=max_grad_norm, optimizer=optimizer,
-                          summaries=create_summary_ops, debug=debug)
+                          summaries=create_summary_ops, detailed_logs=detailed_logs, debug=debug)
         worker_networks.append(network)
     return worker_networks
 
@@ -192,7 +193,7 @@ def main():
     networks = make_networks(n_workers=args.n_workers, obs_shape=envs[0].observation_space.shape,
                              n_actions=envs[0].action_space.n, value_loss_coef=args.value_loss_coef,
                              entropy_bonus=args.entropy_bonus, max_grad_norm=args.max_grad_norm, optimizer=optimizer,
-                             debug=args.debug)
+                             detailed_logs=args.detailed_logs, debug=args.debug)
 
     # Why save_relative_paths=True?
     # So that the plain-text 'checkpoint' file written uses relative paths,

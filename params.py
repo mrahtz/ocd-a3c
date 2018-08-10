@@ -18,6 +18,7 @@ def parse_args():
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--max_n_noops", type=int, default=30)
     parser.add_argument("--debug", action='store_true')
+    parser.add_argument("--detailed_logs", action='store_true')
     parser.add_argument("--wake_interval_seconds", type=int, default=60)
     parser.add_argument("--preprocessing",
                         choices=['generic', 'pong'],

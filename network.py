@@ -136,7 +136,7 @@ def make_loss_ops(a_logits, graph_v, entropy_bonus, value_loss_coef, debug):
 class Network:
 
     def __init__(self, scope, n_actions, entropy_bonus, value_loss_coef, max_grad_norm, optimizer, summaries,
-                 debug=False):
+                 detailed_logs=False, debug=False):
         with tf.variable_scope(scope):
             observations, \
             a_logits, a_softmax, graph_v, \
@@ -176,11 +176,11 @@ class Network:
         self.grads_norm = grads_norm
 
         if summaries:
-            self.summaries_op = self.make_summary_ops(scope)
+            self.summaries_op = self.make_summary_ops(scope, detailed_logs)
         else:
             self.summaries_op = None
 
-    def make_summary_ops(self, scope):
+    def make_summary_ops(self, scope, detailed_logs):
         variables = tf.trainable_variables(scope)
         grads_policy = tf.gradients(self.policy_loss, variables)
         grads_value = tf.gradients(self.value_loss, variables)
@@ -205,9 +205,10 @@ class Network:
             summary = tf.summary.scalar(name, val)
             summaries.append(summary)
 
-        summaries.extend(make_grad_histograms(variables, grads_combined))
-        summaries.extend(make_rmsprop_histograms(self.optimizer))
-        summaries.extend(make_histograms(self.layers, 'activations'))
-        summaries.extend(make_histograms(variables, 'weights'))
+        if detailed_logs:
+            summaries.extend(make_grad_histograms(variables, grads_combined))
+            summaries.extend(make_rmsprop_histograms(self.optimizer))
+            summaries.extend(make_histograms(self.layers, 'activations'))
+            summaries.extend(make_histograms(variables, 'weights'))
 
         return tf.summary.merge(summaries)
