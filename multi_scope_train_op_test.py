@@ -22,8 +22,8 @@ class TestMultiScopeTrainOp(unittest.TestCase):
             v_apply = tf.Variable(1.0)
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=1)
         train_op, grads_tensor = make_train_op(loss, optimizer,
-                                                 'compute_scope',
-                                                 'apply_scope',
+                                               'compute_scope',
+                                               'apply_scope',
                                                max_grad_norm=1e3)
 
         self.sess.run(tf.global_variables_initializer())
@@ -57,7 +57,7 @@ class TestMultiScopeTrainOp(unittest.TestCase):
 
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=1)
         train_op, _ = make_train_op(loss, optimizer,
-                                      'compute_scope', 'apply_scope')
+                                    'compute_scope', 'apply_scope')
 
         self.sess.run(tf.global_variables_initializer())
         self.sess.run(train_op)
@@ -71,8 +71,8 @@ class TestMultiScopeTrainOp(unittest.TestCase):
 
     def test_unused_variables(self):
         """
-        Test whether everything behaves correctly if we have a trainable
-        variable which isn't relevant to the loss function
+        Test whether everything behaves correctly if we have a trainable variable which isn't
+        relevant to the loss function
         """
         scopes = ['compute_scope', 'apply_scope']
         ops = {}
@@ -86,7 +86,7 @@ class TestMultiScopeTrainOp(unittest.TestCase):
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=1)
 
         train_op, _ = make_train_op(ops['compute_scope']['loss'], optimizer,
-                                      'compute_scope', 'apply_scope')
+                                    'compute_scope', 'apply_scope')
 
         self.sess.run(tf.global_variables_initializer())
         self.sess.run(train_op)
@@ -120,19 +120,18 @@ class TestMultiScopeTrainOp(unittest.TestCase):
             with tf.variable_scope(scope):
                 w1 = tf.Variable(inits['w1'], name='w1')
                 w2 = tf.Variable(inits['w2'], name='w2')
-                # NB reduce_sum is necessary to ensure that the gradients
-                # accumulated for multiple examples in a batch are the same as
-                # if the examples were presented in individual batches
+                # NB reduce_sum is necessary to ensure that the gradients accumulated for multiple
+                # examples in a batch are the same as if the examples were presented in individual
+                # batches
                 losses[scope] = tf.reduce_sum(w1 + w2_mult * w2, axis=-1)
                 variables[scope] = {'w1': w1, 'w2': w2}
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=1)
 
         # Check that no extra trainable variables are introduced
-        # We have two variables, two scopes, for a total of 4 trainable
-        # variables
+        # We have two variables, two scopes, for a total of 4 trainable variables
         assert len(tf.trainable_variables()) == 4
         train_op, _ = make_train_op(losses['compute_scope'], optimizer,
-                                      'compute_scope', 'apply_scope')
+                                    'compute_scope', 'apply_scope')
         assert len(tf.trainable_variables()) == 4
 
         self.sess.run(tf.global_variables_initializer())
@@ -147,8 +146,7 @@ class TestMultiScopeTrainOp(unittest.TestCase):
         self.sess.run(train_op, feed_dict={w2_mult: [[3, 4],
                                                      [5, 6]]})
 
-        # Confirm that no changes have been made to the variables in
-        # compute_scope
+        # Confirm that no changes have been made to the variables in compute_scope
         actual = self.sess.run(variables['compute_scope']['w1'])
         expected = inits['w1']
         np.testing.assert_equal(actual, expected)
