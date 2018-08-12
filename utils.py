@@ -22,22 +22,20 @@ def logit_entropy(logits):
     """
     Numerically-stable entropy directly from logits.
 
-    We want to calculate p = exp(logits) / sum(exp(logits)),
-    then do -sum(p * log(p)).
+    We want to calculate p = exp(logits) / sum(exp(logits)), then do -sum(p * log(p)).
 
     There are two things we need to be careful of:
     - If one of the logits is large, exp(logits) will overflow.
     - If one of the probabilities is zero, we'll accidentally do log(0).
       (Entropy /is/ still well-defined if one of the probabilities is zero.
-      we just miss out that probability from the sum.)
+       We just miss out that probability from the sum.)
 
     The first problem is just a matter of using a numerically-stable softmax.
 
-    For the second problem, if we have access to the logits, there's a trick we
-    can use. Note that if we're calculating probabilities from logits, none of
-    the probabilities should ever be zero. If we do up with a zero probability,
-    it's only because of rounding. To get around this, when computing log(p),
-    we don't compute probabilities explicitly, but instead compute the result
+    For the second problem, if we have access to the logits, there's a trick we can use.
+    Note that if we're calculating probabilities from logits, none of the probabilities should ever
+    be zero. If we do up with a zero probability, it's only because of rounding. To get around this,
+    when computing log(p), we don't compute probabilities explicitly, but instead compute the result
     directly in terms of the logits. For example:
       logits = [0, 1000]
       log(probs) = log(exp(logits)/sum(exp(logits)))
@@ -45,7 +43,7 @@ def logit_entropy(logits):
                  = logits - log_sum(exp(logits))
                  = [0, 1000] - log(exp(0) + exp(1000))
                  = [0, 1000] - log(1 + exp(1000))
-                 = [0, 1000] - log(exp(1000))               (approximately)
+                 = [0, 1000] - log(exp(1000))  (approximately)
                  = [0, 1000] - 1000
                  = [-1000, 0]
     """
@@ -53,8 +51,8 @@ def logit_entropy(logits):
     # - 1D list of logits
     # - A 2D list, batch size x logits
     assert len(logits.shape) <= 2
-    # keepdims=True is necessary so that we get a result which is
-    # batch size x 1 instead of just batch size
+    # keepdims=True is necessary so that we get a result
+    # which is (batch size, 1) instead of just (batch size,)
     logp = logits - tf.reduce_logsumexp(logits, axis=-1, keepdims=True)
     nlogp = -logp
     probs = tf.nn.softmax(logits, axis=-1)
@@ -66,13 +64,10 @@ def logit_entropy(logits):
 
 def make_copy_ops(from_scope, to_scope):
     """
-    Create operations to mirror the values from all trainable variables
-    in from_scope to to_scope.
+    Create operations to mirror the values from all trainable variables in from_scope to to_scope.
     """
-    from_tvs = tf.get_collection(
-        tf.GraphKeys.TRAINABLE_VARIABLES, scope=from_scope)
-    to_tvs = tf.get_collection(
-        tf.GraphKeys.TRAINABLE_VARIABLES, scope=to_scope)
+    from_tvs = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=from_scope)
+    to_tvs = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=to_scope)
 
     from_dict = {var.name: var for var in from_tvs}
     to_dict = {var.name: var for var in to_tvs}
@@ -122,12 +117,12 @@ class MemoryProfiler:
 
 
 def get_git_rev():
-    if not osp.exists('.git'):
-        git_rev = "unkrev"
-    else:
-        git_rev = subprocess.check_output(
-            ['git', 'rev-parse', '--short', 'HEAD']).decode().rstrip()
-    return git_rev
+    try:
+        cmd = 'git rev-parse --short HEAD'
+        git_rev = subprocess.check_output(cmd.split(' '), stderr=subprocess.PIPE).decode().rstrip()
+        return git_rev
+    except subprocess.CalledProcessError:
+        return 'unkrev'
 
 
 def set_random_seeds(seed):
@@ -180,8 +175,8 @@ class TensorFlowCounter:
 
 class SubProcessEnv:
     """
-    Run a gym environment in a subprocess so that we can avoid GIL and
-    run multiple environments asynchronously from a single thread
+    Run a gym environment in a subprocess so that we can avoid GIL and run multiple environments
+    asynchronously from a single thread.
     """
 
     @staticmethod

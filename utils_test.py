@@ -7,8 +7,8 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
-from utils import make_copy_ops, logit_entropy, rewards_to_discounted_returns, \
-    set_random_seeds, Timer
+from utils import make_copy_ops, logit_entropy, rewards_to_discounted_returns, set_random_seeds, \
+    Timer
 
 
 class TestMiscUtils(unittest.TestCase):
@@ -54,18 +54,15 @@ class TestMiscUtils(unittest.TestCase):
     def test_random_seed(self):
         # Note: TensorFlow random seeding doesn't work completely as expected.
         # tf.set_random_seed sets a the graph-level seed in the current graph.
-        # But operations also have their own operation-level seed, which is
-        # chosen deterministically based on the graph-level seed, but also
-        # based on other things.
+        # But operations also have their own operation-level seed, which is chosen
+        # deterministically based on the graph-level seed, but also based on other things.
         #
-        # So if you create multiple operations in the same graph,
-        # each one will be given a different operation-level seed.
-        # The  graph-level seed just determines what the sequence of
+        # So if you create multiple operations in the same graph, each one will be given a
+        # different operation-level seed. The graph-level seed just determines what the sequence of
         # operation-level seeds will be.
         #
-        # To get a bunch of operations with the same sequence of
-        # operation-level seeds, we need to reset the graph before creation
-        # of each bunch of operations.
+        # To get a bunch of operations with the same sequence of operation-level seeds, we need to
+        # reset the graph before creation of each bunch of operations.
 
         # Generate some random numbers from a specific seed
         tf.reset_default_graph()
@@ -137,9 +134,8 @@ class TestEntropy(unittest.TestCase):
         logits = np.array([1., 2., 3., 4.])
         probs = np.exp(logits) / np.sum(np.exp(logits))
         expected_entropy = -np.sum(probs * np.log(probs))
-        actual_entropy = self.sess.run(logit_entropy(logits))
-        np.testing.assert_approx_equal(actual_entropy, expected_entropy,
-                                       significant=5)
+        actual_entropy = self.sess.run(logit_entropy(logits))[0]
+        np.testing.assert_approx_equal(actual_entropy, expected_entropy, significant=5)
 
     def test_stability(self):
         """
@@ -148,27 +144,24 @@ class TestEntropy(unittest.TestCase):
         logits = np.array([0., 1000.])
         expected_entropy = 0.
         actual_entropy = self.sess.run(logit_entropy(logits))
-        np.testing.assert_approx_equal(actual_entropy, expected_entropy,
-                                       significant=5)
+        np.testing.assert_approx_equal(actual_entropy, expected_entropy, significant=5)
 
     def test_batch(self):
         """
-        Make sure we get the right result if calculating entropies on a batch
-        of probabilities.
+        Make sure we get the right result if calculating entropies on a batch of probabilities.
         """
-        # shape is 2 (batch size) x 4
+        # shape is (2, 4) (where the first dimension is the batch size)
         logits = np.array([[1., 2., 3., 4.],
                            [1., 2., 2., 1.]])
         probs = np.exp(logits) / np.sum(np.exp(logits), axis=1, keepdims=True)
         expected_entropy = -np.sum(probs * np.log(probs), axis=1, keepdims=True)
         actual_entropy = self.sess.run(logit_entropy(logits))
-        np.testing.assert_allclose(actual_entropy, expected_entropy,
-                                   atol=1e-4)
+        np.testing.assert_allclose(actual_entropy, expected_entropy, atol=1e-4)
 
     def test_gradient_descent(self):
         """
-        Check that if we start with a distribution and use gradient descent
-        to maximise entropy, we end up with a maximise entropy distribution.
+        Check that if we start with a distribution and use gradient descent to maximise entropy,
+        we end up with a maximum-entropy distribution.
         """
         logits = tf.Variable([1., 2., 3., 4., 5.])
         neg_ent = -logit_entropy(logits)
@@ -176,7 +169,7 @@ class TestEntropy(unittest.TestCase):
         self.sess.run(tf.global_variables_initializer())
         for i in range(10000):
             self.sess.run(train_op)
-        expected = [0.2, 0.2, 0.2, 0.2, 0.2]  # maximum entropy distribution
+        expected = [0.2, 0.2, 0.2, 0.2, 0.2]  # maximum-entropy distribution
         actual = self.sess.run(tf.nn.softmax(logits))
         np.testing.assert_allclose(actual, expected, atol=1e-4)
 
