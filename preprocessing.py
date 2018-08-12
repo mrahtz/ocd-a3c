@@ -10,40 +10,35 @@ from gym.spaces import Box
 Observation preprocessing and environment tweaks.
 
 Section 8 ("Experimental Setup") of the paper says:
-"The Atari experiments used the same input preprocessing as
-(Mnih et al., 2015) and an action repeat of 4."
+  "The Atari experiments used the same input preprocessing as (Mnih et al., 2015)
+   and an action repeat of 4."
 
-'Mnih et al., 2015' is
-'Human-level control through deep reinforcement learning'.
+'Mnih et al., 2015' is 'Human-level control through deep reinforcement learning'.
 The relevant parts of that paper's Methods section are summarised below.
 
 
 # Observation preprocessing:
 
 'Preprocessing':
-  - "First, to encode a single frame we take the maximum value for each
-     pixel colour value over the frame being encoded and the previous frame.
-     This was necessary to remove flickering that is present in games where
-     some objects appear only in even frames while other objects appear only
-     in odd frames, an artefact caused by the limited number of sprites Atari
-     2600 can display at once."
-  - "Second, we then extract the Y channel, also known as luminance,
-     from the RGB frame and rescale it to 84 x 84."
-  - "The function phi from algorithm 1 described below applies this
-     preprocessing to the m most recent frames and stacks them to produce the
-     input to the Q-function, in which m = 4, although the algorithm is robust
-     to different values of m (for example, 3 or 5)."
+  - "First, to encode a single frame we take the maximum value for each pixel colour value over the
+     frame being encoded and the previous frame. This was necessary to remove flickering that is
+     present in games where some objects appear only in even frames while other objects appear only
+     in odd frames, an artefact caused by the limited number of sprites Atari 2600 can display at
+     once."
+  - "Second, we then extract the Y channel, also known as luminance, from the RGB frame and rescale
+     it to 84 x 84."
+  - "The function phi from algorithm 1 described below applies this preprocessing to the m most
+     recent frames and stacks them to produce the input to the Q-function, in which m = 4, although
+     the algorithm is robust to different values of m (for example, 3 or 5)."
 'Training details':
-  - "Following previous approaches to playing Atari 2600 games, we also use a
-     simple frame-skipping technique. More precisely, the agent sees and selects
-     actions on every kth frame instead of every frame, and its last action is
-     repeated on skipped frames. Because running the emulator forward for one
-     step requires much less computation than having the agent select an action,
-     this technique allows the agent to play roughly k times more games without
-     significantly increasing the runtime. We use k = 4 for all games."
+  - "Following previous approaches to playing Atari 2600 games, we also use a simple frame-skipping
+     technique. More precisely, the agent sees and selects actions on every kth frame instead of
+     every frame, and its last action is repeated on skipped frames. Because running the emulator
+     forward for one step requires much less computation than having the agent select an action,
+     this technique allows the agent to play roughly k times more games without significantly
+     increasing the runtime. We use k = 4 for all games."
 
-There's some ambiguity about what order to apply these steps in. I think the
-right order should be:
+There's some ambiguity about what order to apply these steps in. I think the right order should be:
 
 1. Max over subsequent frames
    So - observation 0: max. over frames 0 and 1
@@ -68,9 +63,9 @@ right order should be:
                        max. over frames 12 and 13
                        max. over frames 16 and 17
 
-The main ambiguity is whether frame skipping or frame stacking should be done
-first. Above we've assumed frame skipping should be done first. If we did
-frame stacking first, we would only look at every 4th frame stack: giving:
+The main ambiguity is whether frame skipping or frame stacking should be done first.
+Above we've assumed frame skipping should be done first. If we did frame stacking first, we would
+only look at every 4th frame stack, giving:
 
 - Frame stack 0: max. over frames 0 and 1
                  max. over frames 1 and 2
@@ -82,32 +77,27 @@ frame stacking first, we would only look at every 4th frame stack: giving:
                  max. over frames 6 and 7
                  max. over frames 7 and 8
 
-Note that there's a big difference: frame skip then frame stack gives the
-agent much less temporal scope than frame stack then frame skip. In the
-former, the agent has access to 12 frames' worth of observations, whereas in
-the latter, only 4 frames' worth.
+Note that there's a big difference: frame skip then frame stack gives the agent much less temporal
+scope than frame stack then frame skip. In the former, the agent has access to 12 frames' worth of
+observations, whereas in the latter, only 4 frames' worth.
 
 
 ## Environment tweaks
 
 'Training details':
-- "As the scale of scores varies greatly from game to game, we clipped all 
-   positive rewards at 1 and all negative rewards at -1, leaving 0 rewards 
-   unchanged."
-- "For games where there is a life counter, the Atari 2600 emulator also 
-   sends the number of lives left in thegame, which is then used to mark the 
-   end of an episode during training."
+- "As the scale of scores varies greatly from game to game, we clipped all positive rewards at 1 and
+   all negative rewards at -1, leaving 0 rewards unchanged."
+- "For games where there is a life counter, the Atari 2600 emulator also sends the number of lives
+   left in thegame, which is then used to mark the end of an episode during training."
 
 'Evaluation procedure':
-- "The trained agents were evaluated by playing each game 30 times for up to
-   5 min each time with different initial random conditions ('no-op'; see
-   Extended Data Table 1)."
+- "The trained agents were evaluated by playing each game 30 times for up to 5 min each time with
+   different initial random conditions ('no-op'; see Extended Data Table 1)."
   
 Extended Data Table 1 lists "no-op max" as 30 (set in params.py).
    
-
-We implement all these steps using a modular set of wrappers, heavily 
-inspired by baselines' atari_wrappers.py (https://git.io/vhWWG).
+We implement all these steps using a modular set of wrappers, heavily inspired by Baselines'
+atari_wrappers.py (https://git.io/vhWWG).
 """
 
 
@@ -159,9 +149,7 @@ class ExtractLuminanceAndScaleWrapper(ObservationWrapper):
     def __init__(self, env):
         ObservationWrapper.__init__(self, env)
         # Important so that gym's play.py picks up the right resolution
-        self.observation_space = spaces.Box(low=0, high=255,
-                                            shape=(84, 84),
-                                            dtype=np.uint8)
+        self.observation_space = spaces.Box(low=0, high=255, shape=(84, 84), dtype=np.uint8)
 
     def observation(self, obs):
         obs = cv2.cvtColor(obs, cv2.COLOR_RGB2GRAY)
@@ -185,7 +173,7 @@ class FrameStackWrapper(Wrapper):
 
     def _get_obs(self):
         obs = np.array(self.frame_stack)
-        # Switch from e.g. (4, 84, 84) to (84, 84, 4), so that we have the right order for inputting
+        # Switch from (4, 84, 84) to (84, 84, 4), so that we have the right order for inputting
         # directly into the convnet with the default channels_last
         obs = np.moveaxis(obs, 0, -1)
         return obs
@@ -193,9 +181,8 @@ class FrameStackWrapper(Wrapper):
     def reset(self):
         obs = self.env.reset()
         self.frame_stack.append(obs)
-        # The first observation returned should be a stack of observations
-        # 0 through 3. We get observation 0 from env.reset(). For the rest,
-        # we take no-op actions.
+        # The first observation returned should be a stack of observations 0 through 3. We get
+        # observation 0 from env.reset(). For the rest, we take no-op actions.
         noop_action_index = get_noop_action_index(self.env)
         for _ in range(3):
             obs, _, done, _ = self.env.step(noop_action_index)
@@ -248,8 +235,7 @@ class RandomStartWrapper(Wrapper):
         for _ in range(n_noops):
             obs, _, done, _ = self.env.step(noop_action_index)
             if done:
-                raise Exception("Environment signalled done during initial "
-                                "no-ops")
+                raise Exception("Environment signalled done during initial no-ops")
         return obs
 
 
@@ -260,8 +246,7 @@ class NormalizeObservationsWrapper(ObservationWrapper):
 
     def __init__(self, env):
         ObservationWrapper.__init__(self, env)
-        self.observation_space = spaces.Box(low=0.0, high=1.0,
-                                            shape=env.observation_space.shape,
+        self.observation_space = spaces.Box(low=0.0, high=1.0, shape=env.observation_space.shape,
                                             dtype=np.float32)
 
     def observation(self, obs):
@@ -279,10 +264,9 @@ class ClipRewardsWrapper(RewardWrapper):
 
 class EndEpisodeOnLifeLossWrapper(Wrapper):
     """
-    Send 'episode done' when life lost. (baselines' atari_wrappers.py claims
-    that this helps with value estimation. I guess it makes it clear that
-    only actions since the last loss of life contributed significantly to any
-    rewards in the present.)
+    Send 'episode done' when life lost. (Baselines' atari_wrappers.py claims that this helps with
+    value estimation. I guess it makes it clear that only actions since the last loss of life
+    contributed significantly to any rewards in the present.)
     """
 
     def __init__(self, env):
@@ -305,10 +289,9 @@ class EndEpisodeOnLifeLossWrapper(Wrapper):
 
     def reset(self):
         assert self.done_because_life_lost is not None
-        # If we sent the 'episode done' signal after a loss of a life,
-        # then we'll probably get a reset signal next. But we shouldn't
-        # actually reset! We should just keep on playing until the /real/
-        # end-of-episode.
+        # If we sent the 'episode done' signal after a loss of a life, then we'll probably get a
+        # reset signal next. But we shouldn't actually reset! We should just keep on playing until
+        # the /real/ end-of-episode.
         if self.done_because_life_lost:
             self.done_because_life_lost = None
             return self.reset_obs
@@ -340,14 +323,12 @@ debug testing.
 
 class PongFeaturesWrapper(ObservationWrapper):
     """
-    Manually extract the Pong game area, setting paddles/ball to 1.0 and the
-    background to 0.0.
+    Manually extract the Pong game area, setting paddles/ball to 1.0 and the background to 0.0.
     """
 
     def __init__(self, env):
         ObservationWrapper.__init__(self, env)
-        self.observation_space = spaces.Box(
-            low=0.0, high=1.0, shape=(84, 84), dtype=np.float32)
+        self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(84, 84), dtype=np.float32)
 
     def observation(self, obs):
         """

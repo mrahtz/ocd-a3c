@@ -4,6 +4,7 @@ import unittest
 
 import gym
 import numpy as np
+from gym.spaces import Box
 from numpy.testing import assert_array_equal
 
 from debug_wrappers import NumberFrames, ConcatFrameStack
@@ -26,14 +27,14 @@ class ALE:
 
 class DummyEnv(gym.Env):
     """
-    A super-simple environment which just paints a white dot starting at
-    (10, 10) and moving 10 pixels right on every step.
+    A super-simple environment which just paints a white dot starting at (10, 10) and moving 10
+    pixels right on every step.
 
-    Rewards returned corresponds to the current step number. Reset counts as
-    step 1, so the reward from the first step taken is 2.)
+    Rewards returned corresponds to the current step number. Reset counts as step 1, so the reward
+    from the first step taken is 2.)
 
-    If draw_n_dots is true, also indicate the current step number by the
-    number of dots in each column.
+    If draw_n_dots is true, also indicate the current step number by the number of dots in each
+    column.
     """
 
     OBS_DIMS = (210, 160, 3)
@@ -44,6 +45,7 @@ class DummyEnv(gym.Env):
         self.dot_width = dot_width
         self.dot_height = dot_height
         self.ale = ALE()
+        self.observation_space = Box(shape=DummyEnv.OBS_DIMS, low=0, high=255, dtype=np.uint8)
 
     @staticmethod
     def get_action_meanings():
@@ -57,8 +59,8 @@ class DummyEnv(gym.Env):
     def _get_obs(self):
         """
         Draw a dot in a column corresponding to the current step number.
-        If draw_n_dots, also draw a bunch of extra dots in the column to show
-        exactly which step number we're on, such that no. of dots = step number.
+        If draw_n_dots, also draw a bunch of extra dots in the column to show exactly which step
+        number we're on, such that no. of dots = step number.
         """
         obs = np.zeros(self.OBS_DIMS, dtype=np.uint8)
         w = self.dot_width
@@ -66,13 +68,13 @@ class DummyEnv(gym.Env):
         # Draw the a dot on the first row
         x = 10 * self.step_n
         y = 10
-        obs[y:y + h, x:x + w] = 255
+        obs[y:y + h, x:x + w, :] = 255
         if self.draw_n_dots:
             # Draw another n_steps - 1 dots in the same column,
             # for a total of n_steps dots in the column
             for i in range(1, self.step_n):
                 y = 10 + i * 10
-                obs[y:y + h, x:x + w] = 255
+                obs[y:y + h, x:x + w, :] = 255
         return obs
 
     def step(self, action):
@@ -194,30 +196,30 @@ class TestPreprocessing(unittest.TestCase):
 
         actual_obs = env_wrapped.reset()
         # We expect to see a stack of frames 0 to 3
-        expected_obs = np.zeros((4,) + DummyEnv.OBS_DIMS, dtype=np.uint8)
+        expected_obs = np.zeros(DummyEnv.OBS_DIMS + (4,), dtype=np.uint8)
         for frame_n, x in enumerate([10, 20, 30, 40]):
-            expected_obs[frame_n, 10, x] = 255
+            expected_obs[10, x, :, frame_n] = 255
         assert_array_equal(actual_obs, expected_obs)
 
         # Then frames 1 to 4
         actual_obs, _, _, _ = env_wrapped.step(0)
-        expected_obs = np.zeros((4,) + DummyEnv.OBS_DIMS, dtype=np.uint8)
+        expected_obs = np.zeros(DummyEnv.OBS_DIMS + (4,), dtype=np.uint8)
         for frame_n, x in enumerate([20, 30, 40, 50]):
-            expected_obs[frame_n, 10, x] = 255
+            expected_obs[10, x, :, frame_n] = 255
         assert_array_equal(actual_obs, expected_obs)
 
         # Then frames 2 to 5
         actual_obs, _, _, _ = env_wrapped.step(0)
-        expected_obs = np.zeros((4,) + DummyEnv.OBS_DIMS, dtype=np.uint8)
+        expected_obs = np.zeros(DummyEnv.OBS_DIMS + (4,), dtype=np.uint8)
         for frame_n, x in enumerate([30, 40, 50, 60]):
-            expected_obs[frame_n, 10, x] = 255
+            expected_obs[10, x, :, frame_n] = 255
         assert_array_equal(actual_obs, expected_obs)
 
         # If we reset, we should see frames 0 to 3 again
         actual_obs = env_wrapped.reset()
-        expected_obs = np.zeros((4,) + DummyEnv.OBS_DIMS, dtype=np.uint8)
+        expected_obs = np.zeros(DummyEnv.OBS_DIMS + (4,), dtype=np.uint8)
         for frame_n, x in enumerate([10, 20, 30, 40]):
-            expected_obs[frame_n, 10, x] = 255
+            expected_obs[10, x, :, frame_n] = 255
         assert_array_equal(actual_obs, expected_obs)
 
     def test_frame_skip_wrapper(self):
@@ -356,13 +358,13 @@ class TestPreprocessing(unittest.TestCase):
         obs4 = env_wrapped.reset()
 
         subplot(4, 1, 1)
-        imshow(np.hstack(obs1), cmap='gray')
+        imshow(np.hstack(np.moveaxis(obs1, -1, 0)), cmap='gray')
         subplot(4, 1, 2)
-        imshow(np.hstack(obs2), cmap='gray')
+        imshow(np.hstack(np.moveaxis(obs2, -1, 0)), cmap='gray')
         subplot(4, 1, 3)
-        imshow(np.hstack(obs3), cmap='gray')
+        imshow(np.hstack(np.moveaxis(obs3, -1, 0)), cmap='gray')
         subplot(4, 1, 4)
-        imshow(np.hstack(obs4), cmap='gray')
+        imshow(np.hstack(np.moveaxis(obs4, -1, 0)), cmap='gray')
         tight_layout()
         show()
 
