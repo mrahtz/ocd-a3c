@@ -130,22 +130,21 @@ def make_loss_ops(a_logits, graph_v, entropy_bonus, value_loss_coef, debug):
     loss = policy_loss + value_loss
 
     return actions, returns, advantage, policy_entropy, \
-           policy_loss, value_loss, loss
+        policy_loss, value_loss, loss
 
 
 class Network:
 
-    def __init__(self, scope, n_actions, entropy_bonus, value_loss_coef, max_grad_norm, optimizer, summaries,
-                 detailed_logs=False, debug=False):
+    def __init__(self, scope, n_actions, entropy_bonus, value_loss_coef, max_grad_norm, optimizer,
+                 add_summaries, detailed_logs=False, debug=False):
         with tf.variable_scope(scope):
-            observations, \
-            a_logits, a_softmax, graph_v, \
-            layers = make_inference_network(obs_shape=(84, 84, 4), n_actions=n_actions, debug=debug)
+            observations, a_logits, a_softmax, graph_v, layers = \
+                make_inference_network(obs_shape=(84, 84, 4), n_actions=n_actions, debug=debug)
 
             actions, returns, advantage, policy_entropy, \
-            policy_loss, value_loss, loss = make_loss_ops(
-                a_logits, graph_v,
-                entropy_bonus, value_loss_coef, debug)
+                policy_loss, value_loss, loss = make_loss_ops(
+                    a_logits, graph_v,
+                    entropy_bonus, value_loss_coef, debug)
 
         sync_with_global_ops = utils.make_copy_ops(from_scope='global',
                                                    to_scope=scope)
@@ -175,7 +174,7 @@ class Network:
         self.train_op = train_op
         self.grads_norm = grads_norm
 
-        if summaries:
+        if add_summaries:
             self.summaries_op = self.make_summary_ops(scope, detailed_logs)
         else:
             self.summaries_op = None

@@ -19,7 +19,7 @@ def parse_args():
     parser.add_argument("--max_n_noops", type=int, default=30)
     parser.add_argument("--debug", action='store_true')
     parser.add_argument("--detailed_logs", action='store_true')
-    parser.add_argument("--wake_interval_seconds", type=int, default=60)
+    parser.add_argument("--manager_wake_interval_seconds", type=int, default=60)
     parser.add_argument("--preprocessing",
                         choices=['generic', 'pong'],
                         default='generic')
@@ -31,8 +31,7 @@ def parse_args():
     parser.add_argument("--max_grad_norm", type=float, default=5.0)
     parser.add_argument("--entropy_bonus", type=float, default=0.01)
     parser.add_argument("--initial_lr", type=float, default=1e-4)
-    parser.add_argument("--lr_schedule", choices=['constant', 'linear'],
-                                         default='constant')
+    parser.add_argument("--lr_schedule", choices=['constant', 'linear'], default='constant')
     parser.add_argument("--lr_decay_to_zero_by_n_steps", type=float)
 
     group = parser.add_mutually_exclusive_group()
@@ -52,14 +51,12 @@ def parse_args():
     elif args.preprocessing == 'pong':
         preprocess_wrapper = preprocessing.pong_preprocess
 
-    ckpt_timer = Timer(duration_seconds=args.ckpt_interval_seconds)
-
     args.n_steps = int(args.n_steps)
     if args.lr_decay_to_zero_by_n_steps is not None:
         args.lr_decay_to_zero_by_n_steps = \
             int(args.lr_decay_to_zero_by_n_steps)
 
-    return args, lr_args, log_dir, preprocess_wrapper, ckpt_timer
+    return args, lr_args, log_dir, preprocess_wrapper
 
 
 def check_lr_args(args, parser):

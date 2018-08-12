@@ -33,13 +33,13 @@ class TestSharedStatistics(unittest.TestCase):
             make_inference_network(obs_shape=(84, 84, 4), n_actions=env.action_space.n)
 
         network1 = Network(scope="worker_1", n_actions=env.action_space.n, entropy_bonus=0.01, value_loss_coef=0.5,
-                           max_grad_norm=0.5, optimizer=optimizer, summaries=False, debug=False)
+                           max_grad_norm=0.5, optimizer=optimizer, add_summaries=False, debug=False)
         Worker(sess=sess, env=env, network=network1, log_dir='/tmp')
 
         vars1 = optimizer.variables()
 
         network2 = Network(scope="worker_2", n_actions=env.action_space.n, entropy_bonus=0.01, value_loss_coef=0.5,
-                           max_grad_norm=0.5, optimizer=optimizer, summaries=False, debug=False)
+                           max_grad_norm=0.5, optimizer=optimizer, add_summaries=False, debug=False)
         Worker(sess=sess, env=env, network=network2, log_dir='/tmp')
 
         vars2 = optimizer.variables()
@@ -65,8 +65,8 @@ class TestSharedStatistics(unittest.TestCase):
         # We'll record what the variables look like at the start, after the
         # worker 1's update, and after worker 2's update.
         vars_sum_init_1, \
-        vars_sum_post_w1_update_1, \
-        vars_sum_post_w2_update_1 = run_weight_test(reset_rmsprop=True)
+            vars_sum_post_w1_update_1, \
+            vars_sum_post_w2_update_1 = run_weight_test(reset_rmsprop=True)
 
         # We'll want to do a another run where we don't reset RMSprop
         # statistics, and check that worker 2's update is different. But
@@ -75,16 +75,16 @@ class TestSharedStatistics(unittest.TestCase):
         # it really is because of the lack of RMSprop reset and not because
         # of random seeding or something.
         vars_sum_init_2, \
-        vars_sum_post_w1_update_2, \
-        vars_sum_post_w2_update_2 = run_weight_test(reset_rmsprop=True)
+            vars_sum_post_w1_update_2, \
+            vars_sum_post_w2_update_2 = run_weight_test(reset_rmsprop=True)
         self.assertEqual(vars_sum_init_1, vars_sum_init_2)
         self.assertEqual(vars_sum_post_w1_update_1, vars_sum_post_w1_update_2)
         self.assertEqual(vars_sum_post_w2_update_1, vars_sum_post_w2_update_2)
 
         # OK, now we run without RMSprop statistics reset.
         vars_sum_init_3, \
-        vars_sum_post_w1_update_3, \
-        vars_sum_post_w2_update_3 = run_weight_test(reset_rmsprop=False)
+            vars_sum_post_w1_update_3, \
+            vars_sum_post_w2_update_3 = run_weight_test(reset_rmsprop=False)
         # The weights before any updates should be the same as before.
         self.assertEqual(vars_sum_init_2, vars_sum_init_3)
         # The weights after worker 1's update should also be the same.
@@ -114,11 +114,11 @@ def run_weight_test(reset_rmsprop):
                                           decay=0.99, epsilon=1e-5)
 
     network1 = Network(scope="worker_1", n_actions=env.action_space.n, entropy_bonus=0.01, value_loss_coef=0.5,
-                       max_grad_norm=0.5, optimizer=optimizer, summaries=False, debug=False)
+                       max_grad_norm=0.5, optimizer=optimizer, add_summaries=False, debug=False)
     w1 = Worker(sess=sess, env=env, network=network1, log_dir='/tmp')
 
     network2 = Network(scope="worker_2", n_actions=env.action_space.n, entropy_bonus=0.01, value_loss_coef=0.5,
-                       max_grad_norm=0.5, optimizer=optimizer, summaries=False, debug=False)
+                       max_grad_norm=0.5, optimizer=optimizer, add_summaries=False, debug=False)
     w2 = Worker(sess=sess, env=env, network=network2, log_dir='/tmp')
 
     rmsprop_init_ops = [v.initializer for v in optimizer.variables()]

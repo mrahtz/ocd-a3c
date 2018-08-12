@@ -30,7 +30,7 @@ def logit_entropy(logits):
     - If one of the probabilities is zero, we'll accidentally do log(0).
       (Entropy /is/ still well-defined if one of the probabilities is zero.
       we just miss out that probability from the sum.)
-    
+
     The first problem is just a matter of using a numerically-stable softmax.
 
     For the second problem, if we have access to the logits, there's a trick we
@@ -139,13 +139,9 @@ def set_random_seeds(seed):
 class Timer:
     """
     A simple timer class.
-
-    Set the timer duration with the duration_seconds argument to the
-    constructor.
-
-    Start the timer by calling reset().
-
-    Check if the timer is done by calling done().
+    * Set the timer duration with the `duration_seconds` argument to the constructor.
+    * Start the timer by calling `reset()`.
+    * Check whether the timer is done by calling `done()`.
     """
 
     def __init__(self, duration_seconds):
@@ -163,7 +159,11 @@ class Timer:
             return False
 
 
-class GraphCounter:
+class TensorFlowCounter:
+    """
+    Counter implemented as a TensorFlow variable in the provided session's graph.
+    Useful if you want the value to feed into some other operation, e.g. learning rate calculation.
+    """
 
     def __init__(self, sess):
         self.sess = sess
@@ -175,8 +175,7 @@ class GraphCounter:
         return int(self.sess.run(self.value))
 
     def increment(self, n=1):
-        self.sess.run(self.increment_op,
-                      feed_dict={self.increment_by: n})
+        self.sess.run(self.increment_op, feed_dict={self.increment_by: n})
 
 
 class SubProcessEnv:
@@ -276,3 +275,57 @@ class RateMeasure:
         self.prev_value = val
 
         return rate
+
+
+def make_lr(lr_args, step_counter):
+    initial_lr = tf.constant(lr_args['initial'])
+    schedule = lr_args['schedule']
+    if schedule == 'constant':
+        lr = initial_lr
+    elif schedule == 'linear':
+        assert type(step_counter) == tf.Variable
+        steps = tf.cast(step_counter, tf.float32)
+        zero_by_steps = tf.cast(lr_args['zero_by_steps'], tf.float32)
+        lr = initial_lr * (1 - steps / zero_by_steps)
+        lr = tf.clip_by_value(lr, clip_value_min=0.0, clip_value_max=float('inf'))
+    else:
+        raise ValueError("Invalid learning rate schedule '{}'".format(schedule))
+    return lr
+
+
+def make_optimizer(learning_rate):
+    # From the paper, Section 4, Asynchronous RL Framework, subsection Optimization:
+    #   "We investigated three different optimization algorithms in our asynchronous framework –
+    #    SGD with momentum, RMSProp without shared statistics, and RMSProp with shared statistics.
+    #    We used the standard non-centered RMSProp update..."
+    #   "A comparison on a subset of Atari 2600 games showed that a variant of RMSProp where
+    #    statistics g are shared across threads is considerably more robust than the other two
+    #    methods."
+    #
+    # TensorFlow's RMSPropOptimizer defaults to centered=False, so we're good there.
+    #
+    # For shared statistics, we supply the same optimizer instance to all workers. Couldn't they
+    # still end up using different statistics somehow?
+    # a) From the source, RMSPropOptimizer's gradient statistics variables are associated with the
+    #    variables supplied to apply_gradients(), which happen to be the global set of variables
+    #    shared between all threads variables (see multi_scope_train_op.py).
+    # b) Empirically, no. See shared_statistics_test.py.
+    #
+    # In terms of hyperparameters:
+    #
+    # Learning rate: the paper actually runs a bunch of different learning rates and presents
+    # results averaged over the three best learning rates for each game. Empirically, 1e-4 seems to
+    # work OK (set in params.py).
+    #
+    # RMSprop hyperparameters: Section 8, Experimental Setup, says:
+    #   "All experiments used...RMSProp decay factor of α = 0.99."
+    # There's no mention of the epsilon used. I see that OpenAI Baselines' implementation of A2C
+    # uses 1e-5 (https://git.io/vpCQt), instead of TensorFlow's default of 1e-10.
+    # Remember, RMSprop divides gradients by a factor based on recent gradient history.
+    # Epsilon is added to that factor to prevent a division by zero.
+    # If epsilon is too small, we'll get a very large update when the gradient history is close to
+    # zero. So my speculation about why Baselines uses a much larger epsilon is: sometimes in RL
+    # the gradients can end up being very small, and we want to limit the size of the update...?
+
+    optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate, decay=0.99, epsilon=1e-5)
+    return optimizer

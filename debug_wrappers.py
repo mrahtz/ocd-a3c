@@ -84,22 +84,24 @@ class MonitorEnv(Wrapper):
     Log per-episode rewards and episode lengths.
     """
 
-    def __init__(self, env, prefix="", log_dir=None):
+    def __init__(self, env, log_prefix="", log_dir=None):
         Wrapper.__init__(self, env)
 
-        if prefix:
-            self.log_prefix = prefix + ": "
+        if log_prefix:
+            self.log_prefix = log_prefix + ": "
         else:
             self.log_prefix = ""
 
         if log_dir is not None:
-            easy_tf_log.set_dir(log_dir)
+            self.logger = easy_tf_log.Logger()
+            self.logger.set_log_dir(log_dir)
+        else:
+            self.logger = None
 
         self.episode_rewards = None
         self.episode_length_steps = None
         self.episode_n = -1
         self.episode_done = None
-        self.log_dir = log_dir
 
     def reset(self):
         self.episode_rewards = []
@@ -116,13 +118,15 @@ class MonitorEnv(Wrapper):
 
         self.episode_rewards.append(reward)
         self.episode_length_steps += 1
+
         if done:
-            reward_sum = sum(self.episode_rewards)
-            print("{}Episode {} finished; reward sum {}".format(
-                self.log_prefix, self.episode_n, reward_sum))
-            if self.log_dir is not None:
-                tflog('rl/episode_reward_sum', reward_sum)
-                tflog('rl/episode_length_steps', self.episode_length_steps)
             self.episode_done = True
+            reward_sum = sum(self.episode_rewards)
+            print("{}Episode {} finished; episode reward sum {}".format(self.log_prefix,
+                                                                        self.episode_n,
+                                                                        reward_sum))
+            if self.logger:
+                self.logger.logkv('rl/episode_reward_sum', reward_sum)
+                self.logger.logkv('rl/episode_length_steps', self.episode_length_steps)
 
         return obs, reward, done, info

@@ -19,7 +19,7 @@ class TestNetwork(unittest.TestCase):
         with tf.variable_scope('global'):
             make_inference_network(obs_shape=(84, 84, 4), n_actions=6)
         network = Network('foo_scope', n_actions=6, entropy_bonus=0.0, value_loss_coef=0.5, max_grad_norm=0.5,
-                          optimizer=optimizer, summaries=False)
+                          optimizer=optimizer, add_summaries=False)
         sess = tf.Session()
         sess.run(tf.global_variables_initializer())
 
