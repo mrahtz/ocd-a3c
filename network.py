@@ -119,10 +119,6 @@ class Network:
                                              compute_scope=scope, apply_scope='global',
                                              max_grad_norm=max_grad_norm)
 
-        if add_summaries:
-            self.summaries_op = self.make_summary_ops(scope, detailed_logs)
-        else:
-            self.summaries_op = None
 
         self.states = observations
         self.action_probs = action_probs
@@ -140,6 +136,11 @@ class Network:
         self.optimizer = optimizer
         self.train_op = train_op
         self.grads_norm = grads_norm
+
+        if add_summaries:
+            self.summaries_op = self.make_summary_ops(scope, detailed_logs)
+        else:
+            self.summaries_op = None
 
     def make_summary_ops(self, scope, detailed_logs):
         variables = tf.trainable_variables(scope)
