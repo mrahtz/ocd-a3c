@@ -1,11 +1,8 @@
-from math import sqrt
-
 import tensorflow as tf
 
-import utils
 from multi_scope_train_op import make_train_op
-from utils import logit_entropy, make_grad_histograms, make_rmsprop_histograms, \
-    make_histograms
+from utils_tensorflow import make_grad_histograms, make_histograms, make_rmsprop_histograms, \
+    logit_entropy, make_copy_ops
 
 
 def make_inference_network(obs_shape, n_actions, debug=False):
@@ -146,8 +143,7 @@ class Network:
                     a_logits, graph_v,
                     entropy_bonus, value_loss_coef, debug)
 
-        sync_with_global_ops = utils.make_copy_ops(from_scope='global',
-                                                   to_scope=scope)
+        sync_with_global_ops = make_copy_ops(from_scope='global', to_scope=scope)
 
         train_op, grads_norm = make_train_op(
             loss,

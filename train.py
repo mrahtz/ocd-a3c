@@ -6,47 +6,17 @@ import time
 from threading import Thread
 
 import easy_tf_log
-import gym
 import tensorflow as tf
 
 import utils
-from debug_wrappers import NumberFrames, MonitorEnv
+import utils_tensorflow
+from env import make_envs
 from network import Network, make_inference_network
 from params import parse_args
-from utils import SubProcessEnv, make_lr, make_optimizer
+from utils_tensorflow import make_lr, make_optimizer
 from worker import Worker
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'  # filter out INFO messages
-
-
-def make_envs(env_id, preprocess_wrapper, max_n_noops, n_envs, seed, debug, log_dir):
-    def make_make_env_fn(env_n):
-        def thunk():
-            env = gym.make(env_id)
-            # We calculate the env seed like this so that changing the global seed completely
-            # changes the whole set of env seeds.
-            env_seed = seed * n_envs + env_n
-            env.seed(env_seed)
-
-            if env_n == 0:
-                env_log_dir = osp.join(log_dir, "env_0")
-            else:
-                env_log_dir = None
-            env = MonitorEnv(env, "Env {}".format(env_n), log_dir=env_log_dir)
-
-            if debug:
-                env = NumberFrames(env)
-
-            env = preprocess_wrapper(env, max_n_noops)
-
-            return env
-
-        return thunk
-
-    make_env_fns = [make_make_env_fn(env_n) for env_n in range(n_envs)]
-    envs = [SubProcessEnv(make_env_fns[env_n]) for env_n in range(n_envs)]
-
-    return envs
 
 
 def make_networks(n_workers, obs_shape, n_actions, value_loss_coef, entropy_bonus, max_grad_norm,
@@ -136,7 +106,7 @@ def main():
     args, lr_args, log_dir, preprocess_wrapper = parse_args()
     easy_tf_log.set_dir(log_dir)
 
-    utils.set_random_seeds(args.seed)
+    utils_tensorflow.set_random_seeds(args.seed)
     sess = tf.Session()
 
     envs = make_envs(args.env_id, preprocess_wrapper, args.max_n_noops, args.n_workers,

@@ -7,8 +7,8 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
-from utils import make_copy_ops, logit_entropy, rewards_to_discounted_returns, set_random_seeds, \
-    Timer
+from utils import rewards_to_discounted_returns, Timer
+from utils_tensorflow import make_copy_ops, set_random_seeds, logit_entropy
 
 
 class TestMiscUtils(unittest.TestCase):

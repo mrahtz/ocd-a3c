@@ -5,7 +5,7 @@ import unittest
 import gym
 import tensorflow as tf
 
-import utils
+import utils_tensorflow
 from network import make_inference_network, Network
 from preprocessing import generic_preprocess
 from worker import Worker
@@ -101,7 +101,7 @@ def get_var_sum(vars):
 
 def run_weight_test(reset_rmsprop):
     tf.reset_default_graph()
-    utils.set_random_seeds(0)
+    utils_tensorflow.set_random_seeds(0)
     sess = tf.Session()
     env = generic_preprocess(gym.make('Pong-v0'), max_n_noops=0)
     env.seed(0)
