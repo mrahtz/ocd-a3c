@@ -33,9 +33,8 @@ class Worker:
 
         if done:
             self.last_state = self.env.reset()
-            episode_value_sum = sum(self.episode_values)
-            episode_value_mean = episode_value_sum / len(self.episode_values)
             if self.logger:
+                episode_value_mean = sum(self.episode_values) / len(self.episode_values)
                 self.logger.logkv('rl/episode_value_mean', episode_value_mean)
             self.episode_values = []
 
@@ -44,31 +43,13 @@ class Worker:
                      self.network.r: returns}
         self.sess.run(self.network.train_op, feed_dict)
 
-        if self.summary_writer and \
-                self.updates != 0 and self.updates % 100 == 0:
+        if self.summary_writer and self.updates != 0 and self.updates % 100 == 0:
             summaries = self.sess.run(self.network.summaries_op, feed_dict)
             self.summary_writer.add_summary(summaries, self.updates)
 
         self.updates += 1
 
         return len(states)
-
-    def calculate_returns(self, done, rewards):
-        if done:
-            returns = utils.rewards_to_discounted_returns(rewards,
-                                                          DISCOUNT_FACTOR)
-        else:
-            # If we're ending in a non-terminal state, in order to calculate
-            # returns, we need to know the return of the final state.
-            # We estimate this using the value network.
-            feed_dict = {self.network.s: [self.last_state]}
-            last_value = self.sess.run(self.network.graph_v,
-                                       feed_dict=feed_dict)[0]
-            rewards += [last_value]
-            returns = utils.rewards_to_discounted_returns(rewards,
-                                                          DISCOUNT_FACTOR)
-            returns = returns[:-1]  # Chop off last_value
-        return returns
 
     def run_steps(self, n_steps):
         # States, action taken in each state, and reward from that action
@@ -80,17 +61,29 @@ class Worker:
             states.append(self.last_state)
             feed_dict = {self.network.s: [self.last_state]}
             [action_probs], [value_estimate] = \
-                self.sess.run([self.network.a_softmax, self.network.graph_v],
-                              feed_dict=feed_dict)
-
-            a = np.random.choice(self.env.action_space.n, p=action_probs)
-            actions.append(a)
+                self.sess.run([self.network.a_softmax, self.network.graph_v], feed_dict=feed_dict)
             self.episode_values.append(value_estimate)
 
-            self.last_state, r, done, _ = self.env.step(a)
-            rewards.append(r)
+            action = np.random.choice(self.env.action_space.n, p=action_probs)
+            actions.append(action)
+            self.last_state, reward, done, _ = self.env.step(action)
+            rewards.append(reward)
 
             if done:
                 break
 
         return actions, done, rewards, states
+
+    def calculate_returns(self, done, rewards):
+        if done:
+            returns = utils.rewards_to_discounted_returns(rewards, DISCOUNT_FACTOR)
+        else:
+            # If we're ending in a non-terminal state, in order to calculate returns,
+            # we need to know the return of the final state.
+            # We estimate this using the value network.
+            feed_dict = {self.network.s: [self.last_state]}
+            last_value = self.sess.run(self.network.graph_v, feed_dict=feed_dict)[0]
+            rewards += [last_value]
+            returns = utils.rewards_to_discounted_returns(rewards, DISCOUNT_FACTOR)
+            returns = returns[:-1]  # Chop off last_value
+        return returns
