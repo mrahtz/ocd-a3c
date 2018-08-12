@@ -1,7 +1,6 @@
 import cv2
 import easy_tf_log
 import numpy as np
-from easy_tf_log import tflog
 from gym import spaces
 from gym.core import ObservationWrapper, Wrapper
 
@@ -24,8 +23,8 @@ class NumberFrames(ObservationWrapper):
         return self.observation(self.env.reset())
 
     def observation(self, obs):
-        # Make sure the numbers are clear even if some other wrapper takes
-        # maxes observations over pairs of time steps
+        # Make sure the numbers are clear even if some other wrapper takes maxes of observations
+        # over pairs of time steps
         if self.frames_since_reset % 2 == 0:
             x = 0
         else:
@@ -70,12 +69,15 @@ class ConcatFrameStack(ObservationWrapper):
     def __init__(self, env):
         ObservationWrapper.__init__(self, env)
         # Important so that gym's play.py picks up the right resolution
+        obs_shape = env.observation_space.shape
+        assert len(obs_shape) == 3  # height, width, n_stack
         self.observation_space = spaces.Box(low=0, high=255,
-                                            shape=(84, 4 * 84),
+                                            shape=(obs_shape[0], obs_shape[1] * obs_shape[2]),
                                             dtype=np.uint8)
 
     def observation(self, obs):
-        assert obs.shape[0] == 4
+        assert len(obs.shape) == 3
+        obs = np.moveaxis(obs, -1, 0)
         return np.hstack(obs)
 
 
