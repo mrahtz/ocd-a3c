@@ -33,7 +33,6 @@ def main():
         wrap_fn = generic_preprocess
 
     env = gym.make(args.env_id)
-    env = NumberFrames(env)
     env = wrap_fn(env, max_n_noops=0)
     env = ConcatFrameStack(env)
     gym_play.play(env, fps=15, zoom=4, callback=callback)
