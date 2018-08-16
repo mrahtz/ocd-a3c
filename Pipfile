@@ -1,24 +1,18 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [packages]
-
 gym = {extras = ["atari"]}
 opencv-python = "*"
 easy-tf-log = "*"
 
-
 [dev-packages]
-
 nose = "*"
 pygame = "*"
 memory-profiler = "*"
-
+matplotlib = "*"
 
 [requires]
-
 python_version = "3"
