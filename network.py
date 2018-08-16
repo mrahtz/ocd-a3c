@@ -119,7 +119,6 @@ class Network:
                                              compute_scope=scope, apply_scope='global',
                                              max_grad_norm=max_grad_norm)
 
-
         self.states = observations
         self.action_probs = action_probs
         self.value = value

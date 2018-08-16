@@ -5,7 +5,6 @@ import subprocess
 import tempfile
 import unittest
 
-import gym
 import numpy as np
 import tensorflow as tf
 

@@ -7,10 +7,10 @@ import numpy as np
 from gym.spaces import Box
 from numpy.testing import assert_array_equal
 
-from debug_wrappers import NumberFrames, ConcatFrameStack
+from debug_wrappers import NumberFrames
 from preprocessing import MaxWrapper, FrameStackWrapper, FrameSkipWrapper, \
-    ExtractLuminanceAndScaleWrapper, generic_preprocess, pong_preprocess, \
-    ClipRewardsWrapper, EndEpisodeOnLifeLossWrapper
+    ExtractLuminanceAndScaleWrapper, generic_preprocess, ClipRewardsWrapper, \
+    EndEpisodeOnLifeLossWrapper
 
 """
 Tests for preprocessing and environment tweak wrappers.

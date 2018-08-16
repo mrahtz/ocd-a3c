@@ -87,8 +87,8 @@ class TestSharedStatistics(unittest.TestCase):
         self.assertNotEqual(vars_sum_post_w2_update_2, vars_sum_post_w2_update_3)
 
 
-def get_var_sum(vars):
-    return tf.reduce_sum([tf.reduce_sum(v) for v in vars])
+def get_var_sum(tf_vars):
+    return tf.reduce_sum([tf.reduce_sum(v) for v in tf_vars])
 
 
 def run_weight_test(reset_rmsprop):

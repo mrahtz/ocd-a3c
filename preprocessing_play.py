@@ -5,7 +5,7 @@ import argparse
 import gym
 from gym.utils import play as gym_play
 
-from debug_wrappers import NumberFrames, ConcatFrameStack
+from debug_wrappers import ConcatFrameStack
 from preprocessing import generic_preprocess, pong_preprocess
 
 """

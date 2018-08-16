@@ -5,7 +5,7 @@ import time
 from os import path as osp
 
 import preprocessing
-from utils import get_git_rev, Timer
+from utils import get_git_rev
 
 
 def parse_args():
@@ -18,7 +18,9 @@ def parse_args():
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--max_n_noops", type=int, default=30)
     parser.add_argument("--debug", action='store_true')
-    parser.add_argument("--detailed_logs", action='store_true')
+    parser.add_argument("--detailed_logs", action='store_true',
+                        help="Log distributions of weights, activations, gradients and "
+                             "RMSprop statistics for each layer")
     parser.add_argument("--manager_wake_interval_seconds", type=int, default=60)
     parser.add_argument("--preprocessing",
                         choices=['generic', 'pong'],

@@ -65,7 +65,8 @@ def run_worker(worker, n_steps_to_run, steps_per_update, step_counter, update_co
 def start_worker_threads(workers, n_steps, steps_per_update, step_counter, update_counter):
     worker_threads = []
     for worker in workers:
-        f = lambda: run_worker(worker, n_steps, steps_per_update, step_counter, update_counter)
+        def f():
+            run_worker(worker, n_steps, steps_per_update, step_counter, update_counter)
         thread = Thread(target=f)
         thread.start()
         worker_threads.append(thread)

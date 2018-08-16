@@ -4,8 +4,6 @@ Plot process memory usage graphs recorded by utils.profile_memory.
 """
 
 import argparse
-from glob import glob
-from os.path import join
 
 from pylab import *
 

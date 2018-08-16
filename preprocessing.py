@@ -272,6 +272,7 @@ class EndEpisodeOnLifeLossWrapper(Wrapper):
     def __init__(self, env):
         Wrapper.__init__(self, env)
         self.done_because_life_lost = False
+        self.reset_obs = None
 
     def step(self, action):
         lives_before = self.env.unwrapped.ale.lives()

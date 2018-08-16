@@ -43,15 +43,15 @@ def parse_array(line):
     line = re.sub('([0-9]) ', '\\1, ', line)
     line = re.sub('\]', '], ', line)
 
-    array = np.array(eval(line)[0])
+    arr = np.array(eval(line)[0])
     sha = hashlib.sha256(str.encode(line)).hexdigest()[:8]
-    print("Found array with shape {}; sha256 {}".format(array.shape, sha))
+    print("Found array with shape {}; sha256 {}".format(arr.shape, sha))
 
-    return array
+    return arr
 
 
-def show_observations(array):
-    obs = array
+def show_observations(arr):
+    obs = arr
     if obs.shape == (1, 80, 80, 4) or obs.shape == (1, 84, 84, 4):
         # A single frame (passed through the network when selecting an action)
         # Stack frames in stack (axis 3) horizontally
