@@ -5,6 +5,11 @@ import unittest
 import gym
 import tensorflow as tf
 
+import sys
+from os import path
+
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
 import utils_tensorflow
 from network import make_inference_network, Network
 from preprocessing import generic_preprocess

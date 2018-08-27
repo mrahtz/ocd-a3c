@@ -8,6 +8,11 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
+import sys
+from os import path
+
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
 from network import make_inference_network
 
 """
@@ -42,7 +47,6 @@ def vars_hash_after_training(seed, n_steps):
 
 
 class TestTrain(unittest.TestCase):
-
     hash_10_steps = vars_hash_after_training(n_steps=10, seed=0)
     hash_100_steps_1 = vars_hash_after_training(n_steps=100, seed=0)
     hash_100_steps_2 = vars_hash_after_training(n_steps=100, seed=0)

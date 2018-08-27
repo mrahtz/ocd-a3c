@@ -7,6 +7,11 @@ import numpy as np
 from gym.spaces import Box
 from numpy.testing import assert_array_equal
 
+import sys
+from os import path
+
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
 from debug_wrappers import NumberFrames
 from preprocessing import MaxWrapper, FrameStackWrapper, FrameSkipWrapper, \
     ExtractLuminanceAndScaleWrapper, generic_preprocess, ClipRewardsWrapper, \

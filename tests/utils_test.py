@@ -7,6 +7,11 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
+import sys
+from os import path
+
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
 from utils import rewards_to_discounted_returns, Timer
 from utils_tensorflow import make_copy_ops, set_random_seeds, logit_entropy
 

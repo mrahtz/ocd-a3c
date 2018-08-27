@@ -5,6 +5,11 @@ import argparse
 import gym
 from gym.utils import play as gym_play
 
+import sys
+from os import path
+
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
 from debug_wrappers import ConcatFrameStack
 from preprocessing import generic_preprocess, pong_preprocess
 

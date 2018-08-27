@@ -5,6 +5,11 @@ import unittest
 import numpy as np
 import tensorflow as tf
 
+import sys
+from os import path
+
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
 from multi_scope_train_op import make_train_op
 
 
