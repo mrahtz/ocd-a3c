@@ -22,6 +22,9 @@ class TestSharedStatistics(unittest.TestCase):
     two different workers, the optimizer statistics are really shared.
     """
 
+    def setUp(self):
+        tf.reset_default_graph()
+
     def test_rmsprop_variables(self):
         """
         Test 1: let's look at the variables the optimizer creates to check there's no

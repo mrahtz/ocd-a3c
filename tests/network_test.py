@@ -15,6 +15,9 @@ from network import Network, make_inference_network
 
 class TestNetwork(unittest.TestCase):
 
+    def setUp(self):
+        tf.reset_default_graph()
+
     def test_policy_loss(self):
         """
         Does calculating policy loss based on the cross-entropy really give the right result?
