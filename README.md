@@ -1,18 +1,18 @@
 ## TODOs
 
 * Profile memory
-* Note that preprocessing is the hardest thing to get right
 * check tensorflow version on Euler
 * test pipenv on Euler
 * Clean up runs repo
-* TODO: how much faster? How much slower than A2C?
+* how much faster? How much slower than A2C?
+* Test speed on an EC2 server to see whether the FPS spikes are still in there
 
-# TensorFlow A3C
+# OCD A3C
 
 TensorFlow implementation of [A3C](https://arxiv.org/abs/1602.01783) for Atari games using OpenAI
 Gym, crafted with love, kindness - and since deep RL is
-[apparently hard to get right](https://blog.openai.com/openai-baselines-dqn/),
-lots and lots of testing.
+[apparently hard to get right](https://blog.openai.com/openai-baselines-dqn/) -
+OCD levels of thoroughness and care.
 
 
 ## Usage
@@ -74,9 +74,24 @@ For example:
 $ python3 run_checkpoint.py PongNoFrameskip-v4 runs/test-run_1534041413_cdc3bd9/checkpoints
 ```
 
+### Tests
+
+Tests can be run individually, e.g.:
+
+```
+$ tests/network_test.py
+```
+
+Or all together, with:
+
+```
+$ python3 -m unittest tests/*_test.py
+```
+
+
 ## Special Features
 
-OCD A3C comes with a couple of special testing features.
+Partly in support of the its OCD title, OCD A3C includes a few special testing features.
 
 ### Randomness checks
 
@@ -96,8 +111,9 @@ spread out horizontally over time):
 
 ### See what the network sees
 
-Still, what if we somehow manage to fumble something up between the preprocessing pipeline and
-actually sending the frames into the policy network for inference or training?
+Still, what if we somehow manage to fumble something up between the eyes and the brain - between
+the preprocessing pipeline and actually sending the frames into the policy network for inference or
+training?
 
 Thanks to [`tf.Print`](https://www.tensorflow.org/api_docs/python/tf/Print), we can dump all data
 going into the network then check offline that everything looks fine. This involves first running
@@ -150,13 +166,31 @@ And so on.
   environments in separate processes. This was inspired by OpenAI Baselines'
   [`SubprocVecEnv`](https://github.com/openai/baselines/blob/36ee5d17071424f30071bcdc72ff11b18c577529/baselines/common/vec_env/subproc_vec_env.py).
   
-## Code layout
-
-* Explain exactly what's tested
-
-## Other Implementations
   
 ## Lessons learned
+
+### Data organisation
+
+Thorough archival of test runs is absolutely vital for debugging. (I talk a bit more about this
+in the context of a a different paper
+at [Lessons Learned Reproducing a Deep Reinforcement Learning Paper](http://amid.fish/reproducing-deep-rl).)
+
+Using a managed service like FloydHub is nice if you can afford it, but for this implementation
+I was mainly using my university's cluster. The DIY solution I converged on by the end of this
+project was the following:
+
+* Store runs in a separate repository (so that when you're copying the code to a new machine you
+  don't also have to copy all the runs), under Git LFS.
+  (Example: [tensorflow-a3c-runs](https://github.com/mrahtz/tensorflow-a3c-runs/settings)
+* Maintain a separate branch in that repository for each revision in the main code repository
+  you do runs from.
+* Have your code automatically label each run with the current revision, just in case
+  you mess up the branches
+  (see e.g. [params.py](https://github.com/mrahtz/tensorflow-a3c/blob/3c839d6039cf9b4c18b726e2d552313e9be723d2/params.py#L87).
+* Save the arguments used for each run - both those specified on the command line, and the full
+  e.g. `argparse` namespace so you record default arguments too
+  (also [params.py](https://github.com/mrahtz/tensorflow-a3c/blob/3c839d6039cf9b4c18b726e2d552313e9be723d2/params.py#L95)).
+
 
 ### Preprocessing
 
@@ -166,12 +200,12 @@ two times before it was in a form I was confident was correct and was easily tes
 
 The final solution is heavily inspired by OpenAI Baselines'
 [`atari_wrappers`](https://github.com/openai/baselines/blob/8c2aea2addc9f3ba36d4a0c937e6a2d09830afc7/baselines/common/atari_wrappers.py).
-Taking a modular approach to preprocessing, with each stage of preprocessing being done using a
+Taking a layered approach to preprocessing, with each stage of preprocessing being done using a
 separate wrapper, makes both implementation and testing a lot easier.
 
 If you're reproducing papers to learn about deep RL, I strongly recommend just using
 `atari_wrappers`. Implementing the preprocessing from scratch did give me a much stronger appreciation
-for the benefits of modular design, and it seems important to know about the tricks that are used
+for the benefits of layered design, and it seems important to know about the tricks that are used
 (episode reset on end-of-life and no-ops at the start of each episode came as particular surprises to
 me), but it takes away so much time that could be spend learning about actual RL stuff instead.
 
@@ -214,10 +248,10 @@ updates, since each worker contributes different experience at any given moment.
 
 (Note that Figure 3 in the paper suggests this explanation might apply less to A3C than the paper's other
 algorithms. For A3C the main advantage may just be the increased rate of
-experience accumulation. But let's stick with the standard story and see where it goes.)
+experience accumulation. But let's stick with the standard story for now and see where it goes.)
 
 Even if there's diversity between each update, though, this says nothing about the diversity of
-experience /within/ each update (where each update consists of a batch of 5 steps from
+experience /within/ each update (where each update consists of a batch of 5 steps in the environment from
 one worker). My impression from inspecting gradients and RMSprop statistics here and there
 is that this can cause problems: if each update is too homogenous, each update can point in
 one direction kind of sharply, leading to large gradients on each update. Gradient clipping
@@ -228,97 +262,57 @@ and certain RMSprop statistics were definitely different with and without gradie
 up to a factor of 10 or so. And I do have notes of some runs failing apparently because of lack of gradient
 clipping. Nonetheless, take the above story with a grain of salt.)
 
-(Note that this is in contrast to A2C, where /each update/ consists of experience from all workers
+(Also note that this is in contrast to A/2/C, where /each update/ consists of experience from all workers
 and is therefore more diverse.)
 
-Sadly, this is one hyperparameter
+Sadly, amount of gradient clipping is one hyperparameter
 the paper doesn't list (and in fact, learning rate and gradient clipping were tuned for each game
 individually). The value we use (`max_grad_norm` in [`params.py`](params.py)) of 5.0 was determined
 through coarse line search over all five games.
 
 My main takeaways from these experiences are:
-* If you're implementing A3C or something similar, gradient clipping probably is something you'll have to take care of.
-* If you're writing paper about an algorithm which uses gradient clipping, /please/ quote what clip value you use.
-
-TODO learning rate, gradient clip, optimizer stuff
-
-## Reproducing papers and the 80/20 rule
-
-This reproduction was an interesting lesson in the 80/20 rule.
-
-Overall, the project took about 150 hours. The breakdown was something like:
-* First 30 hours: getting multiple workers basically working with Pong (Monte Carlo updates,
-Pong-specific preprocessing)
-* Next 50 hours: puzzling why generic preprocessing didn't work with Monte Carlo updates, and fixing
-(red herring) bugs found along the way
-* Next 20 hours: optimizing it to run at a competitive speed
-* Next 20 hours: tuning hyperparameters
-* Final 30 hours: getting it to run well on all games
-
-I think 80% of my learning about reinforcement learning itself was in the first 30 hours. The rest of
-the project feels like it was more about the tricks necessary to make deep RL work in practice.
-
-This is not to say it felt like the rest of the project was wasted time. However, I do think I made
-a mistake by starting from scratch rather than starting from an existing codebase.
-
-TODO too many assumptions you could mess up
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+* If you're calculating gradients on batches with correlated data, gradient clipping probably /is/
+  something you're going to have to worry about.
+* If you're writing paper about an algorithm which uses gradient clipping,
+  /please/ quote what clip value you use.
+
+
+## Reproducing papers efficiently
+
+Overall, this project took about 150 hours. That's much longer than I expected it to take.
+
+I think the main mistake I made was starting from a minimal set of features and gradually adding
+the bells and whistles rather than starting from a known-good implementation then ablating
+to figure out what was actually important. Some of the extras do end up just being small performance
+improvements, but sometimes they're the difference between it working fine and not working at all,
+and it can be really hard to guess in advance which any particular feature will be. (I'm thinking
+in particular about a) gradient clipping and b) the difference between MC updates and TD updates.
+To my unexperienced self at the start of the project, both of these seemed like completely reasonable
+simplifications. But figuring out that these two were key took so, so much time - there were
+always other bugs which were easier to find and initially seemed important but once fixed turned out
+to be non-critical red herrings.)
+
+Advice I've since heard for how to approach these reproductions more efficiently instead suggests
+a process more like:
+
+1. Start with an existing implementation from a trusted source.
+2. Scrutinize the code and experiment with small parts of it until you're confident you understand
+   what every single line does. Make notes about the parts you're suspicious about the purpose of.
+3. Rewrite the same implementation basically verbatim from memory. Test, and if it fails,
+   compare to the original implementation. Iterate until it works.
+4. Start again from scratch, writing an implementation in your own style. Once it works, ablate
+   the parts you were suspicious of.
+   
+## Other Implementations
+
+A nice thing about A3C is that there are lots of other implementations. Check out how other people
+have implemented the same thing:
+
+* OpenAI's [universe-starter-agent](https://github.com/openai/universe-starter-agent)
+* Denny Britz's [implementation](https://github.com/dennybritz/reinforcement-learning/tree/master/PolicyGradient/a3c)
+  in his [reinforcement-learning](https://github.com/dennybritz/reinforcement-learning) repo
+* Yasuhiro Fujita's [async-rl](https://github.com/muupan/async-rl)
+* Kosuke Miyoshi's [async_deep_reinforce](https://github.com/miyosuda/async_deep_reinforce)
+* (Bonus 1: NVIDIA's [GA3C](https://github.com/NVlabs/GA3C), which uses a slightly different
+  architecture but might be interesting nonetheless)
+* (Bonus 2: OpenAI's [A2C implementation](https://github.com/openai/baselines/tree/master/baselines/a2c))
