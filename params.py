@@ -32,6 +32,8 @@ def parse_args():
     # Determined through coarse line search on the main five Atari games from the paper
     parser.add_argument("--max_grad_norm", type=float, default=5.0)
     parser.add_argument("--entropy_bonus", type=float, default=0.01)
+    # Figure 2 from the paper suggests that a good default learning rate is 10^-3,
+    # but I think the values are off by a factor of 10, such that the optimal is actually 10^-4.
     parser.add_argument("--initial_lr", type=float, default=1e-4)
     parser.add_argument("--lr_schedule", choices=['constant', 'linear'], default='constant')
     parser.add_argument("--lr_decay_to_zero_by_n_steps", type=float)
