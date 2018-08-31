@@ -47,8 +47,8 @@ class MemoryProfiler:
         f = open(self.log_path, 'w+')
         while True:
             # 5 samples, 1 second apart
-            memory_profiler.memory_usage(self.pid, stream=f,
-                                         timeout=5, interval=1)
+            memory_profiler.memory_usage(self.pid, stream=f, timeout=5, interval=1,
+                                         include_children=True)
             f.flush()
 
             try:
