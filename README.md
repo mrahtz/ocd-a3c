@@ -191,7 +191,7 @@ was the following:
   don't also have to copy all the runs), under Git LFS.
   (Example: [tensorflow-a3c-runs](https://github.com/mrahtz/tensorflow-a3c-runs/settings)
 * Maintain a separate branch in that repository for each revision in the main code repository
-  you do runs from.
+  you do runs from, labelled by branch.
 * Have your code automatically label each run with the current revision, just in case
   you mess up the branches
   (see e.g. [params.py](https://github.com/mrahtz/tensorflow-a3c/blob/3c839d6039cf9b4c18b726e2d552313e9be723d2/params.py#L87).
