@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
-
+import sys
 import unittest
+from os import path
 
 import gym
 import tensorflow as tf
-
-import sys
-from os import path
 
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
@@ -68,11 +66,13 @@ class TestSharedStatistics(unittest.TestCase):
         actually affecting updates on another worker.
         """
 
-        # First, we'll do two a run where we deliberately reset RMSprop statistics between
+        # First, we'll do a run where we deliberately reset RMSprop statistics between
         # worker 1's update and worker 2's update. We'll record what the variables look like at
         # the start, after the worker 1's update, and after worker 2's update.
         vars_sum_init_1, vars_sum_post_w1_update_1, vars_sum_post_w2_update_1 = \
             run_weight_test(reset_rmsprop=True)
+        self.assertNotEqual(vars_sum_init_1, vars_sum_post_w1_update_1)
+        self.assertNotEqual(vars_sum_post_w1_update_1, vars_sum_post_w2_update_1)
 
         # We'll want to do a another run where we don't reset RMSprop statistics, and check that
         # worker 2's update is different. But before we can do that, we also have to check that our
@@ -110,7 +110,7 @@ def run_weight_test(reset_rmsprop):
         make_inference_network(obs_shape=(84, 84, 4), n_actions=env.action_space.n)
     shared_variables = tf.global_variables()
 
-    optimizer = tf.train.RMSPropOptimizer(learning_rate=5e-4, decay=0.99, epsilon=1e-5)
+    optimizer = tf.train.RMSPropOptimizer(learning_rate=1e-3, decay=0.99, epsilon=1e-5)
 
     network1 = Network(scope="worker_1", n_actions=env.action_space.n, entropy_bonus=0.01,
                        value_loss_coef=0.5, max_grad_norm=0.5, optimizer=optimizer,
