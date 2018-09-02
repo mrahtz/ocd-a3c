@@ -1,5 +1,11 @@
 # OCD A3C
 
+![](images/Pong.gif)
+![](images/SpaceInvaders.gif)
+![](images/Beamrider.gif)
+![](images/Qbert.gif)
+![](images/Breakout.gif)
+
 TensorFlow implementation of [A3C](https://arxiv.org/abs/1602.01783) for Atari games using OpenAI
 Gym, crafted with love, kindness - and since deep RL is [apparently hard to get
 right](https://blog.openai.com/openai-baselines-dqn/) - OCD levels of thoroughness and care.
