@@ -12,6 +12,51 @@ right](https://blog.openai.com/openai-baselines-dqn/) - OCD levels of thoroughne
 ![](images/Qbert.gif)
 ![](images/Breakout.gif)
 
+## Results
+
+### Game scores
+
+The main Atari games tested in the paper were Beamrider, Breakout, Pong, Q*bert and Space Invaders.
+Reported results on A3C (Figure 4) from the paper were:
+
+![](images/all_scores_paper.png)
+
+OCD A3C achieves comparable results on Pong and Breakout; superior results on Q*bert; but significantly
+worse results on Beamrider and Space Invaders:
+
+![](images/all_scores_graph.png)
+(Original log files for these runs, commands used to run them, resulting policies, and script
+ used to plot results can be found at
+[ocd-a3c-runs/master_a19cf29](https://github.com/mrahtz/ocd-a3c-runs/tree/master_a19cf29).)
+
+I'm assuming the discrepancies are just due to hyperparameter differences: the paper tries 50 different
+learning rates/initializations for each game and reports the best three, whereas all of our results
+use the same hyperparameters: learning rate 1e-4 and a gradient clip of 5.0 (with error regions
+showing variance over three random seeds).
+
+### Speedup from multiple workers
+
+How close to a linear speedup do we get from adding extra workers?
+
+The most dramatic results from the paper were for Pong:
+
+![](images/pong_scores_paper.png)
+
+Though OCD A3C does match the performance for 16 workers, the speedups between 1 and 16 workers are
+not as linear:
+
+![](images/pong_scores_graph.png)
+(Data for these runs can be found at
+[ocd-a3c-runs/master_60d4b42](https://github.com/mrahtz/ocd-a3c-runs/tree/master_60d4b42).)
+
+However, the speedup _does_ seem to be roughly linear when scores are instead plotted against step
+number:
+
+![](images/pong_scores_tb.png)
+
+This suggests that OCD A3C functions correctly in terms of accelerating learning by aggregrating
+experience from multiple workers, but that there's significant overhead from extra workers due
+to e.g. GIL (described below).
 
 ## Usage
 
