@@ -25,6 +25,7 @@ OCD A3C achieves comparable results on Pong and Breakout; superior results on Q*
 worse results on Beamrider and Space Invaders:
 
 ![](images/all_scores_graph.png)
+
 (Original log files for these runs, commands used to run them, resulting policies, and script
  used to plot results can be found at
 [ocd-a3c-runs/master_a19cf29](https://github.com/mrahtz/ocd-a3c-runs/tree/master_a19cf29).)
@@ -46,6 +47,7 @@ Though OCD A3C does match the performance for 16 workers, the speedups between 1
 not as linear:
 
 ![](images/pong_scores_graph.png)
+
 (Data for these runs can be found at
 [ocd-a3c-runs/master_60d4b42](https://github.com/mrahtz/ocd-a3c-runs/tree/master_60d4b42).)
 
@@ -323,7 +325,7 @@ norms and certain RMSprop statistics were definitely different with and without 
 sometimes up to a factor of 10 or so. And I do have notes of some runs failing apparently because of
 lack of gradient clipping. Nonetheless, take the above story with a grain of salt.)
 
-(Also note that this is in contrast to A/2/C, where /each update/ consists of experience from all
+(Also note that this is in contrast to A*2*C, where *each update* consists of experience from all
 workers and is therefore more diverse.)
 
 Sadly, amount of gradient clipping is one hyperparameter the paper doesn't list (and in fact,
@@ -334,7 +336,7 @@ all five games.
 My main takeaways from these experiences are:
 * If you're calculating gradients on batches with correlated data, gradient clipping probably /is/
   something you're going to have to worry about.
-* If you're writing paper about an algorithm which uses gradient clipping, /please/ quote what clip
+* If you're writing paper about an algorithm which uses gradient clipping, *please* quote what clip
   value you use.
 
 
