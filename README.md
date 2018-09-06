@@ -2,9 +2,9 @@
 
 [![CircleCI](https://circleci.com/gh/mrahtz/ocd-a3c.svg?style=shield)](https://circleci.com/gh/mrahtz/ocd-a3c)
 
-TensorFlow implementation of [A3C](https://arxiv.org/abs/1602.01783) for Atari games using OpenAI
-Gym, crafted with love, kindness - and since deep RL is [apparently hard to get
-right](https://blog.openai.com/openai-baselines-dqn/) - OCD levels of thoroughness and care.
+TensorFlow implementation of [asynchronous advantage actor-critic (A3C)](https://arxiv.org/abs/1602.01783) for Atari games using OpenAI
+Gym, built with love, kindness - and since deep RL is
+[apparently easy to mess up](https://blog.openai.com/openai-baselines-dqn/) - OCD levels of thoroughness and care.
 
 ![](images/Pong.gif)
 ![](images/SpaceInvaders.gif)
@@ -26,14 +26,14 @@ worse results on Beamrider and Space Invaders:
 
 ![](images/all_scores_graph.png)
 
-(Original log files for these runs, commands used to run them, resulting policies, and script
+(Original logs for these runs, commands used to run them, resulting policies, and script
  used to plot results can be found at
 [ocd-a3c-runs/master_a19cf29](https://github.com/mrahtz/ocd-a3c-runs/tree/master_a19cf29).)
 
-I'm assuming the discrepancies are just due to hyperparameter differences: the paper tries 50 different
-learning rates/initializations for each game and reports the best three, whereas all of our results
-use the same hyperparameters: learning rate 1e-4 and a gradient clip of 5.0 (with error regions
-showing variance over three random seeds).
+I'm assuming discrepancies are due to hyperparameter differences: the paper tries 50 different
+learning rates/initializations for each game and reports the best three, whereas our results
+use the same hyperparameters throughout: learning rate 1e-4 and a gradient clip of 5.0 (with shaded regions
+showing best/worst scores over three random seeds).
 
 ### Speedup from multiple workers
 
@@ -43,15 +43,15 @@ The most dramatic results from the paper were for Pong:
 
 ![](images/pong_scores_paper.png)
 
-Though OCD A3C does match the performance for 16 workers, the speedups between 1 and 16 workers are
-not as linear:
+Running on 16 cores, though OCD A3C does match the performance for 16 workers, the speedups
+between 1 and 16 workers are not as linear:
 
 ![](images/pong_scores_graph.png)
 
 (Data for these runs can be found at
 [ocd-a3c-runs/master_60d4b42](https://github.com/mrahtz/ocd-a3c-runs/tree/master_60d4b42).)
 
-However, the speedup _does_ seem to be roughly linear when scores are instead plotted against step
+However, the speedup _does_ seem to be roughly linear when scores are instead plotted against episode
 number:
 
 ![](images/pong_scores_tb.png)
@@ -67,7 +67,7 @@ to e.g. GIL (described below).
 To set up an isolated environment and install dependencies, install
 [Pipenv](https://github.com/pypa/pipenv) (e.g. `pip install --user pipenv`), then just run:
 
-`$ pipenv install`
+`$ pipenv sync`
 
 However, note that TensorFlow must be installed manually. Either:
 
@@ -101,21 +101,21 @@ For example, to train an agent on Pong using 16 workers:
 $ python3 train.py --n_workers 16 PongNoFrameskip-v4
 ```
 
-Logs and checkpoints will be saved to a new directory in `runs`. To specify the name of the
-directory, specify `--run_name`.
+TensorBoard logs and checkpoints will be saved to a new directory in `runs`. To specify the name of
+the directory, use `--run_name`.
 
 Run `train.py --help` to see full usage options, including tuneable hyperparameters.
 
-Once training is completed, check out trained agent behaviour with:
+Once training is completed, examine trained behaviour with:
 
 ```
 $ python3 run_checkpoint.py <environment name> <checkpoint directory>
 ```
 
-For example:
+For example, using a checkpoint from [ocd-a3c-runs](https://github.com/mrahtz/ocd-a3c-runs):
 
 ```
-$ python3 run_checkpoint.py PongNoFrameskip-v4 runs/test-run_1534041413_cdc3bd9/checkpoints
+$ python3 run_checkpoint.py PongNoFrameskip-v4 ocd-a3c-runs/Pong-0_a19cf29/checkpoints/
 ```
 
 ### Tests
@@ -139,14 +139,14 @@ To earn its epithet, OCD A3C includes a few special testing features.
 
 ### Randomness checks
 
-An annoying thing that happens with deep RL is a change which should be inconsequential apparently
+An annoying thing with deep RL is when a change which should be inconsequential apparently
 breaking things because it inadvertently changes random seeding. To make it more obvious when this
-might have happened, `train_test.py` runs a full end-to-end run checking that the weights are
-exactly what they were after 100 updates in the previous version of the code.
+might have happened, [`train_test.py`](tests/train_test.py) does an end-to-end run checking that starting
+from a fixed seed, after 100 updates, weights are exactly the same as what they were in previous versions of the code.
 
 ### See through the eyes of the agent
 
-Run `preprocessing_play.py` to play the game through the eyes of the agent using Gym's
+Run [`preprocessing_play.py`](tests/preprocessing_play.py) to play the game through the eyes of the agent using Gym's
 [`play.py`](https://github.com/openai/gym/blob/a77b139e5875c2ab5c7ad894d0819a4e16c3f27f/gym/utils/play.py).
 You'll see the full result of the preprocessing pipeline (including the frame stack, spread out
 horizontally over time):
@@ -158,8 +158,8 @@ horizontally over time):
 Still, what if we fumble something up between the eyes and the brain - between the preprocessing
 pipeline and actually sending the frames into the policy network for inference or training?
 
-Thanks to [`tf.Print`](https://www.tensorflow.org/api_docs/python/tf/Print), we can dump all data
-going into the network then check offline that everything looks fine. This involves first running
+Using [`tf.Print`](https://www.tensorflow.org/api_docs/python/tf/Print), we can dump all data
+going into the network then later check whether things are right. This involves first running
 `train.py` with the `--debug` flag and piping `stderr` to a log file:
 
 ```
