@@ -57,7 +57,7 @@ number:
 ![](images/pong_scores_tb.png)
 
 This suggests that OCD A3C functions correctly in terms of accelerating learning by aggregrating
-experience from multiple workers, but that there's significant overhead from extra workers due
+experience from multiple workers, but just that there's overhead from extra workers due
 to e.g. GIL (described below).
 
 ## Usage
@@ -141,8 +141,9 @@ To earn its epithet, OCD A3C includes a few special testing features.
 
 An annoying thing with deep RL is when a change which should be inconsequential apparently
 breaking things because it inadvertently changes random seeding. To make it more obvious when this
-might have happened, [`train_test.py`](tests/train_test.py) does an end-to-end run checking that starting
-from a fixed seed, after 100 updates, weights are exactly the same as what they were in previous versions of the code.
+might have happened, [`train_test.py`](tests/train_test.py) does an end-to-end run starting
+from a fixed seed, checking that after 100 updates on a deterministic environment,
+weights are exactly the same as what they were in previous versions of the code.
 
 ### See through the eyes of the agent
 
@@ -230,6 +231,20 @@ The reduced through compared to A2C is presumably due to some combination of:
   A2C.
 * GIL-induced thread juggling, since each worker runs on a separate thread.
   
+## Other Implementations
+
+A nice thing about A3C is that there are lots of other implementations. Check out how other people
+have implemented the same thing:
+
+* OpenAI's [universe-starter-agent](https://github.com/openai/universe-starter-agent)
+* Denny Britz's [implementation](https://github.com/dennybritz/reinforcement-learning/tree/master/PolicyGradient/a3c)
+  in his [reinforcement-learning](https://github.com/dennybritz/reinforcement-learning) repo
+* Yasuhiro Fujita's [async-rl](https://github.com/muupan/async-rl)
+* Kosuke Miyoshi's [async_deep_reinforce](https://github.com/miyosuda/async_deep_reinforce)
+* (Bonus 1: NVIDIA's [GA3C](https://github.com/NVlabs/GA3C), which uses a slightly different
+  architecture but might be interesting nonetheless)
+* (Bonus 2: OpenAI's [A2C implementation](https://github.com/openai/baselines/tree/master/baselines/a2c))  
+  
 ## Lessons learned
 
 ### Data organisation
@@ -244,12 +259,12 @@ was the following:
 
 * Store runs in a separate repository (so that when you're copying the code to a new machine you
   don't also have to copy all the runs), under Git LFS.
-  (Example: [tensorflow-a3c-runs](https://github.com/mrahtz/tensorflow-a3c-runs/settings)
+  (Example: [ocd-a3c-runs](https://github.com/mrahtz/ocd-a3c-runs).)
 * Maintain a separate branch in that repository for each revision in the main code repository
   you do runs from, labelled by branch.
 * Have your code automatically label each run with the current revision, just in case
-  you mess up the branches
-  (see e.g. [params.py](https://github.com/mrahtz/tensorflow-a3c/blob/3c839d6039cf9b4c18b726e2d552313e9be723d2/params.py#L87).
+  you mess up the branches.
+  (See e.g. [params.py](https://github.com/mrahtz/tensorflow-a3c/blob/3c839d6039cf9b4c18b726e2d552313e9be723d2/params.py#L87).)
 * Save the arguments used for each run - both those specified on the command line, and the full
   e.g. `argparse` namespace so you record default arguments too
   (also [params.py](https://github.com/mrahtz/tensorflow-a3c/blob/3c839d6039cf9b4c18b726e2d552313e9be723d2/params.py#L95)).
@@ -287,7 +302,7 @@ converge. Maybe training was just too slow to show significant progress on the l
 was doing (~ 12 hours). But I'm hesitant to accept this as the full explanation, since MC updates
 worked fine with the heavier preprocessing, and without taking too much longer.
 
-Another possible explanation is the differences in gradient computation between MC and TD.  The
+Another possible explanation is the difference in gradient accumulation/updates between MC and TD.  The
 pseudocode in the paper suggests simply summing gradients over each step. With MC updates, because
 you're summing gradients over the many steps of an entire episode, you'll end up taking a really
 large step in parameter space on every update. Updates that large just seem like a bad idea.  You
@@ -314,7 +329,7 @@ other algorithms. For A3C the main advantage may just be the increased rate of e
 accumulation. But let's stick with the standard story for now and see where it goes.)
 
 Even if there's diversity between each update, though, this says nothing about the diversity of
-experience /within/ each update (where each update consists of a batch of 5 steps in the environment
+experience *within* each update (where each update consists of a batch of 5 steps in the environment
 from one worker). My impression from inspecting gradients and RMSprop statistics here and there is
 that this can cause problems: if each update is too homogenous, each update can point in one
 direction kind of sharply, leading to large gradients on each update. Gradient clipping therefore
@@ -333,11 +348,10 @@ learning rate and gradient clipping were tuned for each game individually). The 
 (`max_grad_norm` in [`params.py`](params.py)) of 5.0 was determined through coarse line search over
 all five games.
 
-My main takeaways from these experiences are:
-* If you're calculating gradients on batches with correlated data, gradient clipping probably /is/
+My main thoughts from these experiences are:
+* If you're calculating gradients on batches with correlated data, gradient clipping probably *is*
   something you're going to have to worry about.
-* If you're writing paper about an algorithm which uses gradient clipping, *please* quote what clip
-  value you use.
+* If you use gradient clipping in your paper, *please* quote what clip value you use.
 
 
 ## Reproducing papers efficiently
@@ -365,17 +379,3 @@ process more like:
    the original implementation. Iterate until it works.
 4. Start again from scratch, writing an implementation in your own style. Once it works, ablate the
    parts you were suspicious of.
-   
-## Other Implementations
-
-A nice thing about A3C is that there are lots of other implementations. Check out how other people
-have implemented the same thing:
-
-* OpenAI's [universe-starter-agent](https://github.com/openai/universe-starter-agent)
-* Denny Britz's [implementation](https://github.com/dennybritz/reinforcement-learning/tree/master/PolicyGradient/a3c)
-  in his [reinforcement-learning](https://github.com/dennybritz/reinforcement-learning) repo
-* Yasuhiro Fujita's [async-rl](https://github.com/muupan/async-rl)
-* Kosuke Miyoshi's [async_deep_reinforce](https://github.com/miyosuda/async_deep_reinforce)
-* (Bonus 1: NVIDIA's [GA3C](https://github.com/NVlabs/GA3C), which uses a slightly different
-  architecture but might be interesting nonetheless)
-* (Bonus 2: OpenAI's [A2C implementation](https://github.com/openai/baselines/tree/master/baselines/a2c))
